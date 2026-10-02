@@ -10,10 +10,11 @@ GIT_SHA  := $(shell git rev-parse --short HEAD)
 build:
 	docker build -t $(IMAGE):$(GIT_SHA) .
 
-push:
+push: build
+	gcloud auth configure-docker $(REGION)-docker.pkg.dev --quiet
 	docker push $(IMAGE):$(GIT_SHA)
 
-deploy:
+deploy: push
 	gcloud run deploy $(SERVICE) \
 		--image $(IMAGE):$(GIT_SHA) \
 		--region $(REGION) \
@@ -22,4 +23,4 @@ deploy:
 		--port 80 \
 		--allow-unauthenticated
 
-all: build push deploy
+all: deploy

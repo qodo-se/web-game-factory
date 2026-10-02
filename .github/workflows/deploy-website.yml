@@ -1,0 +1,30 @@
+name: Deploy Website
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "website/**"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker europe-west4-docker.pkg.dev --quiet
+
+      - name: Deploy
+        run: make deploy-website

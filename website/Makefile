@@ -3,21 +3,23 @@ REGION    ?= europe-west4
 REPO      ?= web-game-factory
 SERVICE   ?= wgf-website
 IMAGE     = $(REGION)-docker.pkg.dev/$(PROJECT)/$(REPO)/website
+GIT_SHA  := $(shell git rev-parse --short HEAD)
 
 .PHONY: build push deploy all
 
 build:
-	docker build -t $(IMAGE) .
+	docker build -t $(IMAGE):$(GIT_SHA) .
 
 push:
-	docker push $(IMAGE)
+	docker push $(IMAGE):$(GIT_SHA)
 
 deploy:
 	gcloud run deploy $(SERVICE) \
-		--image $(IMAGE) \
+		--image $(IMAGE):$(GIT_SHA) \
 		--region $(REGION) \
 		--project $(PROJECT) \
 		--platform managed \
+		--port 80 \
 		--allow-unauthenticated
 
 all: build push deploy

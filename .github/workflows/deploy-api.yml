@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "api/**"
+      - "Makefile"
 
 jobs:
   deploy:

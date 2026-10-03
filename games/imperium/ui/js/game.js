@@ -1,3 +1,7 @@
+function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 // ── Fantasy RTS map rendering ──────────────────────────────────────────────────
@@ -926,8 +930,8 @@ function updateRegionInfo(id) {
     const ownerNames  = { player_1: state.player_1.name, player_2: state.player_2.name, rogue: 'Neutral' };
     const ownerClass  = { player_1: 'p1-text', player_2: 'p2-text', rogue: 'rogue-text' };
     document.getElementById('region-info').innerHTML = `
-        <div class="region-name">${r.name}${r.is_capital ? ' ★' : ''}</div>
-        <div class="region-row"><span>Owner</span><span class="${ownerClass[r.owner]}">${ownerNames[r.owner]}</span></div>
+        <div class="region-name">${escHtml(r.name)}${r.is_capital ? ' ★' : ''}</div>
+        <div class="region-row"><span>Owner</span><span class="${ownerClass[r.owner]}">${escHtml(ownerNames[r.owner])}</span></div>
         <div class="region-row"><span>Terrain</span><span>${capitalise(r.terrain)}</span></div>
         <div class="region-row"><span>Army</span><span>${r.army}</span></div>
         <div class="region-row"><span>Growth</span><span>+${r.pop_rate}/turn</span></div>

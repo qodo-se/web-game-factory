@@ -1,4 +1,5 @@
-from typing import List, Optional
+import threading
+from typing import Dict, List, Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
@@ -8,6 +9,16 @@ from games.imperium.engine.presets import list_presets
 from games.imperium.api import store
 
 router = APIRouter(prefix="/api/imperium", tags=["imperium"])
+
+_game_locks: Dict[str, threading.Lock] = {}
+_locks_lock = threading.Lock()
+
+
+def _get_game_lock(game_id: str) -> threading.Lock:
+    with _locks_lock:
+        if game_id not in _game_locks:
+            _game_locks[game_id] = threading.Lock()
+        return _game_locks[game_id]
 
 
 # ── Request / Response models ─────────────────────────────────────────────────
@@ -160,10 +171,16 @@ def submit_turn(game_id: str, req: TurnRequest):
         moves=[Move(from_region_id=m.from_region_id, to_region_id=m.to_region_id) for m in req.moves],
     )
 
+    lock = _get_game_lock(game_id)
+    if not lock.acquire(blocking=False):
+        raise HTTPException(status_code=409, detail="A turn is already being processed for this game.")
     try:
-        engine.submit_actions("player_1", actions)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        try:
+            engine.submit_actions("player_1", actions)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=str(e))
+        summary = engine.resolve_turn()
+    finally:
+        lock.release()
 
-    summary = engine.resolve_turn()
     return _serialize_summary(summary, _serialize_state(engine))

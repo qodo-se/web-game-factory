@@ -33,17 +33,6 @@
         errorMsg.classList.remove('hidden');
     }
 
-    try {
-        presetsData = await api.getPresets();
-        presetSel.innerHTML = presetsData
-            .map(p => `<option value="${p.id}">${p.name} (${p.region_count} regions)</option>`)
-            .join('');
-        updateDesc();
-    } catch (e) {
-        presetSel.innerHTML = '<option value="">Failed to load</option>';
-        showError(e.message);
-    }
-
     function updateDesc() {
         const selected = presetsData.find(p => p.id === presetSel.value);
         presetDesc.textContent = selected ? selected.description : '';
@@ -51,9 +40,11 @@
 
     presetSel.addEventListener('change', updateDesc);
 
-    // ── Form submit ───────────────────────────────────────────────────────────
+    // ── Form submit — registered before async load so early clicks are caught ─
+    startBtn.disabled = true;
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
+        if (startBtn.disabled) return;
         errorMsg.classList.add('hidden');
 
         const playerName = document.getElementById('player-name').value.trim() || 'Consul';
@@ -79,4 +70,17 @@
             startBtn.textContent = 'Begin Campaign';
         }
     });
+
+    // ── Load presets (after handler is registered) ────────────────────────────
+    try {
+        presetsData = await api.getPresets();
+        presetSel.innerHTML = presetsData
+            .map(p => `<option value="${p.id}">${p.name} (${p.region_count} regions)</option>`)
+            .join('');
+        updateDesc();
+        startBtn.disabled = false;
+    } catch (e) {
+        presetSel.innerHTML = '<option value="">Failed to load</option>';
+        showError(e.message);
+    }
 })();

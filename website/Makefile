@@ -16,6 +16,7 @@ push: build
 	docker push $(IMAGE):$(GIT_SHA)
 
 deploy: push
+	@[ -n "$(IMPERIUM_API_URL)" ] || { echo "Error: IMPERIUM_API_URL must be set (e.g. make deploy IMPERIUM_API_URL=https://...)"; exit 1; }
 	gcloud run deploy $(SERVICE) \
 		--image $(IMAGE):$(GIT_SHA) \
 		--region $(REGION) \

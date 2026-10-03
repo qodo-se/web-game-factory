@@ -1,0 +1,143 @@
+"""
+Converts a preset definition dict into a GameState.
+
+Preset format:
+    {
+        "id": str,
+        "name": str,
+        "description": str,
+        "regions": [(name, terrain, x, y), ...],   # terrain = city/plains/hills/desert/forest/coast
+        "player1_capital": int,                      # index into regions list
+        "player2_capital": int,
+        "player1_extra_starts": [int, int],          # 2 extra region indices
+        "player2_extra_starts": [int, int],
+        "max_edge_distance": float,                  # Delaunay edge filter (default 0.22)
+        "extra_edges": [(int, int), ...],            # manually added adjacencies (islands etc.)
+        "removed_edges": [(int, int), ...],          # manually removed adjacencies
+    }
+"""
+from typing import Dict, List, Optional, Set, Tuple
+
+import numpy as np
+from scipy.spatial import Delaunay
+
+from ..models import (
+    BASE_STARTING_POP,
+    ROGUE_MILITIA_RATIO,
+    TERRAIN_POP_RATE,
+    GameState,
+    MapSize,
+    Owner,
+    Player,
+    Region,
+    TerrainType,
+)
+
+
+def _build_adjacency(
+    coords: List[Tuple[float, float]],
+    max_dist: float,
+    extra_edges: List[Tuple[int, int]],
+    removed_edges: List[Tuple[int, int]],
+) -> List[Set[int]]:
+    n = len(coords)
+    adj: List[Set[int]] = [set() for _ in range(n)]
+    pts = np.array(coords)
+    tri = Delaunay(pts)
+
+    for simplex in tri.simplices:
+        for i in range(3):
+            for j in range(i + 1, 3):
+                a, b = int(simplex[i]), int(simplex[j])
+                dist = float(np.linalg.norm(pts[a] - pts[b]))
+                if dist <= max_dist:
+                    adj[a].add(b)
+                    adj[b].add(a)
+
+    for a, b in extra_edges:
+        adj[a].add(b)
+        adj[b].add(a)
+
+    for a, b in removed_edges:
+        adj[a].discard(b)
+        adj[b].discard(a)
+
+    return adj
+
+
+def _map_size(n: int) -> MapSize:
+    if n <= 36:
+        return MapSize.SMALL
+    elif n <= 48:
+        return MapSize.MEDIUM
+    return MapSize.LARGE
+
+
+def load_preset(
+    preset: dict,
+    player1_name: str = "Player 1",
+    player2_name: str = "Player 2",
+    player1_is_ai: bool = False,
+    player2_is_ai: bool = True,
+) -> GameState:
+    raw = preset["regions"]          # [(name, terrain, x, y), ...]
+    coords = [(r[2], r[3]) for r in raw]
+
+    adj = _build_adjacency(
+        coords,
+        max_dist=preset.get("max_edge_distance", 0.22),
+        extra_edges=preset.get("extra_edges", []),
+        removed_edges=preset.get("removed_edges", []),
+    )
+
+    p1_start: Set[int] = {preset["player1_capital"]} | set(preset["player1_extra_starts"])
+    p2_start: Set[int] = {preset["player2_capital"]} | set(preset["player2_extra_starts"])
+
+    regions: Dict[int, Region] = {}
+    for idx, (name, terrain_str, x, y) in enumerate(raw):
+        terrain = TerrainType(terrain_str)
+        is_capital = idx in (preset["player1_capital"], preset["player2_capital"])
+
+        if idx in p1_start:
+            owner = Owner.PLAYER_1
+            army = TERRAIN_POP_RATE[terrain] * BASE_STARTING_POP
+        elif idx in p2_start:
+            owner = Owner.PLAYER_2
+            army = TERRAIN_POP_RATE[terrain] * BASE_STARTING_POP
+        else:
+            owner = Owner.ROGUE
+            army = int(TERRAIN_POP_RATE[terrain] * BASE_STARTING_POP * ROGUE_MILITIA_RATIO)
+
+        regions[idx] = Region(
+            id=idx,
+            name=name,
+            terrain=terrain,
+            owner=owner,
+            army=max(1, army),
+            neighbors=sorted(adj[idx]),
+            is_capital=is_capital,
+            x=round(x, 4),
+            y=round(y, 4),
+        )
+
+    players = [
+        Player(
+            id="player_1",
+            name=player1_name,
+            is_ai=player1_is_ai,
+            capital_region_id=preset["player1_capital"],
+        ),
+        Player(
+            id="player_2",
+            name=player2_name,
+            is_ai=player2_is_ai,
+            capital_region_id=preset["player2_capital"],
+        ),
+    ]
+
+    return GameState(
+        regions=regions,
+        players=players,
+        turn=1,
+        map_size=_map_size(len(regions)),
+    )

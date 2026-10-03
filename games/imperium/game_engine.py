@@ -37,6 +37,32 @@ class GameEngine:
     # ── Construction ──────────────────────────────────────────────────────────
 
     @classmethod
+    def from_preset(
+        cls,
+        preset_id: str,
+        player1_name: str = "Player 1",
+        player2_name: str = "Player 2",
+        player1_is_ai: bool = False,
+        player2_is_ai: bool = True,
+    ) -> "GameEngine":
+        """Load a named real-world map preset (e.g. 'mediterranean', 'europe')."""
+        from .presets import PRESETS
+        from .presets.loader import load_preset
+
+        if preset_id not in PRESETS:
+            available = ", ".join(PRESETS.keys())
+            raise ValueError(f"Unknown preset '{preset_id}'. Available: {available}")
+
+        state = load_preset(
+            PRESETS[preset_id],
+            player1_name=player1_name,
+            player2_name=player2_name,
+            player1_is_ai=player1_is_ai,
+            player2_is_ai=player2_is_ai,
+        )
+        return cls(state=state)
+
+    @classmethod
     def new_game(
         cls,
         map_size: MapSize = MapSize.SMALL,

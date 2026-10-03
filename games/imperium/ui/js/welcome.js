@@ -71,6 +71,7 @@
             const result = await api.newGame(body);
             sessionStorage.setItem('gameId', result.game_id);
             sessionStorage.setItem('playerName', playerName);
+            sessionStorage.setItem('presetId', mode === 'preset' ? body.preset_id : '');
             window.location.href = 'game.html';
         } catch (e) {
             showError(e.message);

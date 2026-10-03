@@ -9,10 +9,10 @@ Usage:
 """
 import sys
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../.."))
 
-from games.imperium.game_engine import GameEngine
-from games.imperium.models import MapSize
+from games.imperium.engine.game_engine import GameEngine
+from games.imperium.engine.models import MapSize
 
 
 def print_bar(label: str) -> None:

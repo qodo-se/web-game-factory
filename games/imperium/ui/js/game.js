@@ -5,24 +5,24 @@
 // procedural texture, sandy coastal strip between land and ocean, and dark navy
 // ocean with wave texture.  No hillshading — terrain color carries all the info.
 
-// Base and shadow colors per terrain type [R,G,B]
+// Base and shadow colors per terrain type [R,G,B] — Age of Empires II palette
 const TERRAIN_BASE = {
-    coast:   [132, 192,  90],   // bright coastal green
-    plains:  [ 78, 148,  46],   // rich medium grass
-    city:    [ 86, 150,  52],   // city on plains
-    forest:  [ 40,  92,  24],   // deep forest green
-    hills:   [108,  86,  46],   // rocky brown
-    desert:  [196, 164,  76],   // golden sand
+    coast:   [152, 212, 100],   // light coastal grass (bright, near-shore)
+    plains:  [ 96, 160,  52],   // classic AoE2 medium-green grassland
+    city:    [100, 164,  56],   // developed plains
+    forest:  [ 48, 104,  24],   // AoE2 forest green (canopy lit top)
+    hills:   [132, 108,  64],   // warm grey-stone highland
+    desert:  [204, 176, 100],   // AoE2 sandy dunes — warm gold
 };
 const TERRAIN_DARK = {          // shadow / dense-cover variant (lower noise → this)
-    coast:   [100, 152,  64],
-    plains:  [ 52, 112,  28],
-    city:    [ 62, 118,  34],
-    forest:  [ 20,  56,  12],
-    hills:   [ 72,  58,  28],
-    desert:  [160, 130,  50],
+    coast:   [112, 168,  72],
+    plains:  [ 60, 116,  30],
+    city:    [ 68, 124,  36],
+    forest:  [ 20,  56,  10],   // deep forest shadow — nearly black-green
+    hills:   [ 84,  64,  32],   // rocky shadow crevice
+    desert:  [168, 140,  68],
 };
-const SAND_COLOR = [184, 158, 94]; // sandy coastal strip between ocean and land
+const SAND_COLOR = [204, 180, 112]; // AoE2-style warm sandy beach
 
 // Owner tint: [R,G,B, alpha] — political overlay; strong enough to be unambiguous
 const OWNER_TINT = {
@@ -34,204 +34,239 @@ const OWNER_TINT = {
 const SEA_FACTOR = 1.45;
 
 const MAP_W = 1000, MAP_H = 650;
-const PAD = 0.08; // normalised padding on each side of the bounding box
+const PAD = 0.15; // normalised padding on each side of the bounding box
 
 // ── Per-preset sea points ─────────────────────────────────────────────────────
 // Virtual Voronoi centres that always render as ocean, carving geographically
 // correct water bodies.  Coordinates are in the same raw [x,y] space as r.x/r.y.
 const SEA_POINTS_BY_PRESET = {
     // ── Mediterranean ──────────────────────────────────────────────────────────
-    // The sea is the protagonist. 21 points carve out every named body of water.
+    // Coordinates matched to actual preset region positions (x=W→E, y=N→S).
+    // Region bounding box: x 0.02–0.92, y 0.28–0.92, max_edge_distance 0.22.
     mediterranean: [
-        // Western Mediterranean (Alboran / Balearic)
-        [0.09, 0.66],  // Alboran Sea — mouth of the Med
-        [0.15, 0.63],  // Balearic Sea (between Hispania and Numidia)
-        [0.21, 0.61],  // Western Mediterranean centre
-        // Ligurian Sea — south of Gaul, north of Corsica
-        [0.25, 0.47],  // Gulf of Lion
-        [0.30, 0.45],  // Ligurian Sea
-        // Tyrrhenian Sea — between Italy, Sardinia, Sicily
-        [0.35, 0.53],  // Tyrrhenian north
-        [0.39, 0.57],  // Tyrrhenian south
-        // Sicilian Channel and Libya Sea
-        [0.36, 0.70],  // Sicilian Channel west
-        [0.44, 0.71],  // Sicilian Channel east
-        [0.49, 0.77],  // Libya Sea (east of Sicily)
-        // Adriatic Sea — between Italy and Illyria
-        [0.45, 0.43],  // Adriatic north
-        [0.47, 0.52],  // Adriatic south
-        // Ionian Sea — south of Greece, east of Calabria
-        [0.50, 0.63],  // Ionian west
-        [0.54, 0.67],  // Ionian east
-        // Aegean Sea — between Macedonia and Asia Minor
-        [0.59, 0.50],  // Aegean north
-        [0.63, 0.56],  // Aegean south
+        // Strait of Gibraltar + western Mediterranean
+        [0.07, 0.66],  // Strait of Gibraltar (Hispalis 0.07,0.60 ↔ Mauretania 0.08,0.72)
+        [0.13, 0.66],  // Alboran Sea
+        [0.20, 0.63],  // Balearic Sea (between Carthago Nova and Numidia)
+        [0.25, 0.60],  // Western Mediterranean north basin
+        // Gulf of Lyon / Ligurian Sea
+        [0.24, 0.50],  // Gulf of Lyon (south of Gallia Narbonensis 0.23,0.40)
+        [0.29, 0.46],  // Ligurian Sea (between Liguria 0.32,0.37 and Corsica 0.31,0.52)
+        // Tyrrhenian Sea (west of Italian peninsula)
+        [0.36, 0.54],  // Tyrrhenian north (west of Rome 0.37,0.43)
+        [0.39, 0.60],  // Tyrrhenian south (west of Campania 0.42,0.48)
+        // Sicilian Channel
+        [0.36, 0.68],  // Sicilian Channel (Sicily 0.40,0.63 ↔ Carthage 0.33,0.63)
+        // Libya Sea
+        [0.47, 0.76],  // Libya Sea (between Libya 0.42,0.80 and Ionian)
+        // Adriatic Sea — narrow strip east of Italian peninsula
+        [0.45, 0.42],  // Adriatic north (Cisalpine 0.36,0.32 ↔ Illyria 0.48,0.40)
+        [0.46, 0.49],  // Adriatic centre (Campania 0.42,0.48 ↔ Illyria 0.48,0.40)
+        [0.48, 0.56],  // Adriatic south (Calabria 0.43,0.58 ↔ Macedonia 0.54,0.47)
+        // Ionian Sea
+        [0.51, 0.64],  // Ionian west (Calabria/Sicily ↔ Athens 0.56,0.58)
+        [0.56, 0.68],  // Ionian east (towards Crete 0.59,0.70)
+        // Bosphorus / Aegean
+        [0.65, 0.46],  // Bosphorus/Dardanelles (Thrace 0.63,0.42 ↔ Bithynia 0.68,0.50)
+        [0.61, 0.52],  // Aegean north
+        [0.63, 0.58],  // Aegean south (Athens 0.56,0.58 ↔ Lydia 0.64,0.58)
         // Eastern Mediterranean — Levantine Basin
-        [0.65, 0.71],  // East Med (between Crete and Alexandria)
-        [0.70, 0.75],  // Levantine Basin (between Crete and Phoenicia)
-        // Black Sea — north of Bithynia / Pontus
-        [0.68, 0.36],  // Black Sea west
-        [0.75, 0.33],  // Black Sea central
-        [0.82, 0.36],  // Black Sea east (north of Pontus)
+        [0.65, 0.72],  // East Med (between Crete 0.59,0.70 and Alexandria 0.68,0.82)
+        [0.70, 0.75],  // Levantine Basin (Cyprus 0.73,0.68 ↔ Phoenicia 0.76,0.72)
+        // Black Sea — north of Thrace / Pontus
+        [0.67, 0.33],  // Black Sea west (north of Thrace 0.63,0.42)
+        [0.76, 0.30],  // Black Sea central (north of Pontus 0.78,0.45)
+        [0.84, 0.35],  // Black Sea east (north of Armenia 0.90,0.50)
     ],
 
     // ── Europe ─────────────────────────────────────────────────────────────────
-    // Atlantic seaboard, British Isles seas, Baltic, and Mediterranean south.
+    // Coordinates matched to actual preset region positions (x=W→E, y=N→S).
+    // Region bounding box: x 0.04–0.82, y 0.08–0.78, max_edge_distance 0.18.
     europe: [
-        // North Atlantic and Norwegian Sea
-        [0.06, 0.16],  // Norwegian Sea
-        [0.07, 0.26],  // Atlantic west of Ireland
-        [0.06, 0.48],  // Bay of Biscay
-        [0.06, 0.62],  // Iberian Atlantic
-        // Irish Sea and English Channel
-        [0.12, 0.26],  // Irish Sea
-        [0.18, 0.31],  // English Channel
+        // Atlantic — west coast of Iberia
+        [0.02, 0.73],  // Atlantic off Lisbon (0.04,0.72)
+        [0.03, 0.58],  // Atlantic off northern Iberia
+        // Bay of Biscay
+        [0.07, 0.52],  // Bay of Biscay (Brittany 0.14,0.38 ↔ Castile 0.12,0.65)
+        // Irish Sea
+        [0.11, 0.23],  // Irish Sea (Ireland 0.08,0.22 ↔ England 0.18,0.25)
+        // English Channel
+        [0.19, 0.30],  // Western Channel (England 0.18,0.25 ↔ Normandy 0.20,0.33)
+        [0.25, 0.29],  // Eastern Channel (↔ Flanders 0.30,0.30)
         // North Sea
-        [0.25, 0.22],  // Southern North Sea
-        [0.30, 0.18],  // North Sea central
-        [0.36, 0.14],  // North Sea north (off Denmark)
+        [0.26, 0.22],  // Southern North Sea (England/Scotland ↔ Denmark 0.40,0.20)
+        [0.30, 0.15],  // Central North Sea
+        [0.34, 0.12],  // Northern North Sea (off Norway 0.37,0.08)
+        // Norwegian Sea
+        [0.14, 0.07],  // Norwegian Sea (north of Scotland 0.17,0.15)
         // Baltic Sea
-        [0.44, 0.16],  // Western Baltic (Kattegat / Øresund)
-        [0.50, 0.14],  // Baltic central
-        [0.56, 0.12],  // Gulf of Finland (east Baltic)
-        // Mediterranean south
-        [0.36, 0.74],  // Ligurian / Gulf of Genoa
-        [0.44, 0.72],  // Tyrrhenian Sea
-        [0.48, 0.82],  // Adriatic and southern Italy coast
-        [0.52, 0.76],  // Ionian Sea
-        [0.56, 0.72],  // Eastern Mediterranean / Aegean
+        [0.45, 0.16],  // Western Baltic (Denmark 0.40,0.20 ↔ Pomerania 0.48,0.22)
+        [0.54, 0.12],  // Baltic central (Sweden 0.48,0.10 ↔ Lithuania 0.60,0.22)
+        [0.62, 0.09],  // Gulf of Finland (Finland 0.58,0.08 ↔ Latvia 0.62,0.14)
+        // Mediterranean — Ligurian / Gulf of Genoa
+        [0.32, 0.67],  // Gulf of Genoa (south of Provence 0.32,0.62)
+        // Tyrrhenian Sea
+        [0.37, 0.74],  // Tyrrhenian north (west of Rome 0.40,0.68)
+        [0.41, 0.82],  // Tyrrhenian south (Naples 0.44,0.75 ↔ Sicily 0.44,0.85)
+        // Adriatic
+        [0.47, 0.65],  // Adriatic (Croatia 0.48,0.58 ↔ east Italian coast)
+        // Ionian
+        [0.52, 0.84],  // Ionian Sea (Greece 0.55,0.78 ↔ Sicily 0.44,0.85)
+        // Aegean
+        [0.58, 0.76],  // Aegean (Greece 0.55,0.78 ↔ Bulgaria 0.58,0.65)
+        // Turkish Straits / Sea of Marmara
+        [0.64, 0.76],  // Sea of Marmara (Constantinople 0.62,0.75 ↔ Anatolia 0.70,0.78)
         // Black Sea
-        [0.65, 0.66],  // Black Sea west (south of Wallachia, north of Constantinople)
-        [0.70, 0.64],  // Black Sea east (south of Crimea)
+        [0.64, 0.68],  // Black Sea west (Wallachia 0.60,0.58 ↔ Crimea 0.70,0.62)
+        [0.72, 0.65],  // Black Sea east (south of Crimea 0.70,0.62)
     ],
 
     // ── Western Europe ─────────────────────────────────────────────────────────
-    // Strong Atlantic presence; full British Isles sea geometry; Baltic; Med south.
+    // Coordinates matched to actual preset region positions (x=W→E, y=N→S).
+    // Region bounding box: x 0.06–0.60, y 0.05–0.96, max_edge_distance 0.20.
     western_europe: [
-        // Atlantic — Iberian coast
-        [0.03, 0.88],  // Atlantic off Portugal (Lisbon)
-        [0.04, 0.76],  // Atlantic off northern Spain
-        [0.04, 0.64],  // Cantabrian Sea
+        // Atlantic — west of Iberian Peninsula
+        [0.02, 0.88],  // Atlantic off Lisbon (0.06,0.88)
+        [0.04, 0.76],  // Atlantic off Castile (0.16,0.80)
         // Bay of Biscay
-        [0.08, 0.56],  // Bay of Biscay south
-        [0.09, 0.46],  // Bay of Biscay north
-        [0.10, 0.40],  // Breton offshore
-        // Irish Sea
-        [0.15, 0.30],  // Irish Sea
+        [0.10, 0.62],  // Bay of Biscay south (Aquitaine 0.26,0.62 ↔ Navarre 0.22,0.64)
+        [0.12, 0.52],  // Bay of Biscay north (Brittany 0.20,0.48)
+        // Irish Sea / Celtic Sea
+        [0.14, 0.33],  // Irish Sea (Ireland 0.12,0.30 ↔ Wales 0.20,0.32)
         // English Channel
-        [0.22, 0.35],  // Western Channel
-        [0.28, 0.32],  // Eastern Channel (Dover Strait)
+        [0.24, 0.35],  // Western Channel (England 0.28,0.25 ↔ Normandy 0.28,0.42)
+        [0.34, 0.34],  // Eastern Channel / Dover Strait (↔ Flanders 0.38,0.38)
         // North Sea
-        [0.34, 0.24],  // Southern North Sea
-        [0.38, 0.20],  // North Sea central
-        [0.44, 0.22],  // North Sea north-east (off Denmark)
-        // Baltic
-        [0.48, 0.16],  // Western Baltic
-        [0.54, 0.14],  // Baltic central
-        // Mediterranean south
-        [0.42, 0.82],  // Tyrrhenian Sea
-        [0.46, 0.90],  // Straits of Messina / south Sicily
-        [0.52, 0.76],  // Adriatic
+        [0.36, 0.26],  // Southern North Sea (Holland 0.40,0.30 ↔ England 0.28,0.25)
+        [0.40, 0.20],  // North Sea central (Denmark 0.46,0.20 ↔ Jorvik 0.28,0.15)
+        // Norwegian Sea
+        [0.22, 0.06],  // Norwegian Sea west (Scotland 0.25,0.05 ↔ Norway 0.42,0.08)
+        [0.34, 0.06],  // Norwegian Sea east (off Norway)
+        // Baltic Sea
+        [0.50, 0.16],  // Western Baltic (Denmark 0.46,0.20 ↔ Sweden 0.54,0.10)
+        [0.58, 0.14],  // Baltic central / Pomeranian (Sweden ↔ Pomerania 0.58,0.22)
+        // Mediterranean — Gulf of Lyon / Ligurian
+        [0.36, 0.76],  // Gulf of Lyon (south of Provence 0.40,0.72)
+        // Tyrrhenian Sea
+        [0.44, 0.84],  // Tyrrhenian (Rome 0.48,0.80 ↔ Naples 0.52,0.88)
+        [0.47, 0.93],  // Sicilian Channel (Sicily 0.50,0.96)
+        // Adriatic Sea
+        [0.52, 0.74],  // Adriatic north (Venice 0.54,0.62 ↔ Tuscany 0.46,0.70)
+        [0.56, 0.80],  // Adriatic south (Croatia 0.58,0.68 ↔ Naples 0.52,0.88)
     ],
 
     // ── Eastern Europe ─────────────────────────────────────────────────────────
-    // Baltic in the north; Black Sea and Azov in the south; Caspian in the east.
+    // Coordinates matched to actual preset region positions (x=W→E, y=N→S).
+    // Region bounding box: x 0.05–0.82, y 0.05–0.82, max_edge_distance 0.22.
     eastern_europe: [
-        // Baltic Sea
-        [0.08, 0.09],  // Baltic (off Pomerania / Prussia)
-        [0.18, 0.07],  // Baltic central
-        [0.30, 0.07],  // Gulf of Finland (off Estonia)
-        // Black Sea
-        [0.42, 0.84],  // Black Sea northwest (south of Moldavia / Wallachia)
-        [0.52, 0.86],  // Black Sea central (south of Crimea)
-        [0.60, 0.80],  // Black Sea east (off Don Steppe)
+        // Baltic Sea — north of Pomerania, Prussia, Latvia, Estonia (minY=0.05)
+        [0.06, 0.06],  // Baltic west (off Prussia 0.05,0.22 ↔ Pomerania 0.12,0.15)
+        [0.20, 0.03],  // Baltic central (between Pomerania 0.12,0.15 ↔ Latvia 0.28,0.12)
+        [0.32, -0.02], // Gulf of Finland (north of Estonia 0.30,0.05 — outside box)
+        // Black Sea — south of Wallachia, Bulgaria, Crimea, Don Steppe
+        [0.36, 0.90],  // Black Sea northwest (south of Wallachia 0.35,0.75 ↔ Bulgaria 0.38,0.82)
+        [0.50, 0.90],  // Black Sea central (south of Crimea 0.52,0.80)
+        [0.62, 0.84],  // Black Sea east (south of Don Steppe 0.62,0.72)
         // Sea of Azov
-        [0.57, 0.77],  // Sea of Azov (between Crimea and Don Steppe)
-        // Caspian Sea
-        [0.86, 0.76],  // Caspian Sea (east of Astrakhan)
-        [0.86, 0.60],  // Caspian north
+        [0.58, 0.77],  // Sea of Azov (Crimea 0.52,0.80 ↔ Don Steppe 0.62,0.72)
+        // Caspian Sea — east of Astrakhan
+        [0.88, 0.80],  // Caspian west (east of Astrakhan 0.82,0.82)
+        [0.90, 0.62],  // Caspian north (east of Volga 0.80,0.52)
     ],
 
     // ── Middle East ────────────────────────────────────────────────────────────
-    // Mediterranean west, Black Sea north, Red Sea, Persian Gulf, Caspian east.
+    // Coordinates matched to actual preset region positions (x=W→E, y=N→S).
+    // Region bounding box: x 0.05–0.88, y 0.08–0.90, max_edge_distance 0.22.
     middle_east: [
-        // Eastern Mediterranean / Aegean
-        [0.05, 0.14],  // Aegean north (west of Constantinople)
-        [0.05, 0.30],  // Eastern Mediterranean
-        [0.04, 0.46],  // East Med south (off Alexandria coast)
-        // Black Sea (north of Pontus and Constantinople)
-        [0.24, 0.05],  // Black Sea west
-        [0.38, 0.05],  // Black Sea east (north of Pontus)
-        // Red Sea — between Egypt / Sinai and Arabia
-        [0.12, 0.68],  // Red Sea north (Gulf of Aqaba / Suez area)
-        [0.16, 0.80],  // Red Sea central
-        [0.20, 0.88],  // Red Sea south (Bab-el-Mandeb / Gulf of Aden)
-        // Persian Gulf
-        [0.52, 0.67],  // Persian Gulf north (Basra approach)
-        [0.53, 0.76],  // Persian Gulf central
-        [0.48, 0.84],  // Persian Gulf south (Strait of Hormuz)
+        // Aegean Sea — west of Constantinople and Lydia
+        [0.02, 0.10],   // Aegean north (west of Constantinople 0.18,0.10)
+        [0.02, 0.20],   // Aegean south (west of Lydia 0.22,0.18)
+        // Eastern Mediterranean — west of Levant and Egypt
+        [0.00, 0.38],   // Eastern Med (west of Cyrenaica 0.05,0.40 ↔ Phoenicia 0.22,0.42)
+        [0.00, 0.52],   // Eastern Med south (west of Alexandria 0.05,0.55)
+        // Black Sea — north of Pontus, Constantinople, Armenia
+        [0.22, 0.04],  // Black Sea west (north of Constantinople 0.18,0.10)
+        [0.40, 0.04],  // Black Sea east (north of Pontus 0.40,0.12 ↔ Armenia 0.48,0.15)
+        // Red Sea — between Egypt/Sinai and Arabian Peninsula
+        [0.14, 0.66],  // Red Sea north / Gulf of Suez (Sinai 0.18,0.62 ↔ Nile Delta 0.08,0.65)
+        [0.18, 0.80],  // Red Sea central (Hejaz 0.28,0.72 ↔ Upper Egypt coast)
+        [0.22, 0.90],  // Red Sea south / Gulf of Aden (Yemen 0.30,0.90)
+        // Persian Gulf — between Arabia and Persia
+        [0.52, 0.65],  // Persian Gulf north (Basra 0.56,0.62 ↔ Gulf Coast 0.52,0.72)
+        [0.52, 0.75],  // Persian Gulf central (Gulf Coast 0.52,0.72 ↔ Oman 0.48,0.80)
+        [0.48, 0.86],  // Strait of Hormuz / Gulf of Oman (south of Oman 0.48,0.80)
         // Arabian Sea
-        [0.36, 0.92],  // Arabian Sea (off Yemen)
-        [0.44, 0.92],  // Arabian Sea (off Oman)
-        // Caspian Sea
-        [0.70, 0.12],  // Caspian north (south of Caucasus)
-        [0.72, 0.24],  // Caspian south
+        [0.34, 0.93],  // Arabian Sea (south of Yemen 0.30,0.90)
+        [0.45, 0.93],  // Arabian Sea (south of Oman 0.48,0.80)
+        // Caspian Sea — east of Caucasus / Hyrcania
+        [0.68, 0.12],  // Caspian north (east of Georgia 0.52,0.08 ↔ Azerbaijan 0.58,0.15)
+        [0.70, 0.24],  // Caspian south (east of Hyrcania 0.68,0.22)
     ],
 
     // ── Central Asia ───────────────────────────────────────────────────────────
-    // Mostly landlocked; Caspian western fringe and Aral Sea.
+    // Coordinates matched to actual preset region positions (x=W→E, y=N→S).
+    // Region bounding box: x 0.04–0.92, y 0.05–0.85, max_edge_distance 0.22.
+    // Mostly landlocked; Caspian on the western fringe, Aral Sea inland.
     central_asia: [
-        [0.01, 0.28],  // Caspian Sea north (west of Astrakhan)
-        [0.01, 0.44],  // Caspian Sea south
-        [0.07, 0.28],  // Aral Sea (north of Aral Shore)
+        // Caspian Sea — west of Astrakhan and Caspian Steppe
+        [0.01, 0.20],  // Caspian north (west of Astrakhan 0.04,0.22)
+        [0.01, 0.38],  // Caspian south (west of Caspian Steppe 0.08,0.38)
+        // Aral Sea — west of Aral Shore
+        [0.06, 0.34],  // Aral Sea (west of Aral Shore 0.12,0.35)
     ],
 
     // ── Indian Subcontinent ────────────────────────────────────────────────────
-    // Arabian Sea on the west, Bay of Bengal on the east, Indian Ocean south.
+    // Coordinates matched to actual preset region positions (x=W→E, y=N→S).
+    // Region bounding box: x 0.02–0.70, y 0.05–0.98, max_edge_distance 0.20.
     india: [
-        // Arabian Sea — western coast of India
-        [0.01, 0.36],  // Arabian Sea north (off Sindh / Balochistan)
-        [0.02, 0.52],  // Arabian Sea central (off Gujarat)
-        [0.04, 0.68],  // Arabian Sea south (off Konkan / Goa)
-        [0.07, 0.84],  // Arabian Sea (off Kerala)
-        // Bay of Bengal — eastern coast
-        [0.65, 0.28],  // Bay of Bengal north (between Bengal and Arakan)
-        [0.62, 0.44],  // Bay of Bengal central
-        [0.60, 0.60],  // Bay of Bengal south (off Kalinga)
-        [0.56, 0.74],  // Bay of Bengal (off Andhra / Coromandel)
-        // Indian Ocean — southern tip
-        [0.22, 0.97],  // Indian Ocean southwest (off Kerala)
-        [0.40, 0.98],  // Indian Ocean south (of Sri Lanka)
-        [0.53, 0.96],  // Indian Ocean southeast (off Coromandel)
+        // Arabian Sea — west coast (sea points sit between canvas edge and coastal land)
+        [-0.05, 0.22],  // Arabian Sea NW (off Balochistan 0.02,0.22 / Sindh 0.10,0.28)
+        [-0.03, 0.38],  // Arabian Sea north (off Gujarat 0.12,0.42)
+        [0.00, 0.52],   // Arabian Sea central (off Gujarat/Malwa coast)
+        [0.04, 0.66],   // Arabian Sea south (off Konkan 0.20,0.65)
+        [0.06, 0.80],   // Arabian Sea south (off Kerala 0.22,0.90)
+        // Bay of Bengal — east coast (sea points between coastal land and canvas right edge)
+        [0.82, 0.20],   // Bay of Bengal north (east of Bengal 0.60,0.25 / Manipur 0.70,0.22)
+        [0.80, 0.36],   // Bay of Bengal (east of Arakan 0.68,0.32 / Orissa 0.55,0.38)
+        [0.78, 0.52],   // Bay of Bengal central (east of Kalinga 0.55,0.55)
+        [0.74, 0.68],   // Bay of Bengal south (east of Andhra 0.48,0.68)
+        [0.68, 0.80],   // Bay of Bengal (east of Coromandel 0.45,0.82)
+        // Indian Ocean — south of the peninsula tip
+        [0.20, 1.08],   // Indian Ocean SW (south of Kerala 0.22,0.90)
+        [0.38, 1.10],   // Indian Ocean south (south of Madurai/Sri Lanka)
+        [0.55, 1.06],   // Indian Ocean SE (east of Coromandel)
         // Palk Strait / Gulf of Mannar
-        [0.44, 0.94],  // Palk Strait (between Sri Lanka and Madurai)
+        [0.44, 0.94],   // Palk Strait (Sri Lanka 0.42,0.98 ↔ Madurai 0.38,0.92)
     ],
 
     // ── Southeast Asia ─────────────────────────────────────────────────────────
-    // Andaman Sea, South China Sea, Malacca Strait, Java Sea, Banda Sea, Sulu Sea.
+    // Coordinates matched to actual preset region positions (x=W→E, y=N→S).
+    // Region bounding box: x 0.02–0.68, y 0.08–0.92, max_edge_distance 0.20.
+    // Westernmost land: Arakan 0.02,0.15. Easternmost: Maluku 0.68,0.65.
     southeast_asia: [
-        // Andaman Sea
-        [0.09, 0.30],  // Andaman Sea north
-        [0.13, 0.44],  // Andaman Sea south
-        // Gulf of Thailand
-        [0.30, 0.44],  // Gulf of Thailand north
-        [0.34, 0.52],  // Gulf of Thailand south
-        // South China Sea
-        [0.50, 0.18],  // South China Sea north (off northern Vietnam)
-        [0.52, 0.30],  // South China Sea central
-        [0.54, 0.42],  // South China Sea south
+        // Bay of Bengal — left of Arakan (westernmost land at 0.02)
+        [-0.04, 0.15],  // Bay of Bengal (west of Arakan 0.02,0.15)
+        [-0.01, 0.28],  // Andaman Sea north (west of Irrawaddy Delta 0.10,0.22)
+        [0.04, 0.42],   // Andaman Sea south (off Kedah 0.22,0.45)
+        // Gulf of Thailand — inland sea between mainland and Malay Peninsula
+        [0.28, 0.44],   // Gulf of Thailand (Gulf of Siam 0.28,0.35 ↔ Kedah 0.22,0.45)
+        [0.34, 0.52],   // Gulf of Thailand south (Mekong Delta ↔ Malacca 0.26,0.55)
+        // South China Sea — right of the eastern coast
+        [0.72, 0.12],   // South China Sea north (east of Hanoi 0.38,0.12 / Luzon 0.60,0.25)
+        [0.72, 0.28],   // South China Sea central (Hue/Champa ↔ Philippines)
+        [0.72, 0.42],   // South China Sea south (Saigon ↔ Visayas 0.62,0.38)
         // Strait of Malacca
-        [0.18, 0.64],  // Strait of Malacca
+        [0.18, 0.62],   // Strait of Malacca (Malacca 0.26,0.55 ↔ Aceh 0.12,0.68)
         // Java Sea
-        [0.32, 0.78],  // Java Sea west
-        [0.40, 0.80],  // Java Sea east
-        // Sulu Sea (between Borneo and Philippines)
-        [0.54, 0.52],  // Sulu Sea
-        // Banda / Flores Sea
-        [0.54, 0.78],  // Banda Sea west
-        [0.62, 0.74],  // Banda Sea east / Maluku Sea
-        // Philippine Sea
-        [0.66, 0.32],  // Philippine Sea (east of Luzon)
+        [0.32, 0.78],   // Java Sea west (Palembang 0.30,0.72 ↔ Sunda 0.32,0.88)
+        [0.40, 0.80],   // Java Sea east (Majapahit 0.38,0.85 ↔ Kalimantan 0.48,0.78)
+        // Sulu Sea — between Borneo and Philippines
+        [0.54, 0.54],   // Sulu Sea (Brunei 0.48,0.68 ↔ Mindanao 0.65,0.48)
+        // Flores / Banda Sea
+        [0.54, 0.80],   // Flores Sea (Bali 0.50,0.90 ↔ Kalimantan / Sulawesi 0.58,0.62)
+        [0.64, 0.74],   // Banda / Maluku Sea (Sulawesi 0.58,0.62 ↔ Maluku 0.68,0.65)
+        // Philippine Sea — right of Philippines
+        [0.76, 0.30],   // Philippine Sea (east of Luzon 0.60,0.25 / Visayas 0.62,0.38)
     ],
 };
 
@@ -298,23 +333,23 @@ function _terrainPx(terrain, nx, ny) {
     const dark = TERRAIN_DARK[terrain] || TERRAIN_DARK.plains;
 
     if (terrain === 'forest') {
-        // Dense tree canopy: high-contrast blobs (majority is dark, bright only in gaps)
-        if (n2 < 0.38) return [8, 30, 4];     // deep shadow beneath canopy
-        if (n1 < 0.55) return [22, 64, 12];   // dense canopy mass
-        if (n1 < 0.74) return [42, 96, 26];   // mid canopy / partial gap
-        const t = (n1 - 0.74) / 0.26;
+        // AoE2 forest: dark canopy mass with bright tree-top blobs on a dark base
+        if (n2 < 0.34) return [10, 38,  6];   // deep under-canopy shadow
+        if (n1 < 0.50) return [26, 72, 14];   // dense canopy interior
+        if (n1 < 0.70) return [44, 100, 26];  // mid canopy
+        const t = (n1 - 0.70) / 0.30;
         return [dark[0] + (base[0]-dark[0])*t|0,
                 dark[1] + (base[1]-dark[1])*t|0,
                 dark[2] + (base[2]-dark[2])*t|0];
     }
 
     if (terrain === 'hills') {
-        // Rocky spires: deep shadow crevices, mid stone, bright lit peaks
-        if (n1 < 0.22) return [24, 18, 8];    // deep shadow crevice
-        if (n2 < 0.28) return [40, 32, 16];   // secondary shadow crack
-        if (n1 < 0.48) return [74, 60, 30];   // shadow face
-        if (n1 > 0.76) return [164, 136, 86]; // bright lit peak
-        const t = (n1 - 0.48) / 0.28;
+        // AoE2 rocky highland: warm stone with deep crevice shadows and pale lit peaks
+        if (n1 < 0.18) return [28, 22, 12];   // deep shadow crevice
+        if (n2 < 0.26) return [48, 38, 20];   // secondary crack
+        if (n1 < 0.46) return [84, 68, 38];   // stone face
+        if (n1 > 0.78) return [180, 160, 108];// bright sunlit peak
+        const t = (n1 - 0.46) / 0.32;
         return [dark[0] + (base[0]-dark[0])*t|0,
                 dark[1] + (base[1]-dark[1])*t|0,
                 dark[2] + (base[2]-dark[2])*t|0];
@@ -458,7 +493,7 @@ function renderCanvas() {
     }
 
     // ── Pass 2: Fantasy RTS terrain color + coastal sand + owner tint ────────
-    const SAND_W = 28; // sand strip width in pixels (pixel-accurate via seaDist)
+    const SAND_W = 34; // sand strip width in pixels (pixel-accurate via seaDist)
 
     for (let py = 0; py < H; py++) {
         for (let px = 0; px < W; px++) {
@@ -468,13 +503,14 @@ function renderCanvas() {
             const nx     = px / W, ny = py / H;
 
             if (h < 0) {
-                // ── Sea: dark navy with fBm wave texture ──────────────────────
-                const wave = _fbm(nx * 5.0,        ny * 5.0)        * 0.65 +
-                             _fbm(nx * 10.0 + 7.3, ny * 10.0 + 4.1) * 0.35;
-                const depth = Math.min(1, (-h - 0.05) / 0.95);
-                pxs[i4]   = clamp(30  + wave * 12 - depth * 10 | 0, 0, 255);
-                pxs[i4+1] = clamp(48  + wave * 10 - depth * 18 | 0, 0, 255);
-                pxs[i4+2] = clamp(106 + wave * 14 - depth * 36 | 0, 0, 255);
+                // ── Sea: AoE2 azure blue with wave sparkle ────────────────────
+                const wave    = _fbm(nx * 4.0,       ny * 6.0)        * 0.60 +
+                                _fbm(nx * 10 + 7.3,  ny * 8  + 4.1)   * 0.40;
+                const sparkle = _fbm(nx * 24 + 1.3,  ny * 20 + 3.7);
+                const depth   = Math.min(1, (-h - 0.05) / 0.95);
+                pxs[i4]   = clamp( 52 + wave * 32 + sparkle *  6 - depth * 16 | 0, 0, 255);
+                pxs[i4+1] = clamp(120 + wave * 26 + sparkle *  5 - depth * 34 | 0, 0, 255);
+                pxs[i4+2] = clamp(196 + wave * 16 + sparkle *  4 - depth * 56 | 0, 0, 255);
                 pxs[i4+3] = 255;
 
             } else {
@@ -516,35 +552,95 @@ function renderCanvas() {
         }
     }
 
-    // ── Pass 3: Political borders ─────────────────────────────────────────────
+    // ── Pass 3: Thick ownership borders (distance-transform) ─────────────────
+    // Step 3a — mark cross-owner boundary source pixels
+    const BORDER_W = 7;
+    const BORDER_COLORS = {
+        player_1: [55, 130, 230],
+        player_2: [220,  55,  55],
+        rogue:    [110,  95,  68],
+    };
+    const bDist = new Float32Array(W * H).fill(W + H);
+
     for (let py = 1; py < H - 1; py++) {
         for (let px = 1; px < W - 1; px++) {
             const me = idxMap[py * W + px];
             if (me === -1) continue;
+            const oMe = regions[me].owner;
             const nbN = idxMap[(py-1)*W+px], nbS = idxMap[(py+1)*W+px];
             const nbW = idxMap[py*W+px-1],   nbE = idxMap[py*W+px+1];
-            let isBorder = false, isHostile = false;
+            let crossOwner = false;
             for (const nb of [nbN, nbS, nbW, nbE]) {
-                if (nb === -1 || nb === me) continue;
-                isBorder = true;
-                const o1 = regions[me].owner, o2 = regions[nb].owner;
-                if ((o1 === 'player_1') !== (o2 === 'player_1') &&
-                    o1 !== 'rogue' && o2 !== 'rogue') isHostile = true;
+                if (nb === -1) { crossOwner = true; break; }      // land touches sea
+                if (nb !== me && regions[nb].owner !== oMe) { crossOwner = true; break; }
             }
-            if (isBorder) {
-                const i4 = (py * W + px) * 4;
-                if (isHostile) { pxs[i4]=225; pxs[i4+1]=210; pxs[i4+2]=145; pxs[i4+3]=255; }
-                else           { pxs[i4]=22;  pxs[i4+1]=16;  pxs[i4+2]=12;  pxs[i4+3]=255; }
+            if (crossOwner) bDist[py * W + px] = 0;
+        }
+    }
+
+    // Step 3b — 4-directional 1D distance transform from boundary source pixels
+    for (let py = 0; py < H; py++)
+        for (let px = 1; px < W; px++) {
+            const i = py * W + px;
+            if (bDist[i - 1] + 1 < bDist[i]) bDist[i] = bDist[i - 1] + 1;
+        }
+    for (let py = 0; py < H; py++)
+        for (let px = W - 2; px >= 0; px--) {
+            const i = py * W + px;
+            if (bDist[i + 1] + 1 < bDist[i]) bDist[i] = bDist[i + 1] + 1;
+        }
+    for (let px = 0; px < W; px++)
+        for (let py = 1; py < H; py++) {
+            const i = py * W + px;
+            if (bDist[i - W] + 1 < bDist[i]) bDist[i] = bDist[i - W] + 1;
+        }
+    for (let px = 0; px < W; px++)
+        for (let py = H - 2; py >= 0; py--) {
+            const i = py * W + px;
+            if (bDist[i + W] + 1 < bDist[i]) bDist[i] = bDist[i + W] + 1;
+        }
+
+    // Step 3c — paint thick colored ownership rings + thin dark region borders
+    for (let py = 1; py < H - 1; py++) {
+        for (let px = 1; px < W - 1; px++) {
+            const me = idxMap[py * W + px];
+            if (me === -1) continue;
+            const i4 = (py * W + px) * 4;
+            const dist = bDist[py * W + px];
+
+            if (dist < BORDER_W) {
+                // Thick colored border: owner color blended in strongly near boundary
+                const t = dist / BORDER_W;               // 0 at boundary, 1 at edge
+                const alpha = (1 - t * t) * 0.92;        // smooth falloff
+                const bc = BORDER_COLORS[regions[me].owner] || BORDER_COLORS.rogue;
+                pxs[i4]   = pxs[i4]   + (bc[0] - pxs[i4])   * alpha | 0;
+                pxs[i4+1] = pxs[i4+1] + (bc[1] - pxs[i4+1]) * alpha | 0;
+                pxs[i4+2] = pxs[i4+2] + (bc[2] - pxs[i4+2]) * alpha | 0;
+            } else {
+                // Thin 1px dark line at same-owner region boundaries
+                const oMe = regions[me].owner;
+                const nbN = idxMap[(py-1)*W+px], nbS = idxMap[(py+1)*W+px];
+                const nbW = idxMap[py*W+px-1],   nbE = idxMap[py*W+px+1];
+                let sameBorder = false;
+                for (const nb of [nbN, nbS, nbW, nbE]) {
+                    if (nb !== -1 && nb !== me && regions[nb].owner === oMe) {
+                        sameBorder = true; break;
+                    }
+                }
+                if (sameBorder) {
+                    pxs[i4] = pxs[i4]*0.5|0; pxs[i4+1] = pxs[i4+1]*0.5|0;
+                    pxs[i4+2] = pxs[i4+2]*0.5|0;
+                }
             }
         }
     }
 
     ctx.putImageData(img, 0, 0);
 
-    // Vignette — frames the map, gives cartographic depth
-    const vig = ctx.createRadialGradient(W/2, H/2, H*0.20, W/2, H/2, H*0.84);
+    // Vignette — subtle framing, keep bright AoE2 feel
+    const vig = ctx.createRadialGradient(W/2, H/2, H*0.25, W/2, H/2, H*0.90);
     vig.addColorStop(0, 'rgba(0,0,0,0)');
-    vig.addColorStop(1, 'rgba(0,0,0,0.50)');
+    vig.addColorStop(1, 'rgba(0,0,0,0.28)');
     ctx.fillStyle = vig;
     ctx.fillRect(0, 0, W, H);
 

@@ -202,21 +202,25 @@
     flex: 1;
     position: relative;
     overflow: hidden;
-    background:
-        radial-gradient(ellipse at center, #13132a 0%, #0a0a15 100%);
+    background: #0a0a14;
 }
 
+/* Canvas fills the container — Voronoi territories painted here */
+#map-canvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* SVG floats on top; pointer-events:none so clicks fall through to canvas */
 #map-svg {
+    position: absolute;
+    top: 0; left: 0;
     width: 100%;
     height: 100%;
 }
-
-/* Map region cursor */
-#map-svg .region { cursor: pointer; }
-#map-svg .region.rogue { cursor: default; }
-#map-svg .region.player_2 { cursor: default; }
-#map-svg .region.selectable { cursor: pointer; }
-#map-svg .region.valid-target { cursor: crosshair; }
 
 /* Resolving overlay */
 #resolving-overlay {
@@ -380,7 +384,7 @@
 
 /* Combat log */
 #combat-log {
-    flex: 1;
+    max-height: 180px;
     overflow-y: auto;
     padding: 0;
 }
@@ -419,6 +423,23 @@
     color: var(--text-dim);
     font-style: italic;
 }
+
+#abandon-btn {
+    flex: 0 0 auto;
+    padding: 10px 16px;
+    background: transparent;
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    font-family: 'Georgia', serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+#abandon-btn:hover { color: var(--danger); border-color: var(--danger); }
+#abandon-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
 #end-turn-btn {
     flex: 0 0 160px;

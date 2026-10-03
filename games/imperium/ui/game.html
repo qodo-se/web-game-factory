@@ -13,7 +13,6 @@
     <div id="top-bar">
         <span class="game-title">IMPERIUM</span>
         <span class="turn-badge">Turn <span id="turn-num">—</span></span>
-
         <div class="player-stats">
             <div class="stat-block">
                 <div class="stat-name p1-text" id="p1-name">—</div>
@@ -22,9 +21,7 @@
                     <span id="p1-army">—</span> troops
                 </div>
             </div>
-
             <span class="vs-divider">VS</span>
-
             <div class="stat-block right">
                 <div class="stat-name p2-text" id="p2-name">—</div>
                 <div class="stat-values">
@@ -40,38 +37,36 @@
 
         <!-- Map -->
         <div id="map-container">
-            <svg id="map-svg" viewBox="0 0 1000 650" preserveAspectRatio="xMidYMid meet">
+            <!-- Voronoi territory map — painted by game.js -->
+            <canvas id="map-canvas"></canvas>
+
+            <!-- SVG overlay: labels, rings, arrows only. pointer-events:none so clicks reach canvas. -->
+            <svg id="map-svg" viewBox="0 0 1000 650" preserveAspectRatio="xMidYMid meet"
+                 style="pointer-events:none;">
                 <defs>
-                    <marker id="arr-gold" markerWidth="7" markerHeight="5" refX="5" refY="2.5" orient="auto">
+                    <marker id="arr-gold" markerWidth="7" markerHeight="5"
+                            refX="5" refY="2.5" orient="auto">
                         <polygon points="0 0, 7 2.5, 0 5" fill="#d4a840"/>
                     </marker>
-                    <marker id="arr-p1" markerWidth="7" markerHeight="5" refX="5" refY="2.5" orient="auto">
-                        <polygon points="0 0, 7 2.5, 0 5" fill="#4a90d4"/>
-                    </marker>
-                    <filter id="glow-p1">
-                        <feGaussianBlur stdDeviation="3" result="blur"/>
-                        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                    </filter>
-                    <filter id="glow-gold">
-                        <feGaussianBlur stdDeviation="4" result="blur"/>
-                        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                    </filter>
                 </defs>
-                <g id="g-edges"></g>
+                <g id="g-connections"></g>
                 <g id="g-arrows"></g>
-                <g id="g-regions"></g>
+                <g id="g-labels"></g>
             </svg>
 
-            <!-- Terrain legend -->
+            <!-- Legend -->
             <div class="map-legend">
                 <div class="legend-item">
-                    <div class="legend-dot" style="background:#4a90d4;"></div> You
+                    <div class="legend-dot" style="background:#3464c3;"></div> You
                 </div>
                 <div class="legend-item">
-                    <div class="legend-dot" style="background:#d44a4a;"></div> AI
+                    <div class="legend-dot" style="background:#c33434;"></div> AI
                 </div>
                 <div class="legend-item">
-                    <div class="legend-dot" style="background:#555568;border:1px solid #888"></div> Neutral
+                    <div class="legend-dot" style="background:#b0a878;"></div> Neutral
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background:#1a4a8a;"></div> Sea
                 </div>
             </div>
 
@@ -89,25 +84,21 @@
 
         <!-- Side panel -->
         <div id="side-panel">
-
-            <!-- Region info -->
             <div class="panel-section" id="region-info-section">
                 <div class="panel-label">Region</div>
                 <div id="region-info">
-                    <p class="no-selection">Click a region to inspect it.</p>
+                    <p class="no-selection">Hover a region to inspect it.</p>
                 </div>
             </div>
 
-            <!-- Pending moves / combat log -->
-            <div class="panel-section" style="border-bottom:none; padding-bottom:6px;">
+            <div class="panel-section" style="border-bottom:none;padding-bottom:6px;">
                 <div class="panel-label" id="panel-moves-label">Planned Moves</div>
             </div>
             <div id="moves-list">
-                <p class="no-moves-msg">No moves planned. Select one of your regions to order an advance.</p>
+                <p class="no-moves-msg">No moves planned. Click one of your regions to order an advance.</p>
             </div>
 
-            <!-- Combat log (shown after turn resolution) -->
-            <div id="combat-log-section" class="panel-section hidden" style="border-bottom:none; padding-bottom:6px;">
+            <div id="combat-log-section" class="panel-section hidden" style="border-bottom:none;padding-bottom:6px;">
                 <div class="panel-label">Battle Report — Turn <span id="log-turn">—</span></div>
             </div>
             <div id="combat-log" class="hidden"></div>
@@ -117,7 +108,8 @@
     <!-- Bottom bar -->
     <div id="bottom-bar">
         <span class="move-hint" id="move-hint">Select one of your regions to begin.</span>
-        <button id="end-turn-btn">End Turn</button>
+        <button id="abandon-btn">Abandon</button>
+        <button id="end-turn-btn">Next Turn</button>
     </div>
 
     <script src="js/api.js"></script>

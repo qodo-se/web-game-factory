@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IMPERIUM — Campaign</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/game.css">
+</head>
+<body class="game-page">
+
+    <!-- Top bar -->
+    <div id="top-bar">
+        <span class="game-title">IMPERIUM</span>
+        <span class="turn-badge">Turn <span id="turn-num">—</span></span>
+        <div class="player-stats">
+            <div class="stat-block">
+                <div class="stat-name p1-text" id="p1-name">—</div>
+                <div class="stat-values">
+                    <span id="p1-regions">—</span> regions &nbsp;·&nbsp;
+                    <span id="p1-army">—</span> troops
+                </div>
+            </div>
+            <span class="vs-divider">VS</span>
+            <div class="stat-block right">
+                <div class="stat-name p2-text" id="p2-name">—</div>
+                <div class="stat-values">
+                    <span id="p2-regions">—</span> regions &nbsp;·&nbsp;
+                    <span id="p2-army">—</span> troops
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div id="main">
+
+        <!-- Map -->
+        <div id="map-container">
+            <!-- Voronoi territory map — painted by game.js -->
+            <canvas id="map-canvas"></canvas>
+
+            <!-- SVG overlay: labels, rings, arrows only. pointer-events:none so clicks reach canvas. -->
+            <svg id="map-svg" viewBox="0 0 1000 650" preserveAspectRatio="xMidYMid meet"
+                 style="pointer-events:none;">
+                <defs>
+                    <marker id="arr-gold" markerWidth="7" markerHeight="5"
+                            refX="5" refY="2.5" orient="auto">
+                        <polygon points="0 0, 7 2.5, 0 5" fill="#d4a840"/>
+                    </marker>
+                </defs>
+                <g id="g-connections"></g>
+                <g id="g-arrows"></g>
+                <g id="g-labels"></g>
+            </svg>
+
+            <!-- Legend -->
+            <div class="map-legend">
+                <div class="legend-item">
+                    <div class="legend-dot" style="background:#3464c3;"></div> You
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background:#c33434;"></div> AI
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background:#4e7030;"></div> Neutral
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background:#3478c8;"></div> Sea
+                </div>
+            </div>
+
+            <!-- Resolving overlay -->
+            <div id="resolving-overlay" class="hidden">
+                <span class="resolving-msg">Resolving Turn…</span>
+            </div>
+
+            <!-- Game over overlay -->
+            <div id="gameover-overlay" class="hidden">
+                <div class="gameover-title" id="gameover-title">—</div>
+                <div class="gameover-subtitle" id="gameover-subtitle">—</div>
+            </div>
+        </div>
+
+        <!-- Side panel -->
+        <div id="side-panel">
+            <div class="panel-section" id="region-info-section">
+                <div class="panel-label">Region</div>
+                <div id="region-info">
+                    <p class="no-selection">Hover a region to inspect it.</p>
+                </div>
+            </div>
+
+            <div class="panel-section" style="border-bottom:none;padding-bottom:6px;">
+                <div class="panel-label" id="panel-moves-label">Planned Moves</div>
+            </div>
+            <div id="moves-list">
+                <p class="no-moves-msg">No moves planned. Click one of your regions to order an advance.</p>
+            </div>
+
+            <div id="combat-log-section" class="panel-section hidden" style="border-bottom:none;padding-bottom:6px;">
+                <div class="panel-label">Battle Report — Turn <span id="log-turn">—</span></div>
+            </div>
+            <div id="combat-log" class="hidden"></div>
+        </div>
+    </div>
+
+    <!-- Bottom bar -->
+    <div id="bottom-bar">
+        <span class="move-hint" id="move-hint">Select one of your regions to begin.</span>
+        <button id="abandon-btn">Abandon</button>
+        <button id="end-turn-btn">Next Turn</button>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>

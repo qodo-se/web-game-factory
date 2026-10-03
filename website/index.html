@@ -1,28 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Web Game Factory</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: sans-serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      background: #0f0f0f;
-      color: #fff;
-    }
-    h1 { font-size: 3rem; letter-spacing: 0.05em; }
-    p  { color: #888; text-align: center; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Game Factory</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: #0d0d1a;
+            color: #e8e0d0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .site-title {
+            font-size: 1rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: #888898;
+            margin-bottom: 60px;
+        }
+
+        .games-grid {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 0 24px;
+        }
+
+        .game-card {
+            width: 280px;
+            padding: 32px 28px;
+            background: #1a1a2e;
+            border: 1px solid #2d2d50;
+            text-decoration: none;
+            color: inherit;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            display: block;
+        }
+
+        .game-card:hover {
+            border-color: #d4a840;
+            box-shadow: 0 0 30px rgba(212, 168, 64, 0.12);
+        }
+
+        .game-card h2 {
+            font-size: 1.6rem;
+            letter-spacing: 0.2em;
+            color: #d4a840;
+            font-weight: normal;
+            margin-bottom: 8px;
+        }
+
+        .game-card p {
+            font-size: 0.82rem;
+            color: #888898;
+            line-height: 1.6;
+        }
+
+        .game-tag {
+            display: inline-block;
+            margin-top: 16px;
+            font-size: 0.68rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #555568;
+            border: 1px solid #2d2d50;
+            padding: 3px 8px;
+        }
+
+        footer {
+            margin-top: 64px;
+            font-size: 0.72rem;
+            color: #444456;
+            letter-spacing: 0.08em;
+        }
+    </style>
 </head>
 <body>
-  <div>
-    <h1>Web Game Factory</h1>
-    <p>Coming soon.</p>
-  </div>
+    <div class="site-title">Web Game Factory</div>
+
+    <div class="games-grid">
+        <a class="game-card" href="/imperium/">
+            <h2>IMPERIUM</h2>
+            <p>A turn-based strategy of conquest set across historical maps.
+               Expand your empire, crush the AI, control all regions to win.</p>
+            <span class="game-tag">Strategy · 1 vs AI</span>
+        </a>
+    </div>
+
+    <footer>More games coming soon.</footer>
 </body>
 </html>

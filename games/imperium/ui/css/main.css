@@ -1,0 +1,137 @@
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --bg:          #0d0d1a;
+    --surface:     #1a1a2e;
+    --surface-hi:  #22223a;
+    --border:      #2d2d50;
+    --text:        #e8e0d0;
+    --text-dim:    #888898;
+    --p1:          #4a90d4;
+    --p1-dim:      rgba(74, 144, 212, 0.2);
+    --p2:          #d44a4a;
+    --p2-dim:      rgba(212, 74, 74, 0.2);
+    --rogue:       #666880;
+    --gold:        #d4a840;
+    --gold-dim:    rgba(212, 168, 64, 0.15);
+    --success:     #50b060;
+    --danger:      #e05050;
+}
+
+body {
+    font-family: 'Georgia', serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+}
+
+/* ── Buttons ────────────────────────────────────────────────────────────────── */
+
+.btn-primary {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    background: var(--gold);
+    color: #1a1000;
+    border: none;
+    font-family: 'Georgia', serif;
+    font-size: 1rem;
+    font-weight: bold;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+}
+
+.btn-primary:hover {
+    background: #e0b848;
+}
+
+.btn-primary:active {
+    transform: scale(0.98);
+}
+
+.btn-primary:disabled {
+    background: #555540;
+    color: #888;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-secondary {
+    display: inline-block;
+    padding: 8px 20px;
+    background: transparent;
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    font-family: 'Georgia', serif;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+}
+
+.btn-secondary:hover {
+    border-color: var(--text-dim);
+    color: var(--text);
+}
+
+/* ── Form elements ───────────────────────────────────────────────────────────── */
+
+input[type="text"],
+select {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--surface-hi);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Georgia', serif;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+input[type="text"]:focus,
+select:focus {
+    border-color: var(--gold);
+}
+
+select option {
+    background: var(--surface-hi);
+}
+
+label {
+    display: block;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+}
+
+/* ── Utility ─────────────────────────────────────────────────────────────────── */
+
+.hidden { display: none !important; }
+
+.error-msg {
+    color: var(--danger);
+    font-size: 0.85rem;
+    text-align: center;
+    margin-top: 12px;
+}
+
+.divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 16px 0;
+}
+
+/* ── Player colours ──────────────────────────────────────────────────────────── */
+
+.p1-text { color: var(--p1); }
+.p2-text { color: var(--p2); }
+.rogue-text { color: var(--rogue); }
+.gold-text { color: var(--gold); }

@@ -1,5 +1,5 @@
-from .game_engine import GameEngine
-from .models import (
+from .engine.game_engine import GameEngine
+from .engine.models import (
     GameState,
     MapSize,
     Move,

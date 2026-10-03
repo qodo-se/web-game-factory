@@ -1,23 +1,34 @@
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-// ── Geographic map rendering ──────────────────────────────────────────────────
-// Approach: elevation field driven by terrain type + fractal noise → hypsometric
-// coloring (green lowlands → tan uplands → brown mountains, like a physical atlas)
-// + NW-sun hillshading from height gradient. No flat Voronoi blobs.
+// ── Fantasy RTS map rendering ──────────────────────────────────────────────────
+// Approach: per-terrain saturated palette (Warcraft II era aesthetic) with fBm
+// procedural texture, sandy coastal strip between land and ocean, and dark navy
+// ocean with wave texture.  No hillshading — terrain color carries all the info.
 
-// Terrain elevation base value and noise amplitude (0..1 scale)
-const TERRAIN_HEIGHT = {
-    coast: 0.10, plains: 0.26, city: 0.22, forest: 0.44, hills: 0.73, desert: 0.38,
+// Base and shadow colors per terrain type [R,G,B]
+const TERRAIN_BASE = {
+    coast:   [132, 192,  90],   // bright coastal green
+    plains:  [ 78, 148,  46],   // rich medium grass
+    city:    [ 86, 150,  52],   // city on plains
+    forest:  [ 40,  92,  24],   // deep forest green
+    hills:   [108,  86,  46],   // rocky brown
+    desert:  [196, 164,  76],   // golden sand
 };
-const TERRAIN_NOISE_AMP = {
-    coast: 0.06, plains: 0.10, city: 0.07, forest: 0.12, hills: 0.16, desert: 0.09,
+const TERRAIN_DARK = {          // shadow / dense-cover variant (lower noise → this)
+    coast:   [100, 152,  64],
+    plains:  [ 52, 112,  28],
+    city:    [ 62, 118,  34],
+    forest:  [ 20,  56,  12],
+    hills:   [ 72,  58,  28],
+    desert:  [160, 130,  50],
 };
+const SAND_COLOR = [184, 158, 94]; // sandy coastal strip between ocean and land
 
-// Owner tint: [R,G,B, alpha] — very subtle so terrain remains the dominant visual
+// Owner tint: [R,G,B, alpha] — thin political overlay over terrain
 const OWNER_TINT = {
-    player_1: [55, 105, 200, 0.30],
-    player_2: [200,  55,  55, 0.30],
-    rogue:    [108, 103, 112, 0.08],
+    player_1: [55, 105, 200, 0.22],
+    player_2: [200,  55,  55, 0.22],
+    rogue:    [108, 103, 112, 0.00],
 };
 
 const SEA_FACTOR = 1.45;
@@ -276,41 +287,50 @@ function _fbm(x, y) {
            / 0.9375;
 }
 
-// Hypsometric color: elevation h [0..1] → physical-atlas RGB
-// Mirrors classic atlas palettes: coastal green → lowland green → tan upland → brown mountain
-function _elevColor(h, terrain) {
-    if (terrain === 'desert') {
-        // Warm sandy/ochre throughout; shifts to ruddy brown at height
-        const t = Math.min(1, h / 0.8);
-        return [228 - 52*t | 0, 210 - 62*t | 0, 168 - 70*t | 0];
-    }
+// Procedural terrain texture — fantasy RTS aesthetic.
+// Returns [R,G,B] from terrain type and normalised screen position.
+function _terrainPx(terrain, nx, ny) {
+    const n1 = _fbm(nx * 7.5,        ny * 7.5);
+    const n2 = _fbm(nx * 15.0 + 3.7, ny * 15.0 + 8.3);
+
+    const base = TERRAIN_BASE[terrain] || TERRAIN_BASE.plains;
+    const dark = TERRAIN_DARK[terrain] || TERRAIN_DARK.plains;
+
     if (terrain === 'forest') {
-        // Darker muted greens; more saturated than grassland
-        if (h < 0.35) return [135, 175, 110];
-        if (h < 0.55) return [118, 158,  92];
-        if (h < 0.72) return [138, 152,  98];
-        return [155, 140, 95];
+        // Dense overlapping canopy blobs — high contrast dark patches
+        if (n2 < 0.30) return [16, 44, 10];   // deep shadow under canopy
+        if (n1 < 0.34) return [26, 64, 14];   // dense canopy
+        const t = Math.min(1, (n1 - 0.34) / 0.66);
+        return [dark[0] + (base[0]-dark[0])*t|0,
+                dark[1] + (base[1]-dark[1])*t|0,
+                dark[2] + (base[2]-dark[2])*t|0];
     }
-    // Standard hypsometric — lowland greens fade into upland tans and mountain browns
-    const stops = [
-        [0.00, [200, 230, 180]],
-        [0.14, [182, 212, 158]],
-        [0.26, [165, 196, 135]],
-        [0.38, [178, 190, 128]],
-        [0.50, [196, 180, 122]],
-        [0.61, [188, 162, 105]],
-        [0.72, [172, 142,  88]],
-        [0.83, [155, 124,  74]],
-        [1.00, [138, 110,  62]],
-    ];
-    for (let i = 0; i < stops.length - 1; i++) {
-        const [h0, c0] = stops[i], [h1, c1] = stops[i + 1];
-        if (h <= h1) {
-            const t = (h - h0) / (h1 - h0);
-            return [c0[0]+(c1[0]-c0[0])*t|0, c0[1]+(c1[1]-c0[1])*t|0, c0[2]+(c1[2]-c0[2])*t|0];
-        }
+
+    if (terrain === 'hills') {
+        // Rocky ridges: shadow crevices → mid-tone → bright lit faces
+        if (n1 < 0.20) return [32, 24, 12];   // deep shadow crevice
+        if (n1 < 0.36) return [68, 54, 28];   // shadow face
+        if (n1 > 0.78) return [152, 126, 80]; // bright lit face
+        const t = (n1 - 0.36) / 0.42;
+        return [dark[0] + (base[0]-dark[0])*t|0,
+                dark[1] + (base[1]-dark[1])*t|0,
+                dark[2] + (base[2]-dark[2])*t|0];
     }
-    return stops[stops.length - 1][1];
+
+    if (terrain === 'desert') {
+        // Sandy dunes — warm golden gradient
+        const n3 = _fbm(nx * 11.0 + 5.0, ny * 11.0 + 5.0);
+        const t = n1 * 0.6 + n3 * 0.4;
+        return [base[0] - (base[0]-dark[0])*t|0,
+                base[1] - (base[1]-dark[1])*t|0,
+                base[2] - (base[2]-dark[2])*t|0];
+    }
+
+    // coast / plains / city — smooth green variation
+    const t = n1 * 0.65 + n2 * 0.35;
+    return [dark[0] + (base[0]-dark[0])*(1-t)|0,
+            dark[1] + (base[1]-dark[1])*(1-t)|0,
+            dark[2] + (base[2]-dark[2])*(1-t)|0];
 }
 
 // ── Canvas Voronoi rendering ──────────────────────────────────────────────────
@@ -375,11 +395,13 @@ function renderCanvas() {
         else if (committedFrom.has(r.id)) effect[i] = 3;
     }
 
-    // ── Pass 1: Voronoi + elevation field ─────────────────────────────────────
-    // hMap[px]: land → elevation [0,1]; sea → negative depth value [-1, 0)
+    // ── Pass 1: Voronoi assignment ────────────────────────────────────────────
+    // hMap[px]:  land → 0;  sea → negative depth [-1, 0)
+    // tMap[px]:  land → region index;  sea → -1
+    // dsMap[px]: land → sq-distance to nearest sea centre (for coastal sand strip)
     const hMap  = new Float32Array(W * H);
-    const tMap  = new Uint8Array(W * H);   // terrain index per pixel (land only)
-    const NOISE_SCALE = 5.5;               // noise world-space frequency
+    const tMap  = new Int32Array(W * H).fill(-1);
+    const dsMap = new Float32Array(W * H).fill(1);
     const M = N + SP;
 
     for (let py = 0; py < H; py++) {
@@ -387,13 +409,14 @@ function renderCanvas() {
         for (let px = 0; px < W; px++) {
             const nx = px / W;
 
-            let d1 = Infinity, d2 = Infinity, b1 = 0, b2 = 1, dl = Infinity;
+            let d1 = Infinity, d2 = Infinity, b1 = 0, b2 = 1, dl = Infinity, ds = 1;
             for (let j = 0; j < M; j++) {
                 const dx = nx - ncx[j], dy = ny - ncy[j];
                 const d  = dx*dx + dy*dy;
                 if (d < d1)      { d2 = d1; b2 = b1; d1 = d; b1 = j; }
                 else if (d < d2) { d2 = d;  b2 = j; }
-                if (j < N && d < dl) dl = d;
+                if (j < N  && d < dl) dl = d;
+                if (j >= N && d < ds) ds = d;
             }
 
             const pixIdx  = py * W + px;
@@ -401,103 +424,67 @@ function renderCanvas() {
             const isSea   = b1 >= N || (d2 < d1 * SEA_FACTOR && (b2IsSea || !adj[b1*N+b2]));
 
             if (isSea) {
-                // Encode sea depth as negative: -1 = deep, -ε = coastal
                 const depth = Math.min(1.0, Math.sqrt(dl) / 0.16);
                 hMap[pixIdx] = -(0.05 + depth * 0.95);
             } else {
                 idxMap[pixIdx] = b1;
-                const t1  = regions[b1].terrain || 'plains';
-                const hb1 = TERRAIN_HEIGHT[t1]    || 0.26;
-                const ha1 = TERRAIN_NOISE_AMP[t1] || 0.10;
-                // fBm noise centered at 0: fbm ≈ [0,1] → shift by -0.5 for ±variation
-                const noise1 = (_fbm(nx * NOISE_SCALE + 17.3, ny * NOISE_SCALE + 5.7) - 0.5) * 2;
-                let h = hb1 + ha1 * noise1;
-
-                // Smooth blend toward second region at boundaries
-                if (b2 < N) {
-                    const t2   = regions[b2].terrain || 'plains';
-                    const hb2  = TERRAIN_HEIGHT[t2]    || 0.26;
-                    const ha2  = TERRAIN_NOISE_AMP[t2] || 0.10;
-                    const noise2 = noise1; // same position → coherent noise
-                    const h2   = hb2 + ha2 * noise2;
-                    // centrality: 1 at cell centre, 0 at boundary
-                    const cen  = (d2 - d1) / (d1 + d2);
-                    const bt   = 1 - cen;                       // 0=centre, 1=boundary
-                    const sbt  = bt * bt * (3 - 2 * bt);        // smoothstep
-                    h = h * (1 - sbt * 0.55) + h2 * (sbt * 0.55);
-                }
-
-                hMap[pixIdx] = Math.max(0, Math.min(1, h));
-                tMap[pixIdx] = b1; // store region index for terrain type lookup
+                tMap[pixIdx]   = b1;
+                dsMap[pixIdx]  = ds;
+                // hMap stays 0 (land marker)
             }
         }
     }
 
-    // ── Pass 2: Hillshading + hypsometric color + owner tint ─────────────────
-    // Light from NW at ~45° elevation: direction (-1,-1,1)/√3
-    const LX = -0.5774, LY = -0.5774, LZ = 0.5774;
-    const EXAGGERATION = 12; // height exaggeration for normal computation
+    // ── Pass 2: Fantasy RTS terrain color + coastal sand + owner tint ────────
+    const SAND_THRESH = 0.00095; // sq-dist threshold for sandy coastal border
 
     for (let py = 0; py < H; py++) {
         for (let px = 0; px < W; px++) {
             const pixIdx = py * W + px;
             const i4     = pixIdx * 4;
             const h      = hMap[pixIdx];
+            const nx     = px / W, ny = py / H;
 
             if (h < 0) {
-                // ── Sea ──────────────────────────────────────────────────────
+                // ── Sea: dark navy with fBm wave texture ──────────────────────
+                const wave = _fbm(nx * 5.0,        ny * 5.0)        * 0.65 +
+                             _fbm(nx * 10.0 + 7.3, ny * 10.0 + 4.1) * 0.35;
                 const depth = Math.min(1, (-h - 0.05) / 0.95);
-                // Coastal shelf [120,182,222] → deep ocean [20,55,130]
-                const sr = 120 - 100 * depth | 0;
-                const sg = 182 - 127 * depth | 0;
-                const sb = 222 -  92 * depth | 0;
-                // Subtle ripple texture from fine noise
-                const rip = (((px * 7 + py * 13) ^ (py >> 2)) & 7) - 3;
-                pxs[i4]   = clamp(sr + rip, 0, 255);
-                pxs[i4+1] = clamp(sg + rip, 0, 255);
-                pxs[i4+2] = clamp(sb + rip, 0, 255);
+                pxs[i4]   = clamp(30  + wave * 12 - depth * 10 | 0, 0, 255);
+                pxs[i4+1] = clamp(48  + wave * 10 - depth * 18 | 0, 0, 255);
+                pxs[i4+2] = clamp(106 + wave * 14 - depth * 36 | 0, 0, 255);
                 pxs[i4+3] = 255;
 
             } else {
-                // ── Land ─────────────────────────────────────────────────────
-                // Finite-difference surface normal for hillshading
-                // Clamp sea neighbours to 0 (sea level) so coasts shade naturally
-                const hL = px > 0     ? Math.max(0, hMap[pixIdx - 1])     : h;
-                const hR = px < W - 1 ? Math.max(0, hMap[pixIdx + 1])     : h;
-                const hU = py > 0     ? Math.max(0, hMap[pixIdx - W])     : h;
-                const hD = py < H - 1 ? Math.max(0, hMap[pixIdx + W])     : h;
-
-                const sx = (hR - hL) * EXAGGERATION;  // east-west slope
-                const sy = (hD - hU) * EXAGGERATION;  // north-south slope (y down)
-                const nLen = Math.sqrt(sx*sx + sy*sy + 1);
-                const nx2  = -sx / nLen, ny2 = -sy / nLen, nz = 1 / nLen;
-
-                // Lambert shading + ambient floor
-                const shade = Math.max(0.22, LX*nx2 + LY*ny2 + LZ*nz);
-
-                const b1 = tMap[pixIdx];
-                const r  = regions[b1];
+                // ── Land: per-terrain procedural texture ──────────────────────
+                const ri  = tMap[pixIdx];
+                const r   = regions[ri];
                 const terrain = r.terrain || 'plains';
 
-                // Hypsometric color at this elevation
-                const [tr, tg, tb] = _elevColor(h, terrain);
+                const [tr, tg, tb] = _terrainPx(terrain, nx, ny);
 
-                let R = tr * shade | 0;
-                let G = tg * shade | 0;
-                let B = tb * shade | 0;
+                // Coastal sand strip — smoothstep blend toward SAND_COLOR near sea
+                const sd   = dsMap[pixIdx];
+                const sRaw = sd < SAND_THRESH ? (1 - sd / SAND_THRESH) : 0;
+                const sst  = sRaw * sRaw * (3 - 2 * sRaw);
+                let R = tr + (SAND_COLOR[0] - tr) * sst | 0;
+                let G = tg + (SAND_COLOR[1] - tg) * sst | 0;
+                let B = tb + (SAND_COLOR[2] - tb) * sst | 0;
 
-                // Effect modifiers (selection, targets, committed)
-                const eff = effect[b1];
+                // Selection / committed effects
+                const eff = effect[ri];
                 if      (eff === 1) { R = clamp(R + 55, 0, 255); G = clamp(G + 45, 0, 255); B = clamp(B + 15, 0, 255); }
                 else if (eff === 2) { R = clamp(R + 40, 0, 255); G = clamp(G + 28, 0, 255); B = clamp(B - 15, 0, 255); }
-                else if (eff === 3) { R = R * 0.40 | 0; G = G * 0.40 | 0; B = B * 0.40 | 0; }
+                else if (eff === 3) { R = R * 0.45 | 0; G = G * 0.45 | 0; B = B * 0.45 | 0; }
 
-                // Owner tint (thin political color over the geographic terrain)
+                // Owner tint
                 const tint = OWNER_TINT[r.owner] || OWNER_TINT.rogue;
                 const ta   = tint[3];
-                R = clamp(R, 0, 255) * (1 - ta) + tint[0] * ta | 0;
-                G = clamp(G, 0, 255) * (1 - ta) + tint[1] * ta | 0;
-                B = clamp(B, 0, 255) * (1 - ta) + tint[2] * ta | 0;
+                if (ta > 0) {
+                    R = clamp(R, 0, 255) * (1 - ta) + tint[0] * ta | 0;
+                    G = clamp(G, 0, 255) * (1 - ta) + tint[1] * ta | 0;
+                    B = clamp(B, 0, 255) * (1 - ta) + tint[2] * ta | 0;
+                }
 
                 pxs[i4]   = clamp(R, 0, 255);
                 pxs[i4+1] = clamp(G, 0, 255);

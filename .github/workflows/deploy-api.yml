@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "api/**"
+      - "games/**"
       - "Makefile"
   workflow_dispatch:
 

@@ -20,6 +20,7 @@ deploy: push
 		--region $(REGION) \
 		--project $(PROJECT) \
 		--platform managed \
-		--allow-unauthenticated
+		--allow-unauthenticated \
+		--max-instances 1
 
 all: deploy

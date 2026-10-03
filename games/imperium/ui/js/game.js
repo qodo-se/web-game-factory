@@ -24,11 +24,11 @@ const TERRAIN_DARK = {          // shadow / dense-cover variant (lower noise →
 };
 const SAND_COLOR = [184, 158, 94]; // sandy coastal strip between ocean and land
 
-// Owner tint: [R,G,B, alpha] — thin political overlay over terrain
+// Owner tint: [R,G,B, alpha] — political overlay; strong enough to be unambiguous
 const OWNER_TINT = {
-    player_1: [55, 105, 200, 0.22],
-    player_2: [200,  55,  55, 0.22],
-    rogue:    [108, 103, 112, 0.00],
+    player_1: [55, 105, 200, 0.42],
+    player_2: [200,  55,  55, 0.42],
+    rogue:    [108, 103, 112, 0.06],
 };
 
 const SEA_FACTOR = 1.45;
@@ -289,45 +289,48 @@ function _fbm(x, y) {
 
 // Procedural terrain texture — fantasy RTS aesthetic.
 // Returns [R,G,B] from terrain type and normalised screen position.
+// Uses higher-frequency noise (scale 13/26) for clearly visible texture blobs.
 function _terrainPx(terrain, nx, ny) {
-    const n1 = _fbm(nx * 7.5,        ny * 7.5);
-    const n2 = _fbm(nx * 15.0 + 3.7, ny * 15.0 + 8.3);
+    const n1 = _fbm(nx * 13.0,        ny * 13.0);
+    const n2 = _fbm(nx * 26.0 + 3.7,  ny * 26.0 + 8.3);
 
     const base = TERRAIN_BASE[terrain] || TERRAIN_BASE.plains;
     const dark = TERRAIN_DARK[terrain] || TERRAIN_DARK.plains;
 
     if (terrain === 'forest') {
-        // Dense overlapping canopy blobs — high contrast dark patches
-        if (n2 < 0.30) return [16, 44, 10];   // deep shadow under canopy
-        if (n1 < 0.34) return [26, 64, 14];   // dense canopy
-        const t = Math.min(1, (n1 - 0.34) / 0.66);
+        // Dense tree canopy: high-contrast blobs (majority is dark, bright only in gaps)
+        if (n2 < 0.38) return [8, 30, 4];     // deep shadow beneath canopy
+        if (n1 < 0.55) return [22, 64, 12];   // dense canopy mass
+        if (n1 < 0.74) return [42, 96, 26];   // mid canopy / partial gap
+        const t = (n1 - 0.74) / 0.26;
         return [dark[0] + (base[0]-dark[0])*t|0,
                 dark[1] + (base[1]-dark[1])*t|0,
                 dark[2] + (base[2]-dark[2])*t|0];
     }
 
     if (terrain === 'hills') {
-        // Rocky ridges: shadow crevices → mid-tone → bright lit faces
-        if (n1 < 0.20) return [32, 24, 12];   // deep shadow crevice
-        if (n1 < 0.36) return [68, 54, 28];   // shadow face
-        if (n1 > 0.78) return [152, 126, 80]; // bright lit face
-        const t = (n1 - 0.36) / 0.42;
+        // Rocky spires: deep shadow crevices, mid stone, bright lit peaks
+        if (n1 < 0.22) return [24, 18, 8];    // deep shadow crevice
+        if (n2 < 0.28) return [40, 32, 16];   // secondary shadow crack
+        if (n1 < 0.48) return [74, 60, 30];   // shadow face
+        if (n1 > 0.76) return [164, 136, 86]; // bright lit peak
+        const t = (n1 - 0.48) / 0.28;
         return [dark[0] + (base[0]-dark[0])*t|0,
                 dark[1] + (base[1]-dark[1])*t|0,
                 dark[2] + (base[2]-dark[2])*t|0];
     }
 
     if (terrain === 'desert') {
-        // Sandy dunes — warm golden gradient
-        const n3 = _fbm(nx * 11.0 + 5.0, ny * 11.0 + 5.0);
-        const t = n1 * 0.6 + n3 * 0.4;
+        // Sandy dunes — warm golden gradient with fine grain
+        const n3 = _fbm(nx * 18.0 + 5.0, ny * 18.0 + 5.0);
+        const t = n1 * 0.5 + n3 * 0.5;
         return [base[0] - (base[0]-dark[0])*t|0,
                 base[1] - (base[1]-dark[1])*t|0,
                 base[2] - (base[2]-dark[2])*t|0];
     }
 
     // coast / plains / city — smooth green variation
-    const t = n1 * 0.65 + n2 * 0.35;
+    const t = n1 * 0.60 + n2 * 0.40;
     return [dark[0] + (base[0]-dark[0])*(1-t)|0,
             dark[1] + (base[1]-dark[1])*(1-t)|0,
             dark[2] + (base[2]-dark[2])*(1-t)|0];
@@ -398,10 +401,8 @@ function renderCanvas() {
     // ── Pass 1: Voronoi assignment ────────────────────────────────────────────
     // hMap[px]:  land → 0;  sea → negative depth [-1, 0)
     // tMap[px]:  land → region index;  sea → -1
-    // dsMap[px]: land → sq-distance to nearest sea centre (for coastal sand strip)
     const hMap  = new Float32Array(W * H);
     const tMap  = new Int32Array(W * H).fill(-1);
-    const dsMap = new Float32Array(W * H).fill(1);
     const M = N + SP;
 
     for (let py = 0; py < H; py++) {
@@ -409,14 +410,13 @@ function renderCanvas() {
         for (let px = 0; px < W; px++) {
             const nx = px / W;
 
-            let d1 = Infinity, d2 = Infinity, b1 = 0, b2 = 1, dl = Infinity, ds = 1;
+            let d1 = Infinity, d2 = Infinity, b1 = 0, b2 = 1, dl = Infinity;
             for (let j = 0; j < M; j++) {
                 const dx = nx - ncx[j], dy = ny - ncy[j];
                 const d  = dx*dx + dy*dy;
                 if (d < d1)      { d2 = d1; b2 = b1; d1 = d; b1 = j; }
                 else if (d < d2) { d2 = d;  b2 = j; }
-                if (j < N  && d < dl) dl = d;
-                if (j >= N && d < ds) ds = d;
+                if (j < N && d < dl) dl = d;
             }
 
             const pixIdx  = py * W + px;
@@ -429,14 +429,36 @@ function renderCanvas() {
             } else {
                 idxMap[pixIdx] = b1;
                 tMap[pixIdx]   = b1;
-                dsMap[pixIdx]  = ds;
                 // hMap stays 0 (land marker)
             }
         }
     }
 
+    // ── Pass 1.5: Pixel-accurate distance-to-sea (4-directional 1-D DT) ──────
+    // seaDist[px] = distance in pixels to nearest sea pixel.
+    // Used for the coastal sand strip — works regardless of sea-centre placement.
+    const BIG = W + H;
+    const seaDist = new Float32Array(W * H).fill(BIG);
+    for (let i = 0; i < W * H; i++) if (hMap[i] < 0) seaDist[i] = 0;
+    for (let py = 0; py < H; py++) {
+        for (let px = 1; px < W; px++) {
+            const i = py*W+px; if (seaDist[i-1]+1 < seaDist[i]) seaDist[i] = seaDist[i-1]+1;
+        }
+        for (let px = W-2; px >= 0; px--) {
+            const i = py*W+px; if (seaDist[i+1]+1 < seaDist[i]) seaDist[i] = seaDist[i+1]+1;
+        }
+    }
+    for (let px = 0; px < W; px++) {
+        for (let py = 1; py < H; py++) {
+            const i = py*W+px; if (seaDist[(py-1)*W+px]+1 < seaDist[i]) seaDist[i] = seaDist[(py-1)*W+px]+1;
+        }
+        for (let py = H-2; py >= 0; py--) {
+            const i = py*W+px; if (seaDist[(py+1)*W+px]+1 < seaDist[i]) seaDist[i] = seaDist[(py+1)*W+px]+1;
+        }
+    }
+
     // ── Pass 2: Fantasy RTS terrain color + coastal sand + owner tint ────────
-    const SAND_THRESH = 0.00095; // sq-dist threshold for sandy coastal border
+    const SAND_W = 28; // sand strip width in pixels (pixel-accurate via seaDist)
 
     for (let py = 0; py < H; py++) {
         for (let px = 0; px < W; px++) {
@@ -463,9 +485,9 @@ function renderCanvas() {
 
                 const [tr, tg, tb] = _terrainPx(terrain, nx, ny);
 
-                // Coastal sand strip — smoothstep blend toward SAND_COLOR near sea
-                const sd   = dsMap[pixIdx];
-                const sRaw = sd < SAND_THRESH ? (1 - sd / SAND_THRESH) : 0;
+                // Coastal sand strip — pixel-accurate distance to nearest sea pixel
+                const distSea = seaDist[pixIdx];
+                const sRaw = distSea < SAND_W ? (1 - distSea / SAND_W) : 0;
                 const sst  = sRaw * sRaw * (3 - 2 * sRaw);
                 let R = tr + (SAND_COLOR[0] - tr) * sst | 0;
                 let G = tg + (SAND_COLOR[1] - tg) * sst | 0;

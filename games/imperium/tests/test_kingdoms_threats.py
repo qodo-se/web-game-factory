@@ -20,7 +20,8 @@ class KingdomTests(unittest.TestCase):
                 self.assertEqual(state.get_player('player_1').capital_region_id, choice['id'])
                 for player in state.players:
                     owned = {r.id for r in state.owned_regions(player.id)}
-                    self.assertEqual(len(owned), 3, (preset['id'], choice['id'], player.id))
+                    if not state.battle:
+                        self.assertEqual(len(owned), 3, (preset['id'], choice['id'], player.id))
                     seen = {player.capital_region_id}
                     while True:
                         more = seen | {n for r in seen for n in state.regions[r].neighbors if n in owned}

@@ -12,6 +12,7 @@ const apiBase = process.env.IMPERIUM_TEST_API || 'http://127.0.0.1:8080';
         page.on('pageerror', e => errors.push(e.message));
         page.on('dialog', async d => { errors.push(d.message()); await d.dismiss(); });
         await page.addInitScript(base => localStorage.setItem('IMPERIUM_API_BASE',base),apiBase);
+        await page.addInitScript(()=>localStorage.setItem('imperium-map-input-mode','mouse'));
         await page.goto(ui);
         await page.waitForFunction(() => !document.getElementById('start-btn').disabled);
         await page.locator('input[value="india"]').check();await page.waitForFunction(()=>!document.getElementById('start-btn').disabled);

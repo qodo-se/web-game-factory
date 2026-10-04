@@ -7,6 +7,7 @@ const world = {
         group.style.display = enabled ? '' : 'none';
         if (!atlas.data || !enabled || this.cache === atlas.geometry) return;
         this.cache = atlas.geometry;
+        if (atlas.data.category === 'historical') { group.replaceChildren(); return; }
         const {w,h,idxMap} = atlas.geometry;
         // Place sparse waves wholly inside water using the existing hit grid.
         // No animated geographic masks or duplicated coastline geometry.

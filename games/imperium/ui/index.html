@@ -26,13 +26,19 @@
             </div>
             <fieldset class="map-picker">
                 <legend>Theater of War</legend>
+                <div class="map-categories" role="group" aria-label="Map category">
+                    <button type="button" data-category="world" aria-pressed="true">World Campaigns</button>
+                    <button type="button" data-category="historical" aria-pressed="false">Historical Battles</button>
+                </div>
+                <p id="category-description" class="preset-desc">Choose a theater for an open-ended campaign of conquest.</p>
                 <div id="map-grid" class="map-grid" aria-busy="true">
                     <p>Loading maps…</p>
                 </div>
             </fieldset>
             <div id="preset-options" class="form-group">
                 <p class="preset-desc" id="preset-desc"></p>
-                <label for="kingdom-select">Starting kingdom</label>
+                <div id="battle-briefing" hidden></div>
+                <label id="starting-label" for="kingdom-select">Starting kingdom</label>
                 <select id="kingdom-select" disabled><option>Loading kingdoms…</option></select>
                 <p class="preset-desc" id="kingdom-preview" aria-live="polite"></p>
             </div>

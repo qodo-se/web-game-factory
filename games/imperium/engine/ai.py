@@ -92,6 +92,8 @@ def _score_attack(
         return float("-inf")
 
     value = TERRAIN_VALUE.get(target.terrain, 30.0)
+    if state.battle and target.id in state.battle['objectives']:
+        value += 220.0
     if target.is_capital:
         value += 180.0  # strong incentive to go for the capital
 
@@ -166,6 +168,19 @@ def decide_actions(
     is_aggressive = army_ratio >= 0.9
 
     # Sort regions: highest army + most threatened first
+    battle_distance = {}
+    if state.battle:
+        targets = [rid for rid in state.battle['objectives'] if state.regions[rid].owner != ai_owner]
+        if not targets:
+            targets = [r.id for r in state.regions.values() if r.owner != ai_owner]
+        queue = list(targets)
+        battle_distance = {rid: 0 for rid in targets}
+        for rid in queue:
+            for neighbor in state.regions[rid].neighbors:
+                if neighbor not in battle_distance:
+                    battle_distance[neighbor] = battle_distance[rid] + 1
+                    queue.append(neighbor)
+
     owned_sorted = sorted(
         owned,
         key=lambda r: r.army + _threat_level(r, state, enemy_owner) * 2.0,
@@ -186,10 +201,15 @@ def decide_actions(
 
             if nb.owner == ai_owner:
                 # Consolidation — only when cautious or region is threatened
-                if not is_aggressive or _threat_level(nb, state, enemy_owner) > 0:
+                if state.battle or not is_aggressive or _threat_level(nb, state, enemy_owner) > 0:
                     score = _score_consolidate(region, nb, state, ai_owner, enemy_owner)
                     # Discount consolidation vs attack to keep the AI active
                     score *= 0.65
+                    if state.battle:
+                        if battle_distance.get(nb.id, 999) < battle_distance.get(region.id, 999):
+                            score += 80
+                        else:
+                            score -= 80
                     if score > best_score:
                         best_score = score
                         best = _Candidate(region.id, nb_id, score, is_attack=False)
@@ -199,7 +219,7 @@ def decide_actions(
                     best_score = score
                     best = _Candidate(region.id, nb_id, score, is_attack=True)
 
-        if best is not None and best_score > float("-inf"):
+        if best is not None and best_score > (0 if state.battle else float("-inf")):
             candidates.append(best)
 
     # Sort by score descending, then build non-conflicting move list

@@ -9,6 +9,24 @@ const mapCamera = {
         // Terrain and interactive SVG orders share one gesture surface.
         const surface = this.world;
         this.onSettle = onSettle;
+        const inputMode = document.getElementById('map-input-mode');
+        this.inputMode = /Mac/.test(navigator.platform) ? 'touchpad' : 'mouse';
+        try {
+            const saved = localStorage.getItem('imperium-map-input-mode');
+            if (saved === 'mouse' || saved === 'touchpad') this.inputMode = saved;
+        } catch { /* Defaults remain usable when storage is unavailable. */ }
+        const updateInputMode = () => {
+            inputMode.value = this.inputMode;
+            document.getElementById('map-navigation-help').textContent = this.inputMode === 'touchpad'
+                ? 'Two-finger scroll to pan · Pinch or +/− to zoom · Drag anywhere to pan · Click source, then destination to move · Esc to cancel'
+                : 'Scroll to zoom · Drag anywhere to pan · Click or tap source, then destination to move · Esc to cancel';
+        };
+        inputMode.addEventListener('change', () => {
+            this.inputMode = inputMode.value;
+            try { localStorage.setItem('imperium-map-input-mode', this.inputMode); } catch {}
+            updateInputMode();
+        });
+        updateInputMode();
         let pointer = null, suppressClick = false;
         this.cancelGesture = () => {
             if (!pointer) return;
@@ -21,8 +39,11 @@ const mapCamera = {
         };
         surface.addEventListener('wheel', e => {
             e.preventDefault();
+            if (this.gestureActive) return;
             const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? this.viewport.clientHeight : 1;
-            if (e.shiftKey && !e.ctrlKey) {
+            if (this.inputMode === 'touchpad' && !e.ctrlKey) {
+                this.pan(-e.deltaX * unit, -e.deltaY * unit);
+            } else if (e.shiftKey && !e.ctrlKey) {
                 this.pan(-((e.deltaX || e.deltaY) * unit), e.deltaX ? -e.deltaY * unit : 0);
             } else if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && !e.ctrlKey) {
                 this.pan(-e.deltaX * unit, -e.deltaY * unit);
@@ -33,11 +54,30 @@ const mapCamera = {
                     e.clientX - rect.left, e.clientY - rect.top);
             }
         }, { passive: false });
+        // Safari exposes pinch as GestureEvent rather than ctrl+wheel.
+        surface.addEventListener('gesturestart', e => {
+            e.preventDefault();
+            this.cancelGesture();
+            this.gestureActive = true;
+            this.gestureZoom = this.zoom;
+        }, { passive: false });
+        const pinch = e => {
+            if (!this.gestureActive) return;
+            e.preventDefault();
+            if (Number.isFinite(e.scale) && e.scale > 0) {
+                const rect = this.viewport.getBoundingClientRect();
+                const x = Number.isFinite(e.clientX) ? e.clientX - rect.left : rect.width / 2;
+                const y = Number.isFinite(e.clientY) ? e.clientY - rect.top : rect.height / 2;
+                this.zoomAt(this.gestureZoom * e.scale, x, y);
+            }
+        };
+        surface.addEventListener('gesturechange', pinch, { passive: false });
+        surface.addEventListener('gestureend', e => { pinch(e); this.gestureActive = false; }, { passive: false });
         surface.addEventListener('pointerdown', e => {
             if (pointer || (e.button !== 0 && e.button !== 1)) return;
             suppressClick = false;
             pointer = { id:e.pointerId, startX:e.clientX, startY:e.clientY,
-                x:e.clientX, y:e.clientY, source:e.target.closest('.order-hit') ? null : planning.sourceAt(e) };
+                x:e.clientX, y:e.clientY };
             if (e.button === 1) e.preventDefault();
         });
         surface.addEventListener('pointermove', e => {
@@ -45,19 +85,16 @@ const mapCamera = {
             if (!this.dragging && Math.hypot(e.clientX-pointer.startX, e.clientY-pointer.startY) > 5) {
                 this.dragging = true;
                 surface.setPointerCapture(e.pointerId);
-                if (pointer.source !== null) planning.begin(pointer.source);
-                else this.viewport.classList.add('is-panning');
+                this.viewport.classList.add('is-panning');
             }
             if (this.dragging) {
-                if (pointer.source !== null) planning.move(e);
-                else this.pan(e.clientX-pointer.x, e.clientY-pointer.y);
+                this.pan(e.clientX-pointer.x, e.clientY-pointer.y);
             }
             pointer.x=e.clientX; pointer.y=e.clientY;
         });
         const finish = e => {
             if (!pointer || e.pointerId !== pointer.id) return;
             suppressClick = this.dragging || e.type === 'pointercancel';
-            if (this.dragging && pointer.source !== null) planning.finish(e, e.type !== 'pointerup');
             pointer = null;
             this.dragging = false;
             this.viewport.classList.remove('is-panning');
@@ -90,12 +127,22 @@ const mapCamera = {
             e.preventDefault();
         });
         let width = this.viewport.clientWidth, height = this.viewport.clientHeight;
-        window.addEventListener('resize', () => {
-            const nextWidth=this.viewport.clientWidth, nextHeight=this.viewport.clientHeight;
-            if (width && height) { this.x*=nextWidth/width; this.y*=nextHeight/height; }
-            width=nextWidth; height=nextHeight;
-            this.apply();
-        });
+        let pixelRatio = window.devicePixelRatio;
+        const resize = () => {
+            cancelAnimationFrame(this.resizeFrame);
+            this.resizeFrame = requestAnimationFrame(() => {
+                const nextWidth = this.viewport.clientWidth, nextHeight = this.viewport.clientHeight;
+                if (!nextWidth || !nextHeight) return;
+                if (width === nextWidth && height === nextHeight && pixelRatio === window.devicePixelRatio) return;
+                if (width && height) { this.x *= nextWidth / width; this.y *= nextHeight / height; }
+                width = nextWidth; height = nextHeight; pixelRatio = window.devicePixelRatio;
+                this.apply();
+                this.onSettle();
+            });
+        };
+        this.resizeObserver = new ResizeObserver(resize);
+        this.resizeObserver.observe(this.viewport);
+        window.addEventListener('resize', resize);
         this.apply();
     },
     zoomAt(value, px, py) {

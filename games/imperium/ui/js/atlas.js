@@ -10,6 +10,13 @@ const atlas = {
             data.regions.some(f => regions[f.id]?.name !== f.name))) {
             throw new Error('This preset has changed. Start a new campaign to use the updated map.');
         }
+        this.terrainImage = null;
+        if (data.terrain?.image) {
+            const terrainImage = new Image();
+            terrainImage.src = `maps/${data.terrain.image}`;
+            await terrainImage.decode();
+            this.terrainImage = terrainImage;
+        }
         this.data = data;
     },
     prepare(regions) {
@@ -80,6 +87,15 @@ const atlas = {
                 if(i===0)rivers.moveTo(this.x(x)*w,this.y(y)*h);else rivers.lineTo(this.x(x)*w,this.y(y)*h);
             });
         }
+        const linePath = lines => {
+            const result = new Path2D();
+            for (const line of lines || []) line.forEach(([x,y],i) => {
+                if (i === 0) result.moveTo(this.x(x)*w,this.y(y)*h);
+                else result.lineTo(this.x(x)*w,this.y(y)*h);
+            });
+            return result;
+        };
+        const roads = linePath(this.data.roads), ridges = linePath(this.data.ridges);
         const relief=paths.map((path,index)=>{
             const marks=new Path2D();
             const feature=this.data.regions[index];
@@ -97,7 +113,7 @@ const atlas = {
         });
         const land = new Path2D(); paths.forEach(path => land.addPath(path));
         const svgPaths=this.data.regions.map(feature=>({id:feature.id,d:feature.polygons.map(p=>p.map(r=>r.map(([x,y],i)=>`${i?'L':'M'}${this.x(x)*w},${this.y(y)*h}`).join(' ')+'Z').join(' ')).join(' ')}));
-        this.geometry = { w, h, paths, idxMap, rivers, relief, land, svgPaths };
+        this.geometry = { w, h, paths, idxMap, rivers, roads, ridges, relief, land, svgPaths };
         this.baseKey = null;
     },
     x(x) { const l = this.layout; return (l.left+x*l.width)/l.w; },
@@ -138,7 +154,7 @@ const atlas = {
         const {w,h,paths,land}=this.geometry;
         ctx.setTransform(scaleX,0,0,scaleY,0,0);
         const ocean = ctx.createLinearGradient(0,0,0,h);
-        ocean.addColorStop(0, '#263e49'); ocean.addColorStop(1, '#1c303a');
+        ocean.addColorStop(0, this.data.category==='historical' ? '#303930' : '#263e49'); ocean.addColorStop(1, this.data.category==='historical' ? '#202c2b' : '#1c303a');
         ctx.fillStyle = ocean; ctx.fillRect(0,0,w,h);
         // Fine graticule, spaced in geographic degrees.
         const [west,south,east,north] = this.data.bounds;
@@ -154,27 +170,44 @@ const atlas = {
         }
         ctx.stroke();
         ctx.textAlign='center';ctx.fillStyle='rgba(173,198,208,.48)';ctx.font='italic 13px Georgia, serif';
-        for(const label of this.data.water_labels||[])ctx.fillText(label.name,this.x(label.center[0])*w,this.y(label.center[1])*h);
+        if (!this.terrainImage) for(const label of this.data.water_labels||[])ctx.fillText(label.name,this.x(label.center[0])*w,this.y(label.center[1])*h);
+        if (this.terrainImage) {
+            const l=this.layout;
+            ctx.drawImage(this.terrainImage,l.left,l.top,l.width,l.height);
+        }
         const terrain = { plains:'#b4b49a', city:'#bab8a0', coast:'#bfc0a5',
             forest:'#899b85', hills:'#a9a393', desert:'#c8ba98' };
         this.data.regions.forEach((feature,i) => {
             const r = regions[feature.id], path = paths[i];
-            ctx.fillStyle = terrain[r.terrain] || terrain.plains;
-            ctx.fill(path, 'evenodd');
-            if(r.terrain==='hills') {
+            if (!this.terrainImage) {
+                ctx.fillStyle = terrain[r.terrain] || terrain.plains;
+                ctx.fill(path, 'evenodd');
+            }
+            if(r.terrain==='hills' && this.data.category !== 'historical') {
                 ctx.save();ctx.clip(path,'evenodd');
                 ctx.strokeStyle='rgba(72,64,49,.19)';ctx.lineWidth=.65;
                 ctx.stroke(this.geometry.relief[i]);ctx.restore();
             }
             if (r.owner !== 'rogue') {
                 ctx.fillStyle = r.owner === 'player_1' ? 'rgba(65,106,143,.42)' : 'rgba(160,83,68,.40)';
+                ctx.globalAlpha = this.terrainImage ? .28 : 1;
                 ctx.fill(path, 'evenodd');
+                ctx.globalAlpha = 1;
             }
             ctx.strokeStyle = r.owner==='player_1'?'#577792':r.owner==='player_2'?'#98695c':'rgba(40,49,44,.48)';
-            ctx.lineWidth = r.owner==='rogue'?.55:1.5; ctx.stroke(path);
+            ctx.lineWidth = this.terrainImage ? .7 : r.owner==='rogue'?.55:1.5; ctx.globalAlpha=this.terrainImage?.65:1; ctx.stroke(path);ctx.globalAlpha=1;
         });
+        if (this.data.category === 'historical' && !this.terrainImage) {
+            ctx.save(); ctx.clip(land,'evenodd');
+            ctx.lineJoin='round'; ctx.lineCap='round';
+            // Broad ridge shading, not surveyed contour elevations.
+            ctx.strokeStyle='rgba(45,45,29,.13)';ctx.lineWidth=16;ctx.stroke(this.geometry.ridges);
+            ctx.strokeStyle='rgba(235,226,182,.22)';ctx.lineWidth=5;ctx.stroke(this.geometry.ridges);
+            ctx.strokeStyle='rgba(230,216,174,.85)';ctx.lineWidth=2;ctx.setLineDash([5,3]);ctx.stroke(this.geometry.roads);
+            ctx.restore();
+        }
         ctx.save();ctx.clip(land,'evenodd');ctx.strokeStyle='rgba(70,124,151,.66)';ctx.lineWidth=1;
-        ctx.stroke(this.geometry.rivers);ctx.restore();
+        if (!this.terrainImage) ctx.stroke(this.geometry.rivers);ctx.restore();
         ctx.strokeStyle='rgba(245,240,223,.65)'; ctx.lineWidth=.8;
         this.data.regions.forEach((feature,i) => {
             const x=this.x(feature.center[0])*w, y=this.y(feature.center[1])*h;
@@ -183,10 +216,23 @@ const atlas = {
             ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(marker.x,marker.y); ctx.stroke();
             ctx.fillStyle='#f5f0df'; ctx.beginPath(); ctx.arc(x,y,1.5,0,Math.PI*2); ctx.fill();
         });
+        if (this.terrainImage) {
+            ctx.textAlign='center';ctx.fillStyle='rgba(224,231,220,.85)';ctx.font='italic 13px Georgia, serif';
+            for (const label of this.data.water_labels||[]) ctx.fillText(label.name,this.x(label.center[0])*w,this.y(label.center[1])*h);
+        }
+        if (this.data.terrain) {
+            const l=this.layout, meters=this.data.terrain.width_m;
+            const distance=meters>10000?2000:meters>4000?1000:500;
+            const length=distance/meters*l.width;
+            ctx.strokeStyle='#e5dfc5';ctx.lineWidth=2;ctx.beginPath();
+            ctx.moveTo(l.left+10,l.top+l.height-14);ctx.lineTo(l.left+10+length,l.top+l.height-14);ctx.stroke();
+            ctx.fillStyle='#e5dfc5';ctx.font='10px Arial';ctx.textAlign='left';
+            ctx.fillText(distance>=1000?`${distance/1000} km`:`${distance} m`,l.left+10,l.top+l.height-20);
+        }
         ctx.fillStyle = '#a6b7bb'; ctx.font='10px Georgia, serif';
         ctx.fillText('N ↑', 16, 24);
         ctx.font='10px Arial, sans-serif';
         ctx.textAlign='right';
-        ctx.fillText('Natural Earth · Historical territories approximated', w-16, h-12);
+        ctx.fillText((this.data.terrain ? `Contours ${this.data.terrain.contour_interval} m · Elevation & sources in map settings` : this.data.attribution) || 'Natural Earth · Historical territories approximated', w-16, h-12);
     },
 };

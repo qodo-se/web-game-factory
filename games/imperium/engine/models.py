@@ -69,9 +69,11 @@ class Region:
     x: float = 0.0
     y: float = 0.0
 
+    reinforcement_rate: Optional[int] = None
+
     @property
     def pop_rate(self) -> int:
-        return TERRAIN_POP_RATE[self.terrain]
+        return self.reinforcement_rate if self.reinforcement_rate is not None else TERRAIN_POP_RATE[self.terrain]
 
     @property
     def defense_bonus(self) -> float:
@@ -147,6 +149,7 @@ class GameState:
     routes: Dict[str, str] = field(default_factory=dict)
     ports: List[int] = field(default_factory=list)
     rules_version: int = 2
+    battle: Optional[dict] = None
 
     def get_player(self, player_id: str) -> Optional[Player]:
         for p in self.players:

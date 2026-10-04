@@ -3,6 +3,8 @@
 Start with the [map overview and interaction guide](../ui/maps/README.md).
 This document covers the active collection and asset generation.
 
+Historical Battles are documented separately in [BATTLES.md](BATTLES.md), including sources, approximations, rules and asset generation.
+
 The active map collection is defined in `engine/presets/__init__.py`. Older
 presets and their atlas JSON remain bundled so existing saved campaigns can
 still render. They are not offered for new campaigns. Random generation also
@@ -29,3 +31,33 @@ Build tools require Shapely 2.1+ and pyshp, in addition to the engine dependenci
 Geometry, routes, and thumbnails are bundled; the browser needs no GIS library
 or third-party map service. Thumbnail images are lightweight SVGs generated
 from the actual territory polygons.
+
+## Afghanistan, Balochistan & Indus
+
+`balochistan_borderlands_expanded` has 69 territories: 29 across all of Afghanistan,
+31 in Pakistani Balochistan, Sindh, Punjab and the Pakistan–Afghanistan border belt, and nine
+in Iran's Sistan and Baluchestan province. The Iranian sectors are Zabol,
+Zahedan, Khash, Saravan, Iranshahr, Bampur, Sarbaz, Nikshahr and Chabahar.
+Sistan is included as the adjoining Afghanistan–Iran border area, not described
+as uniformly Baloch. Regional context: [Encyclopaedia Iranica's geography of
+Balochistan](https://www.iranicaonline.org/articles/baluchistan-index/baluchistan-i/).
+
+The preset's `source_provinces` pins the Natural Earth admin-1 IDs included in
+the theater. Gilgit–Baltistan, Kashmir and
+other Iranian provinces are excluded from land geometry rather than merely
+having their labels removed. Source FATA boundaries are used as geographic
+pieces, not presented as current administrative units. Country assignment is
+preserved during sector generation. Outer coastlines and province boundaries
+come from Natural Earth; internal sectors are gameplay divisions rather than
+surveyed districts or ethnic boundaries. Normal world campaign rules apply.
+Recommended starts are Quetta and Zahedan; players can choose other regions.
+
+Rebuild with `balochistan_borderlands_expanded` as the final argument to `build_maps.py`
+and `build_strategy_maps.py`, then regenerate thumbnails. The earlier
+`pakistan_afghanistan` and `balochistan_borderlands` presets, atlases and routes are retained for existing local
+campaigns but are no longer offered in the new-game catalog.
+
+Sindh adds Karachi, Hyderabad, Thatta, Sukkur and Thar. Pakistani Punjab adds
+Lahore, Multan, Bahawalpur, Faisalabad, Sargodha, Rawalpindi and Dera Ghazi Khan.
+The frame includes the southern Sindh coast, Punjab’s eastern boundary and
+all of Afghanistan, including the northern provinces and the Wakhan corridor.

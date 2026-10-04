@@ -808,6 +808,8 @@ function renderOverlay(idxMap, cw, ch) {
         let best, leastOverlap=Infinity;
         for (const [dx,dy] of candidates) {
             const box={x:x+dx-width/2, y:y+dy-10, w:width, h:13};
+            box.x=Math.max(8,Math.min(cw-box.w-8,box.x));
+            box.y=Math.max(8,Math.min(ch-box.h-8,box.y));
             const overlap=occupiedLabels.reduce((sum,b) => sum+
                 Math.max(0,Math.min(box.x+box.w,b.x+b.w)-Math.max(box.x,b.x))*
                 Math.max(0,Math.min(box.y+box.h,b.y+b.h)-Math.max(box.y,b.y)), 0);
@@ -827,6 +829,10 @@ function renderOverlay(idxMap, cw, ch) {
 
         const g = svgEl('g', { 'data-id': r.id,
             transform: `translate(${x} ${y}) scale(${1/mapCamera.zoom}) translate(${-x} ${-y})` });
+        if (state.battle?.objectives.includes(r.id)) {
+            g.appendChild(svgEl('path', {d:`M${x} ${y-22} L${x+22} ${y} L${x} ${y+22} L${x-22} ${y} Z`,
+                fill:'none',stroke:'#ffe09a','stroke-width':2,class:'battle-objective'}));
+        }
         if(r.terrain==='city') g.appendChild(svgEl('path',{
             d:`M${x-18} ${y+14}v-29h5v5h5v-5h5v5h6v-5h5v5h5v-5h5v29Z`,
             fill:'rgba(35,37,28,.45)',stroke:'#e1d5b7','stroke-width':1,opacity:.85}));
@@ -1059,12 +1065,26 @@ function removePendingMove(fromId) {
 function updateTopBar() {
     document.getElementById('turn-label').textContent = campaignReplay.active?'Replay':'Turn';
     document.getElementById('turn-num').textContent = campaignReplay.active?(state.turn===1?'Start':state.turn-1):state.turn;
-    document.getElementById('p1-name').textContent    = state.player_1.name;
+    document.getElementById('p1-name').textContent    = state.battle?.factions.player_1 || state.player_1.name;
     document.getElementById('p1-regions').textContent = state.player_1.regions;
     document.getElementById('p1-army').textContent    = state.player_1.total_army;
-    document.getElementById('p2-name').textContent    = state.player_2.name;
+    document.getElementById('p2-name').textContent    = state.battle?.factions.player_2 || state.player_2.name;
     document.getElementById('p2-regions').textContent = state.player_2.regions;
     document.getElementById('p2-army').textContent    = state.player_2.total_army;
+    const battle = state.battle;
+    document.getElementById('battle-status').hidden = !battle;
+    const terrainNotes=document.getElementById('battle-terrain-notes');
+    terrainNotes.hidden=!atlas.data?.terrain;
+    if (atlas.data?.terrain) document.getElementById('battle-terrain-description').textContent = `${atlas.data.terrain.min_elevation} to ${atlas.data.terrain.max_elevation} m · ${atlas.data.terrain.contour_interval} m contours. Measured elevation with reconstructed historical woods, fields and routes.`;
+    const supplyRules = document.getElementById('supply-rules');
+    if (!supplyRules.dataset.campaignText) supplyRules.dataset.campaignText = supplyRules.textContent;
+    supplyRules.textContent = battle ? 'Owned strongpoints and your headquarters supply connected friendly sectors. There is no recruitment. Isolated armies attack at 75% strength and defend at 85%.' : supplyRules.dataset.campaignText;
+    if (battle) {
+        const score = owner => battle.objectives.filter(id => state.regions[id].owner === owner).length;
+        document.getElementById('battle-title').textContent = battle.name;
+        document.getElementById('battle-progress').textContent = `${Math.min(state.turn, battle.turn_limit)}/${battle.turn_limit} turns · Objectives: you ${score('player_1')} — rival ${score('player_2')}`;
+        document.getElementById('battle-status').title = `At the end of turn ${battle.turn_limit}, most objectives wins. Ties use army strength, then ${battle.factions[battle.defender]}. Eliminating the opposing army wins early. Crown markers are headquarters.`;
+    }
 }
 
 function updateRegionInfo(id) {
@@ -1074,11 +1094,11 @@ function updateRegionInfo(id) {
     const r = state.regions[id];
     if (!r) return;
     const borderThreat = document.getElementById('show-threats').checked && threatView.key === JSON.stringify([state.turn,pendingMoves]) ? threatView.data?.entries.find(e => e.region_id === id) : null;
-    const ownerNames  = { player_1: state.player_1.name, player_2: state.player_2.name, rogue: 'Neutral' };
+    const ownerNames  = { player_1: state.battle?.factions.player_1 || state.player_1.name, player_2: state.battle?.factions.player_2 || state.player_2.name, rogue: 'Neutral' };
     const ownerClass  = { player_1: 'p1-text', player_2: 'p2-text', rogue: 'rogue-text' };
     document.getElementById('region-info').innerHTML = `
-        <div class="region-name">${escHtml(r.name)}${r.is_capital ? ' ★' : ''}</div>
-        <div class="region-meta"><span class="${ownerClass[r.owner]}">${escHtml(ownerNames[r.owner])}</span> · ${capitalise(r.terrain)}${r.port?' · Port':''}</div>
+        <div class="region-name">${escHtml(r.name)}${r.is_capital ? ' ★' : ''}${state.battle?.objectives.includes(r.id) ? ' · Objective' : ''}</div>
+        <div class="region-meta"><span class="${ownerClass[r.owner]}">${escHtml(ownerNames[r.owner])}</span> · ${capitalise(r.terrain)}${atlas.data?.terrain?.elevations ? ` · ~${atlas.data.terrain.elevations[id]} m` : ''}${r.port?' · Port':''}</div>
         <div class="region-stats"><span><b>${r.army}</b> troops</span><span><b>+${r.pop_rate}</b>/turn</span><span><b>×${r.defense_bonus.toFixed(2)}</b> defense</span></div>
         <div class="region-meta ${r.supplied===false?'region-isolated':''}">${r.owner==='rogue'?'Local militia':r.supplied===false?'Isolated supply':'Supplied'}${borderThreat ? ` · <span title="Assumes adjacent enemies attack together; ${borderThreat.garrison} defenders after orders">${Math.round(borderThreat.risk*100)}% potential loss risk</span>` : ''}</div>
         <div id="battle-forecast"></div>
@@ -1092,13 +1112,13 @@ function updateRegionInfo(id) {
             api.forecast(gameId,orders,forecastController.signal).then(result=>{
                 if(sequence!==forecastSequence || result.turn!==state.turn)return;
                 const f=result.forecasts.find(item=>item.target===id);if(!f)return;
-                planning.preview(id, f.friendly?`${r.name} · +${f.army} reinforcements (includes recruits)`:`${r.name} · ${f.army} attackers · ${f.effective_defense} defense · ${Math.round(f.win_probability*100)}% victory chance. Includes recruits and queued attacks; enemy orders may change this.`);
+                planning.preview(id, f.friendly?`${r.name} · +${f.army} reinforcements${state.battle ? '' : ' (includes recruits)'}`:`${r.name} · ${f.army} attackers · ${f.effective_defense} defense · ${Math.round(f.win_probability*100)}% victory chance. Includes ${state.battle ? '' : 'recruits and '}queued attacks; enemy orders may change this.`);
                 target.innerHTML=f.friendly?`<p>Reinforce with <b>${f.army}</b> troops.</p>`:
                     `<p class="forecast-odds">${Math.round(f.win_probability*100)}% estimated victory</p>
                     <details class="forecast-details"><summary>Forecast details</summary><p>${f.army} troops · ${f.effective_attack} effective strength against ${f.effective_defense} defense</p>
                     <p>Losses if victorious: ${f.losses_on_win.join('–')}. Potential retreat survivors if defeated: ${f.retreat_survivors_on_loss.join('–')}.</p>
                     <p>Approach: ${f.crossings.map(escHtml).join(', ')}${f.isolated_sources.length?' · Isolated attackers':''}</p>
-                    <small>Includes recruits and combined planned attacks. Assumes defenders stay; enemy moves can change the outcome. Retreat requires a friendly destination.</small></details>`;
+                    <small>Includes ${state.battle ? '' : 'recruits and '}combined planned attacks. Assumes defenders stay; enemy moves can change the outcome. Retreat requires a friendly destination.</small></details>`;
             }).catch(error=>{if(error.name!=='AbortError' && sequence===forecastSequence){target.textContent='Forecast unavailable. Hover again to retry.';planning.preview(id,'Forecast unavailable. Hover again to retry.');}});
         },120);
     }
@@ -1184,7 +1204,7 @@ async function endTurn() {
     if (resolving || gameOver) return;
     const submittedTurn=state.turn;
     setResolving(true);
-    planning.clearDrag(); planning.hidePreview();
+    planning.clearEffects(); planning.hidePreview();
     selectedFrom = null;
     clearTimeout(forecastTimer); forecastController?.abort();
     ++forecastSequence;
@@ -1250,6 +1270,10 @@ function handleGameOver(winner) {
     subtitle.textContent = isVictory
         ? `${state.player_1.name} conquers all.`
         : `${state.player_2.name} prevails.`;
+    if (state.battle) {
+        const objectives = owner => state.battle.objectives.filter(id => state.regions[id].owner === owner).length;
+        subtitle.textContent = `${state.battle.factions[winner]} wins. Objectives: ${objectives('player_1')}–${objectives('player_2')} · Your remaining strength: ${state.player_1.total_army}.`;
+    }
     overlay.classList.remove('hidden');
     setResolving(false);
 
@@ -1293,13 +1317,6 @@ async function init() {
     mapCamera.init(() => { if (state) renderMap(); });
     initCanvasEvents();
     planning.init();
-
-    // Resize canvas when window resizes (re-render the Voronoi map)
-    let resizeTimer;
-    window.addEventListener('resize', () => {
-        clearTimeout(resizeTimer);
-        resizeTimer=setTimeout(() => { if (state) renderMap(); },120);
-    });
 
     try {
         const [gameData, vm] = await Promise.all([

@@ -70,6 +70,15 @@ def _decode(payload):
     if data.get('schema') != 1:
         raise ValueError('Unsupported campaign save version')
     raw = data['state']
+    # India was renamed without changing IDs, borders or rules. Upgrade only
+    # known old labels so existing campaigns still match the bundled atlas.
+    if raw.get('preset_id') == 'india':
+        from games.imperium.engine.presets.india import PRESET, LEGACY_REGION_NAMES
+        if len(raw['regions']) == len(PRESET['regions']):
+            for rid, old_name in LEGACY_REGION_NAMES.items():
+                region = raw['regions'].get(str(rid))
+                if region and region['name'] == old_name:
+                    region['name'] = PRESET['regions'][rid][0]
     raw['regions'] = {int(key): Region(**{**region, 'terrain': TerrainType(region['terrain']),
                                          'owner': Owner(region['owner'])}) for key, region in raw['regions'].items()}
     raw['players'] = [Player(**player) for player in raw['players']]

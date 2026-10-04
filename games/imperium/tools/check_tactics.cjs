@@ -9,7 +9,7 @@ const base=process.env.IMPERIUM_TEST_API||'http://127.0.0.1:8080';
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.addInitScript(base=>localStorage.setItem('IMPERIUM_API_BASE',base),base);
   await page.goto(ui);await page.waitForFunction(()=>!document.getElementById('start-btn').disabled);
-  await page.selectOption('#preset-select','india');await page.click('#start-btn');
+  await page.locator('input[value="india"]').check();await page.waitForFunction(()=>!document.getElementById('start-btn').disabled);await page.click('#start-btn');
   await page.waitForFunction(()=>typeof atlas!=='undefined'&&atlas.geometry);
   const plan=async()=>page.evaluate(()=>{const from=state.player_1.capital;const to=validMoves[from].find(id=>state.regions[id].owner!=='player_1');handleRegionClick(from);handleRegionClick(to);return {from,to}});
   await page.evaluate(()=>sidebar.open('orders'));

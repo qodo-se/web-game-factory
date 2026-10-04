@@ -18,6 +18,7 @@ const orderHistory = {
         this.changed(redo?'Order redone.':'Order undone.');
     },
     changed(message) {
+        planning.clearDrag();
         selectedFrom=null;clearRegionInfo();lastHoverId=null;
         renderMap();updateMovesList();updateMoveHint();
         document.getElementById('order-status').textContent=message;

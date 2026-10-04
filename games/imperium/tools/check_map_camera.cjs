@@ -14,7 +14,7 @@ const apiBase = process.env.IMPERIUM_TEST_API || 'http://127.0.0.1:8080';
         await page.addInitScript(base => localStorage.setItem('IMPERIUM_API_BASE',base),apiBase);
         await page.goto(ui);
         await page.waitForFunction(() => !document.getElementById('start-btn').disabled);
-        await page.locator('#preset-select').selectOption('india');
+        await page.locator('input[value="india"]').check();await page.waitForFunction(()=>!document.getElementById('start-btn').disabled);
         await page.locator('#start-btn').click();
         await page.waitForURL('**/game.html');
         await page.waitForFunction(() => atlas.geometry);
@@ -37,9 +37,11 @@ const apiBase = process.env.IMPERIUM_TEST_API || 'http://127.0.0.1:8080';
         assert.deepEqual(await page.locator('.map-navigation').boundingBox(),controls);
         await page.waitForFunction(() => document.getElementById('map-canvas').width > atlas.layout.w);
 
-        // A drag starting on an owned counter must not select it or issue a move.
+        // Shift-drag on an owned counter pans without planning an order.
+        await page.keyboard.down('Shift');
         await page.mouse.move(after.x,after.y); await page.mouse.down();
         await page.mouse.move(after.x+70,after.y+45,{steps:10}); await page.mouse.up();
+        await page.keyboard.up('Shift');
         assert.equal(await page.evaluate(() => selectedFrom),null);
         assert.equal(await page.evaluate(() => pendingMoves.length),0);
         assert.ok((await camera()).x > -500);
@@ -88,10 +90,7 @@ const apiBase = process.env.IMPERIUM_TEST_API || 'http://127.0.0.1:8080';
         assert.deepEqual(await camera(),{zoom:1,x:0,y:0});
 
         // Random maps share the same camera and inverse hit coordinates.
-        await page.evaluate(async () => {
-            const result=await api.newGame({mode:'random',map_size:'small',player_name:'Camera test'});
-            sessionStorage.setItem('gameId',result.game_id);sessionStorage.removeItem('presetId');
-        });
+        await require('./legacy_random_fixture.cjs')(page);
         await page.goto(`${ui}/game.html`);
         await page.waitForFunction(() => state && scaleCache);
         await page.locator('#map-zoom-in').click();

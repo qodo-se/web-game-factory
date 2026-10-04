@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - "website/**"
+      - "games/imperium/ui/**"
+      - ".github/workflows/deploy-website.yml"
       - "Makefile"
   workflow_dispatch:
 

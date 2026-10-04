@@ -1,11 +1,10 @@
 from .mediterranean import PRESET as MEDITERRANEAN
 from .europe import PRESET as EUROPE
-from .western_europe import PRESET as WESTERN_EUROPE
-from .eastern_europe import PRESET as EASTERN_EUROPE
-from .middle_east import PRESET as MIDDLE_EAST
 from .central_asia import PRESET as CENTRAL_ASIA
 from .india import PRESET as INDIA
-from .southeast_asia import PRESET as SOUTHEAST_ASIA
+from .southeast_asia_oceania import PRESET as SOUTHEAST_ASIA
+from .americas import PRESET as AMERICAS
+from .africa_middle_east import PRESET as AFRICA_MIDDLE_EAST
 
 # Registry: id → preset dict
 PRESETS = {
@@ -13,9 +12,8 @@ PRESETS = {
     for p in [
         MEDITERRANEAN,
         EUROPE,
-        WESTERN_EUROPE,
-        EASTERN_EUROPE,
-        MIDDLE_EAST,
+        AMERICAS,
+        AFRICA_MIDDLE_EAST,
         CENTRAL_ASIA,
         INDIA,
         SOUTHEAST_ASIA,

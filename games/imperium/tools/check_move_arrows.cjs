@@ -1,15 +1,17 @@
 // Live browser regression for short arrows, reverse orders, zoom and resizing.
 const {chromium}=require('playwright');
 const assert=require('node:assert/strict');
+const ui=process.env.IMPERIUM_TEST_URL||'http://localhost:3000';
+const base=process.env.IMPERIUM_TEST_API||'http://127.0.0.1:8080';
 (async()=>{
  const browser=await chromium.launch({headless:true});
  try {
   const page=await browser.newPage({viewport:{width:1440,height:1000}});
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.addInitScript(()=>localStorage.setItem('IMPERIUM_API_BASE','http://127.0.0.1:8080'));
-  await page.goto('http://localhost:3000');
+  await page.addInitScript(base=>localStorage.setItem('IMPERIUM_API_BASE',base),base);
+  await page.goto(ui);
   await page.waitForFunction(()=>!document.getElementById('start-btn').disabled);
-  await page.locator('#preset-select').selectOption('india');await page.locator('#start-btn').click();
+  await page.locator('input[value="india"]').check();await page.waitForFunction(()=>!document.getElementById('start-btn').disabled);await page.locator('#start-btn').click();
   await page.waitForFunction(()=>typeof atlas!=='undefined'&&atlas.geometry);
   for(const viewport of [{width:1440,height:1000},{width:1024,height:768},{width:800,height:900}]){
    await page.setViewportSize(viewport);
@@ -42,11 +44,8 @@ const assert=require('node:assert/strict');
   await page.screenshot({path:'/tmp/imperium-planned-arrows.png'});
   // Random-map SVGs have a nonuniform viewBox scale; screen-space direction
   // and arrowhead geometry must remain correct there too.
-  await page.evaluate(async()=>{
-   const data=await api.newGame({mode:'random',map_size:'small'});
-   sessionStorage.setItem('gameId',data.game_id);sessionStorage.removeItem('presetId');
-  });
-  await page.goto('http://localhost:3000/game.html');
+  await require('./legacy_random_fixture.cjs')(page);
+  await page.goto(`${ui}/game.html`);
   await page.waitForFunction(()=>state&&scaleCache);
   assert.equal(await page.evaluate(()=>atlas.data),null);
   const randomCheck=await page.evaluate(()=>{

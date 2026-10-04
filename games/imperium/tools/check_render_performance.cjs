@@ -11,7 +11,7 @@ const base=process.env.IMPERIUM_TEST_API||'http://127.0.0.1:8080';
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.addInitScript(base=>localStorage.setItem('IMPERIUM_API_BASE',base),base);
   await page.goto(ui);
-  for(const preset of ['india','europe',null]) {
+  for(const preset of ['india','europe','southeast_asia_oceania']) {
    const result=await page.evaluate(async preset=>{
     const result=await api.newGame(preset?{mode:'preset',preset_id:preset}:{mode:'random',map_size:'large'});
     sessionStorage.setItem('gameId',result.game_id);sessionStorage.setItem('presetId',preset||'');

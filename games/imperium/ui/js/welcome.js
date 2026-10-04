@@ -10,10 +10,17 @@
 
     campaigns.render();
     let mode = 'preset';
+    let submitting = false, startsReady = false;
     let presetsData = [];
     let starts = [], loadSequence = 0;
     const kingdom = document.getElementById('kingdom-select');
     const preview = document.getElementById('kingdom-preview');
+    function updateControls() {
+        for(const control of form.querySelectorAll('input,select,button'))control.disabled=submitting;
+        presetSel.disabled=submitting||!presetsData.length;
+        kingdom.disabled=submitting||!startsReady;
+        startBtn.disabled=submitting||(mode==='preset'&&!startsReady);
+    }
     function previewKingdom() {
         const choice = starts.find(c => String(c.id ?? '') === kingdom.value);
         preview.textContent = choice ? `${choice.regions.join(' · ')}. ${choice.army} troops · +${choice.growth} recruits/turn. Rival seat: ${choice.rival}. ${choice.difficulty} — based on starting army strength, not a victory prediction.` : '';
@@ -23,10 +30,11 @@
     // ── Mode tabs ────────────────────────────────────────────────────────────
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
+            if(submitting)return;
             tabs.forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
             mode = tab.dataset.mode;
-            startBtn.disabled = mode === 'preset' && kingdom.disabled;
+            updateControls();
             if (mode === 'preset') {
                 presetOpts.classList.remove('hidden');
                 randomOpts.classList.add('hidden');
@@ -47,14 +55,14 @@
         const selected = presetsData.find(p => p.id === presetSel.value);
         presetDesc.textContent = selected ? selected.description : '';
         const sequence = ++loadSequence;
-        kingdom.disabled = true; startBtn.disabled = mode === 'preset';
+        startsReady=false;updateControls();
         preview.textContent = 'Loading starting kingdoms…';
         try {
             const choices = await api.getStarts(presetSel.value);
             if (sequence !== loadSequence) return;
             starts = choices;
             kingdom.replaceChildren(...choices.map(c => new Option(c.id === null ? `Recommended — ${c.name}` : c.name, c.id ?? '')));
-            kingdom.disabled = false; startBtn.disabled = false; previewKingdom();
+            startsReady=true;updateControls();previewKingdom();
         } catch (error) {
             if (sequence !== loadSequence) return;
             preview.textContent = 'Kingdoms unavailable. Choose another map to retry.';
@@ -62,17 +70,17 @@
         }
     }
 
-    presetSel.addEventListener('change', updateDesc);
+    presetSel.addEventListener('change', () => { if(!submitting)updateDesc(); });
 
     // ── Form submit — registered before async load so early clicks are caught ─
     startBtn.disabled = true;
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        if (startBtn.disabled) return;
+        if (submitting || startBtn.disabled) return;
         errorMsg.classList.add('hidden');
 
         const playerName = document.getElementById('player-name').value.trim() || 'Consul';
-        startBtn.disabled = true;
+        submitting=true;updateControls();
         startBtn.textContent = 'Marshalling forces…';
 
         const body = { player_name: playerName, campaign_name: document.getElementById('campaign-name').value.trim(), mode };
@@ -88,11 +96,11 @@
             campaigns.remember(result.game_id, result.state);
             sessionStorage.setItem('gameId', result.game_id);
             sessionStorage.setItem('playerName', playerName);
-            sessionStorage.setItem('presetId', mode === 'preset' ? body.preset_id : '');
+            sessionStorage.setItem('presetId', body.mode === 'preset' ? body.preset_id : '');
             window.location.href = 'game.html';
         } catch (e) {
             showError(e.message);
-            startBtn.disabled = false;
+            submitting=false;updateControls();
             startBtn.textContent = 'Begin Campaign';
         }
     });

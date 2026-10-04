@@ -1121,7 +1121,7 @@ function showCombatLog(summary) {
 
     const log = document.getElementById('combat-log');
     if (summary.combat_results.length === 0) {
-        log.innerHTML = '<div class="log-entry" style="font-style:italic;color:#666880">No battles this turn.</div>';
+        log.innerHTML = '<div class="log-entry log-empty">No battles this turn.</div>';
         return;
     }
     log.innerHTML = summary.combat_results.map(c => battleReports.battle(c)).join('');
@@ -1148,6 +1148,9 @@ function abandon() {
 async function endTurn() {
     if (resolving || gameOver) return;
     const submittedTurn=state.turn;
+    const submittedPlan=orderHistory.copy(pendingMoves);
+    const submittedUndo=orderHistory.undoStack.map(orderHistory.copy);
+    const submittedRedo=orderHistory.redoStack.map(orderHistory.copy);
     setResolving(true);
     selectedFrom = null;
     clearTimeout(forecastTimer); forecastController?.abort();
@@ -1175,14 +1178,21 @@ async function endTurn() {
         // another order, so retries never silently resolve the same turn twice.
         try {
             const latest=await api.getGame(gameId);
-            state=latest.state;campaignHistory=latest.history||[];pendingMoves=[];
-            orderHistory.reset();
+            state=latest.state;campaignHistory=latest.history||[];
+            if(state.turn===submittedTurn && !state.game_over) {
+                // The request never committed: preserve the plan and its edit history.
+                pendingMoves=submittedPlan;
+                orderHistory.undoStack=submittedUndo;
+                orderHistory.redoStack=submittedRedo;
+            } else {
+                pendingMoves=[];orderHistory.reset();
+            }
             clearRegionInfo();lastHoverId=null;
             const vm=await api.getValidMoves(gameId);validMoves=vm;
             campaigns.remember(gameId,state);updateTopBar();renderMap();updateMovesList();renderTimeline();
             if(campaignHistory.length)showCombatLog(campaignHistory[campaignHistory.length-1]);
             if(state.turn>submittedTurn)sidebar.showTurnReport();
-            status.textContent=`Saved through turn ${state.turn-1}`;
+            status.textContent=state.turn===submittedTurn?'Turn not submitted — orders preserved':`Saved through turn ${state.turn-1}`;
             setResolving(false);updateMoveHint();
             if(state.game_over)handleGameOver(state.winner);
         } catch {

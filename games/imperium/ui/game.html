@@ -42,8 +42,7 @@
             <canvas id="map-canvas"></canvas>
 
             <!-- SVG overlay: labels, rings, arrows only. pointer-events:none so clicks reach canvas. -->
-            <svg id="map-svg" viewBox="0 0 1000 650" preserveAspectRatio="none"
-                 style="pointer-events:none;">
+            <svg id="map-svg" viewBox="0 0 1000 650" preserveAspectRatio="none">
                 <g id="g-strategy" pointer-events="none"></g>
                 <g id="g-terrain-effects" pointer-events="none"></g>
                 <g id="g-atmosphere" pointer-events="none"></g>
@@ -81,16 +80,16 @@
             <!-- Legend -->
             <div class="map-legend">
                 <div class="legend-item">
-                    <div class="legend-dot" style="background:#3464c3;"></div> You
+                    <div class="legend-dot legend-player"></div> You
                 </div>
                 <div class="legend-item">
-                    <div class="legend-dot" style="background:#c33434;"></div> AI
+                    <div class="legend-dot legend-enemy"></div> AI
                 </div>
                 <div class="legend-item">
-                    <div class="legend-dot" style="background:#4e7030;"></div> Neutral
+                    <div class="legend-dot legend-neutral"></div> Neutral
                 </div>
                 <div class="legend-item">
-                    <div class="legend-dot" style="background:#3478c8;"></div> Sea
+                    <div class="legend-dot legend-sea"></div> Sea
                 </div>
             </div>
 

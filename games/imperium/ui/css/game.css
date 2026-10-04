@@ -708,3 +708,10 @@
 #campaign-replay-slider { width:100%; margin:12px 0 4px; accent-color:var(--gold); }
 #campaign-replay-note { color:#b6bec0; }
 #replay-campaign { margin-top:20px; }
+
+#map-svg { pointer-events:none; }
+.legend-player { background:#3464c3; }
+.legend-enemy { background:#c33434; }
+.legend-neutral { background:#4e7030; }
+.legend-sea { background:#3478c8; }
+.log-empty { font-style:italic; color:#666880; }

@@ -9,7 +9,7 @@ GIT_SHA  := $(shell git rev-parse --short HEAD)
 .PHONY: build push deploy all
 
 build:
-	docker build -t $(IMAGE):$(GIT_SHA) -f website/Dockerfile ..
+	docker build -t $(IMAGE):$(GIT_SHA) -f Dockerfile ..
 
 push: build
 	gcloud auth configure-docker $(REGION)-docker.pkg.dev --quiet

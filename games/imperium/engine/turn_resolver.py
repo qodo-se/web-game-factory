@@ -3,6 +3,7 @@ from collections import defaultdict
 from typing import Dict, List, Optional, Tuple
 
 from .combat import resolve_combat
+from .strategy import supplied_regions, growth, attack_factor, defense_factor, CROSSING_BONUS, route_kind
 from .models import (
     CombatResult,
     GameState,
@@ -67,19 +68,19 @@ def resolve_turn(
     Phase 3 — Combat resolution
         All queued attacks resolved simultaneously (random order for ties).
         Attacker armies from the same player attacking the same target combine.
-        Win probability = attacking_army / (attacking_army + effective_defenders).
+        Win probability uses squared effective strengths, including supply and crossings.
 
     Win condition check follows combat.
     """
     rng = random.Random(seed)
 
     # ── Phase 1: Population generation ───────────────────────────────────────
+    supplied = supplied_regions(state)
+    events = []
+    retreats = []
     pop_generated: Dict[int, int] = {}
     for region in state.regions.values():
-        if region.owner == Owner.ROGUE:
-            generated = int(region.pop_rate * ROGUE_MILITIA_RATIO)
-        else:
-            generated = region.pop_rate
+        generated = growth(region, supplied)
         region.army += generated
         pop_generated[region.id] = generated
 
@@ -112,6 +113,9 @@ def resolve_turn(
             continue
 
         movements.append((src_id, tgt_id, army_size))
+        events.append({'type': 'movement', 'from': src_id, 'to': tgt_id,
+                       'army': army_size, 'owner': src_owner.value,
+                       'route': route_kind(state, src_id, tgt_id)})
 
         if tgt_owner == src_owner:
             # Consolidation: troops merge into friendly region
@@ -128,9 +132,13 @@ def resolve_turn(
 
         # Combine armies from same player attacking the same target
         player_armies: Dict[Owner, int] = defaultdict(int)
+        player_strength = defaultdict(float)
+        player_origins = defaultdict(list)
         player_source: Dict[Owner, int] = {}  # first source region for logging
         for src_id, army, attacker_owner in attackers:
             player_armies[attacker_owner] += army
+            player_strength[attacker_owner] += army * attack_factor(state.regions[src_id], supplied) / CROSSING_BONUS[route_kind(state, src_id, target_id)]
+            player_origins[attacker_owner].append(src_id)
             if attacker_owner not in player_source:
                 player_source[attacker_owner] = src_id
 
@@ -140,12 +148,29 @@ def resolve_turn(
 
         for attacker_owner, total_attack_army in attacker_list:
             src_region = state.regions[player_source[attacker_owner]]
+            defending_owner = target_region.owner
             result = resolve_combat(
                 attacker_region=src_region,
                 defender_region=target_region,
                 attacking_army=total_attack_army,
                 rng=rng,
+                effective_attack=player_strength[attacker_owner],
+                defense_multiplier=defense_factor(target_region, supplied),
             )
+            result.battle_details.update({
+                'terrain': target_region.terrain.value,
+                'terrain_multiplier': target_region.defense_bonus,
+                'defender_supplied': target_id in supplied,
+                'defense_multiplier': defense_factor(target_region, supplied),
+                'sources': [{'region_id': src_id, 'army': army_snapshot[src_id],
+                             'supplied': src_id in supplied,
+                             'attack_multiplier': attack_factor(state.regions[src_id], supplied),
+                             'crossing': route_kind(state, src_id, target_id),
+                             'crossing_multiplier': CROSSING_BONUS[route_kind(state, src_id, target_id)]}
+                            for src_id in player_origins[attacker_owner]],
+            })
+            result.attacker_owner = attacker_owner.value
+            result.defender_owner = defending_owner.value
             combat_results.append(result)
 
             if result.attacker_won:
@@ -153,6 +178,38 @@ def resolve_turn(
                 target_region.army = result.survivors
             else:
                 target_region.army = result.survivors
+            events.append({'type': 'battle', 'from': src_region.id, 'to': target_id,
+                           'owner': attacker_owner.value, 'previous_owner': defending_owner.value,
+                           'won': result.attacker_won, 'army': result.survivors,
+                           'attacker_losses': result.attacker_army-result.attacker_survivors,
+                           'defender_losses': result.defender_army-result.defender_survivors})
+            if result.attacker_won:
+                retreats.append((result, defending_owner, result.defender_survivors,
+                                 list(target_region.neighbors), target_id))
+            else:
+                retreats.append((result, attacker_owner, result.attacker_survivors,
+                                 player_origins[attacker_owner] + list(target_region.neighbors), target_id))
+
+    # Retreats happen after every battle. A captured origin cannot receive troops,
+    # and routed armies cannot reinforce a battle that already resolved this turn.
+    for result, owner, survivors, candidates, origin in retreats:
+        destination = next((rid for rid in candidates if rid != origin and
+                            state.regions[rid].owner == owner), None)
+        if survivors > 0 and destination is not None:
+            state.regions[destination].army += survivors
+            result.retreat_region_id = destination
+            result.retreated = survivors
+            events.append({'type': 'retreat', 'from': origin, 'to': destination,
+                           'army': survivors, 'owner': owner.value})
+        elif result.attacker_won:
+            result.defender_survivors = 0
+        else:
+            result.attacker_survivors = 0
+
+    # Final losses include routed troops that found no safe retreat.
+    for event, result in zip((e for e in events if e['type'] == 'battle'), combat_results):
+        event['attacker_losses'] = result.attacker_army-result.attacker_survivors
+        event['defender_losses'] = result.defender_army-result.defender_survivors
 
     # ── Win condition check ───────────────────────────────────────────────────
     n_total = len(state.regions)
@@ -182,4 +239,5 @@ def resolve_turn(
         combat_results=combat_results,
         game_over=game_over,
         winner=winner,
+        events=events,
     )

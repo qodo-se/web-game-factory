@@ -8,6 +8,7 @@ Strategy profile: challenging but beatable.
 - Applies a small imperfection factor so skilled humans can outmanoeuvre it
 """
 import random
+from .strategy import win_probability, supplied_regions, attack_factor, defense_factor, route_kind, CROSSING_BONUS
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Set
 
@@ -54,7 +55,7 @@ class _Candidate:
 def _win_prob(attacker: int, defender: int, defense_mult: float) -> float:
     effective = defender * defense_mult
     total = attacker + effective
-    return attacker / total if total > 0 else 0.5
+    return win_probability(attacker, effective)
 
 
 def _threat_level(region: Region, state: GameState, enemy_owner: Owner) -> float:
@@ -83,7 +84,10 @@ def _score_attack(
     ai_owner: Owner,
 ) -> float:
     """Score for attacking target from attacker. Returns -inf if not worth it."""
-    prob = _win_prob(attacker.army, target.army, target.defense_bonus)
+    supplied = supplied_regions(state)
+    prob = _win_prob(attacker.army * attack_factor(attacker, supplied)
+                     / CROSSING_BONUS[route_kind(state, attacker.id, target.id)],
+                     target.army, defense_factor(target, supplied))
     if prob < MIN_ATTACK_WIN_PROB:
         return float("-inf")
 

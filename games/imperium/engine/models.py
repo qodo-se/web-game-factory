@@ -107,6 +107,13 @@ class CombatResult:
     effective_defender_army: float  # after terrain multiplier
     attacker_won: bool
     survivors: int            # troops that occupy the region after battle
+    attacker_survivors: int = 0
+    defender_survivors: int = 0
+    attacker_owner: str = ''
+    defender_owner: str = ''
+    retreat_region_id: Optional[int] = None
+    retreated: int = 0
+    battle_details: dict = field(default_factory=dict)
 
 
 @dataclass
@@ -117,6 +124,7 @@ class TurnSummary:
     combat_results: List[CombatResult]
     game_over: bool
     winner: Optional[str]
+    events: List[dict] = field(default_factory=list)
 
 
 @dataclass
@@ -135,6 +143,10 @@ class GameState:
     map_size: MapSize
     winner: Optional[str] = None
     game_over: bool = False
+    preset_id: Optional[str] = None
+    routes: Dict[str, str] = field(default_factory=dict)
+    ports: List[int] = field(default_factory=list)
+    rules_version: int = 2
 
     def get_player(self, player_id: str) -> Optional[Player]:
         for p in self.players:

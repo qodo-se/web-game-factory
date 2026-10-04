@@ -21,6 +21,10 @@
             </div>
 
             <div class="form-group">
+                <label for="campaign-name">Campaign name</label>
+                <input type="text" id="campaign-name" placeholder="My northern campaign" maxlength="80">
+            </div>
+            <div class="form-group">
                 <label>Map</label>
                 <div class="mode-tabs">
                     <button type="button" class="tab active" data-mode="preset">Historical Preset</button>
@@ -34,6 +38,9 @@
                     <option value="">Loading maps…</option>
                 </select>
                 <p class="preset-desc" id="preset-desc"></p>
+                <label for="kingdom-select">Starting kingdom</label>
+                <select id="kingdom-select" disabled><option>Loading kingdoms…</option></select>
+                <p class="preset-desc" id="kingdom-preview" aria-live="polite"></p>
             </div>
 
             <div id="random-options" class="form-group hidden">
@@ -55,9 +62,15 @@
 
             <p id="error-msg" class="error-msg hidden"></p>
         </form>
+        <section id="saved-campaigns" hidden>
+            <h2>Your campaigns</h2>
+            <p class="save-explainer">Turns save automatically. Resume links are kept in this browser.</p>
+            <div id="campaign-list"></div>
+        </section>
     </div>
 
     <script src="js/api.js"></script>
+    <script src="js/campaigns.js"></script>
     <script src="js/welcome.js"></script>
 </body>
 </html>

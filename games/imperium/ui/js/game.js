@@ -285,6 +285,10 @@ let resolving    = false;
 let gameOver     = false;
 let scaleCache   = null;
 let lastHoverId  = null;
+let campaignHistory = [];
+let forecastSequence = 0;
+let forecastTimer, forecastController;
+let randomTerrainCache;
 
 // ── Scale helpers ─────────────────────────────────────────────────────────────
 
@@ -297,10 +301,10 @@ function computeScale(regions) {
     return { minX, minY, rangeX: maxX - minX || 1, rangeY: maxY - minY || 1 };
 }
 
-function normX(rx) { return (rx - scaleCache.minX) / scaleCache.rangeX * (1 - 2*PAD) + PAD; }
-function normY(ry) { return (ry - scaleCache.minY) / scaleCache.rangeY * (1 - 2*PAD) + PAD; }
-function toSVGX(rx) { return normX(rx) * MAP_W; }
-function toSVGY(ry) { return normY(ry) * MAP_H; }
+function normX(rx) { if (atlas.data) return atlas.x(rx); return (rx - scaleCache.minX) / scaleCache.rangeX * (1 - 2*PAD) + PAD; }
+function normY(ry) { if (atlas.data) return atlas.y(ry); return (ry - scaleCache.minY) / scaleCache.rangeY * (1 - 2*PAD) + PAD; }
+function toSVGX(rx) { return normX(rx) * (atlas.data ? atlas.layout.w : MAP_W); }
+function toSVGY(ry) { return normY(ry) * (atlas.data ? atlas.layout.h : MAP_H); }
 function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
 
 // ── Fractal noise helpers ─────────────────────────────────────────────────────
@@ -386,6 +390,11 @@ function renderCanvas() {
         canvas.height = ch;
     }
 
+    const terrainKey=JSON.stringify([cw,ch,...Object.values(state.regions).map(r=>[r.id,r.x,r.y,r.owner,r.terrain,r.neighbors])]);
+    if(randomTerrainCache?.key===terrainKey) {
+        renderTerrainEffects(randomTerrainCache.paths,selectedFrom,new Set(validMoves[selectedFrom]||[]),new Set(pendingMoves.map(m=>m.from_region_id)),`scale(${MAP_W/cw} ${MAP_H/ch})`,false);
+        return randomTerrainCache.data;
+    }
     const ctx = canvas.getContext('2d');
     const W = cw, H = ch;
     const img = ctx.createImageData(W, H);
@@ -424,17 +433,6 @@ function renderCanvas() {
             const j = idToIdx[nid];
             if (j !== undefined) { adj[i*N+j] = 1; adj[j*N+i] = 1; }
         }
-    }
-
-    // Per-region selection / commitment state
-    const committedFrom = new Set(pendingMoves.map(m => m.from_region_id));
-    const validTargets  = selectedFrom !== null ? new Set(validMoves[selectedFrom] || []) : new Set();
-    const effect = new Uint8Array(N);
-    for (let i = 0; i < N; i++) {
-        const r = regions[i];
-        if      (r.id === selectedFrom)   effect[i] = 1;
-        else if (validTargets.has(r.id))  effect[i] = 2;
-        else if (committedFrom.has(r.id)) effect[i] = 3;
     }
 
     // ── Pass 1: Voronoi assignment ────────────────────────────────────────────
@@ -532,12 +530,6 @@ function renderCanvas() {
                 let R = tr + (SAND_COLOR[0] - tr) * sst | 0;
                 let G = tg + (SAND_COLOR[1] - tg) * sst | 0;
                 let B = tb + (SAND_COLOR[2] - tb) * sst | 0;
-
-                // Selection / committed effects
-                const eff = effect[ri];
-                if      (eff === 1) { R = clamp(R + 55, 0, 255); G = clamp(G + 45, 0, 255); B = clamp(B + 15, 0, 255); }
-                else if (eff === 2) { R = clamp(R + 40, 0, 255); G = clamp(G + 28, 0, 255); B = clamp(B - 15, 0, 255); }
-                else if (eff === 3) { R = R * 0.45 | 0; G = G * 0.45 | 0; B = B * 0.45 | 0; }
 
                 // Owner tint
                 const tint = OWNER_TINT[r.owner] || OWNER_TINT.rogue;
@@ -649,7 +641,18 @@ function renderCanvas() {
     ctx.fillRect(0, 0, W, H);
 
     // Return idxMap so the SVG overlay can detect which adjacent pairs cross sea
-    return { idxMap, cw: W, ch: H };
+    // Run-length paths reuse exact Voronoi hits for lightweight selection tint.
+    const spans=regions.map(()=>[]);
+    for(let y=0;y<H;y++) for(let x=0;x<W;) {
+        const index=idxMap[y*W+x],start=x;
+        while(x<W && idxMap[y*W+x]===index)x++;
+        if(index>=0)spans[index].push(`M${start} ${y}h${x-start}v1h${start-x}Z`);
+    }
+    const paths=regions.map((r,i)=>({id:r.id,d:spans[i].join('')}));
+    const data={idxMap,cw:W,ch:H};
+    randomTerrainCache={key:terrainKey,paths,data};
+    renderTerrainEffects(paths,selectedFrom,new Set(validMoves[selectedFrom]||[]),new Set(pendingMoves.map(m=>m.from_region_id)),`scale(${MAP_W/cw} ${MAP_H/ch})`,false);
+    return data;
 }
 
 // ── SVG overlay (labels, rings, arrows) ──────────────────────────────────────
@@ -660,19 +663,74 @@ function svgEl(tag, attrs) {
     return e;
 }
 
+// Construct planned arrows in screen pixels so gaps/head sizes remain stable
+// under camera zoom and non-uniform SVG scaling on random maps.
+function plannedMoveArrow(from, to, matrix) {
+    const a = new DOMPoint(toSVGX(from.x), toSVGY(from.y)).matrixTransform(matrix);
+    const b = new DOMPoint(toSVGX(to.x), toSVGY(to.y)).matrixTransform(matrix);
+    const dx=b.x-a.x, dy=b.y-a.y, distance=Math.hypot(dx,dy);
+    if (distance < .001) return null;
+    const ux=dx/distance, uy=dy/distance;
+    // Nearby counters need a detour; trimming a short straight segment at both
+    // ends would either reverse it or bury its head underneath the destination.
+    const bend=distance < 72 ? 36 : 0;
+    const control={x:(a.x+b.x)/2-uy*bend, y:(a.y+b.y)/2+ux*bend};
+    const startLength=Math.hypot(control.x-a.x,control.y-a.y);
+    const endLength=Math.hypot(b.x-control.x,b.y-control.y);
+    const startGap=Math.min(14,startLength*.4), endGap=Math.min(19,endLength*.4);
+    const start={x:a.x+(control.x-a.x)*startGap/startLength,
+                 y:a.y+(control.y-a.y)*startGap/startLength};
+    const tx=(b.x-control.x)/endLength, ty=(b.y-control.y)/endLength;
+    const tip={x:b.x-tx*endGap,y:b.y-ty*endGap};
+    const headLength=Math.min(12,(endLength-endGap)*.65);
+    const halfWidth=Math.min(5.5,headLength*.55);
+    const base={x:tip.x-tx*headLength,y:tip.y-ty*headLength};
+    const inverse=matrix.inverse();
+    const point=p=>new DOMPoint(p.x,p.y).matrixTransform(inverse);
+    const [s,c,t,h,left,right]=[start,control,tip,base,
+        {x:base.x-ty*halfWidth,y:base.y+tx*halfWidth},
+        {x:base.x+ty*halfWidth,y:base.y-tx*halfWidth}].map(point);
+    const group=svgEl('g',{'data-from':from.id,'data-to':to.id,'class':'planned-arrow'});
+    const title=svgEl('title');title.textContent=`${from.name} → ${to.name}`;group.append(title);
+    const path=`M ${s.x} ${s.y} Q ${c.x} ${c.y} ${h.x} ${h.y}`;
+    for (const [stroke,width] of [['#182730',7],['#ffe09a',3.5]]) {
+        group.append(svgEl('path',{d:path,fill:'none',stroke,'stroke-width':width,
+            'stroke-linecap':'round','vector-effect':'non-scaling-stroke','class':'planned-arrow-shaft'}));
+    }
+    group.append(svgEl('polygon',{points:`${t.x},${t.y} ${left.x},${left.y} ${right.x},${right.y}`,
+        fill:'#ffe09a',stroke:'#182730','stroke-width':1.5,'stroke-linejoin':'round',
+        'vector-effect':'non-scaling-stroke','class':'planned-arrow-head'}));
+    return group;
+}
+
+function renderTerrainEffects(paths,selected,targets,committed,transform='',outlined=true) {
+    const group=document.getElementById('g-terrain-effects');
+    const fragment=document.createDocumentFragment();
+    for(const feature of paths) {
+        const active=feature.id===selected, target=targets.has(feature.id), moving=committed.has(feature.id);
+        if(!active && !target && !moving)continue;
+        fragment.appendChild(svgEl('path',{d:feature.d,transform,'fill-rule':'evenodd',
+            fill:moving?'rgba(30,37,37,.2)':outlined?'none':active?'rgba(255,230,130,.25)':'rgba(230,190,70,.2)',
+            stroke:outlined && (active||target)?active?'#f6eacb':'#d4b772':'none',
+            'stroke-width':active?2:1.5}));
+    }
+    group.replaceChildren(fragment);
+}
+
 function renderOverlay(idxMap, cw, ch) {
-    const gLabels = document.getElementById('g-labels');
-    const gArrows = document.getElementById('g-arrows');
-    const gConn   = document.getElementById('g-connections');
-    gLabels.innerHTML = '';
-    gArrows.innerHTML = '';
-    gConn.innerHTML   = '';
+    // Read the transform before changing SVG nodes to avoid forced layout.
+    const matrix=document.getElementById('map-svg').getScreenCTM();
+    world.render();
+    threatView.draw();
+    const gLabels = document.createDocumentFragment();
+    const gArrows = document.createDocumentFragment();
+    const gConn = document.createDocumentFragment();
 
     // ── Sea-crossing connection lines ─────────────────────────────────────────
     // For each pair of game-adjacent regions, sample pixels along the line
     // between them.  If any pixel is sea (idxMap == -1), the connection crosses
     // water — draw a dashed line so the player can see it's traversable.
-    if (idxMap && cw > 0 && ch > 0) {
+    if (!state.routes && idxMap && cw > 0 && ch > 0) {
         const drawn = new Set();
         for (const r of Object.values(state.regions)) {
             const ax = normX(r.x) * cw;
@@ -710,10 +768,42 @@ function renderOverlay(idxMap, cw, ch) {
     }
 
     const regions = state.regions;
+    const showSupply = document.getElementById('show-supply')?.checked;
+    for (const [key, kind] of Object.entries(state.routes || {})) {
+        const [a,b]=key.split(':').map(Number), from=regions[a], to=regions[b];
+        if(!from||!to)continue;
+        const isSelected=a===selectedFrom||b===selectedFrom;
+        const supply=showSupply && from.owner==='player_1' && to.owner==='player_1';
+        if(!isSelected && !supply && kind!=='sea')continue;
+        gConn.appendChild(svgEl('line',{x1:toSVGX(from.x),y1:toSVGY(from.y),x2:toSVGX(to.x),y2:toSVGY(to.y),
+            stroke:supply?(from.supplied&&to.supplied?'#b0d4a5':'#df956c'):kind==='river'?'#8bbacb':kind==='pass'?'#d6c4a4':'#b1bdc1',
+            'stroke-width':isSelected||supply?1.6:1,'stroke-dasharray':kind==='sea'?'4 6':kind==='pass'?'2 4':'none',
+            opacity:isSelected||supply?.85:.22,'vector-effect':'non-scaling-stroke'}));
+    }
     const committedFrom = new Set(pendingMoves.map(m => m.from_region_id));
     const validTargets  = selectedFrom !== null
         ? new Set(validMoves[selectedFrom] || [])
         : new Set();
+
+    const occupiedLabels = atlas.data ? Object.values(regions).map(r => ({
+        x:toSVGX(r.x)-18, y:toSVGY(r.y)-(r.is_capital?31:16), w:36, h:r.is_capital?47:32,
+    })) : [];
+    function labelPosition(x, y, name) {
+        if (!atlas.data) return {x, y:y+24};
+        const width=name.length*5.4+4;
+        const candidates=[[0,25],[0,-23],[width/2+20,4],[-width/2-20,4],[0,39],[0,-37]];
+        let best, leastOverlap=Infinity;
+        for (const [dx,dy] of candidates) {
+            const box={x:x+dx-width/2, y:y+dy-10, w:width, h:13};
+            const overlap=occupiedLabels.reduce((sum,b) => sum+
+                Math.max(0,Math.min(box.x+box.w,b.x+b.w)-Math.max(box.x,b.x))*
+                Math.max(0,Math.min(box.y+box.h,b.y+b.h)-Math.max(box.y,b.y)), 0);
+            if (overlap<leastOverlap) { best=box; leastOverlap=overlap; }
+            if (!overlap) break;
+        }
+        occupiedLabels.push(best);
+        return {x:best.x+width/2, y:best.y+10};
+    }
 
     for (const r of Object.values(regions)) {
         const x = toSVGX(r.x), y = toSVGY(r.y);
@@ -721,7 +811,17 @@ function renderOverlay(idxMap, cw, ch) {
         const isTarget    = validTargets.has(r.id);
         const isCommitted = committedFrom.has(r.id);
 
-        const g = svgEl('g', { 'data-id': r.id });
+        const g = svgEl('g', { 'data-id': r.id,
+            transform: `translate(${x} ${y}) scale(${1/mapCamera.zoom}) translate(${-x} ${-y})` });
+        if(r.terrain==='city') g.appendChild(svgEl('path',{
+            d:`M${x-18} ${y+14}v-29h5v5h5v-5h5v5h6v-5h5v5h5v-5h5v29Z`,
+            fill:'rgba(35,37,28,.45)',stroke:'#e1d5b7','stroke-width':1,opacity:.85}));
+        if(r.port) {
+            const port=svgEl('text',{x:x+19,y:y+4,fill:'#d6e7e8','font-size':14,'text-anchor':'middle'});
+            port.textContent='⚓';g.appendChild(port);
+        }
+        if(r.supplied===false && r.owner==='player_1')g.appendChild(svgEl('circle',{cx:x,cy:y,r:18,
+            fill:'none',stroke:'#e6a16a','stroke-dasharray':'3 3','stroke-width':1.5}));
 
         // Selection ring — tight around the army circle
         if (isSelected) {
@@ -742,11 +842,11 @@ function renderOverlay(idxMap, cw, ch) {
             }));
         }
 
-        // Capital indicator — small gold dot just above army circle
+        // Capital crown, with space reserved in label placement.
         if (r.is_capital) {
-            g.appendChild(svgEl('circle', {
-                cx: x, cy: y - 20, r: 3.5,
-                fill: '#d4a840', stroke: 'rgba(0,0,0,0.5)', 'stroke-width': 1,
+            g.appendChild(svgEl('path', {
+                d:`M${x-8} ${y-19}l-2-8 6 4 4-7 4 7 6-4-2 8Z`,
+                fill:'#e7c56e',stroke:'#40351d','stroke-width':1,
             }));
         }
 
@@ -755,6 +855,8 @@ function renderOverlay(idxMap, cw, ch) {
         g.appendChild(svgEl('circle', {
             cx: x, cy: y, r: bgR,
             fill: 'rgba(0,0,0,0.60)',
+            stroke: strategicView.mode==='ownership'?'none':{player_1:'#3f83de',player_2:'#dc685c',rogue:'#b0ad96'}[r.owner],
+            'stroke-width': 1.5,
         }));
 
         const armyEl = svgEl('text', {
@@ -767,15 +869,21 @@ function renderOverlay(idxMap, cw, ch) {
             'font-family': 'Arial, sans-serif',
             'pointer-events': 'none',
         });
-        armyEl.textContent = r.army;
+        armyEl.textContent = strategicView.mode==='recruitment'?`+${r.pop_rate}`:r.army;
         g.appendChild(armyEl);
 
         // Region name — just below the army circle
+        const label = labelPosition(x, y, r.name);
         const nameEl = svgEl('text', {
-            x, y: y + 24,
+            x:label.x, y:label.y,
             'text-anchor': 'middle',
-            fill: isSelected ? '#f0e8d0' : 'rgba(230,218,190,0.68)',
-            'font-size': '8',
+            fill: atlas.data ? '#f5f0df' : (isSelected ? '#f0e8d0' : 'rgba(230,218,190,0.68)'),
+            stroke: atlas.data ? '#26332e' : 'none',
+            'stroke-width': atlas.data ? 2.5 : 0,
+            'paint-order': 'stroke',
+            'vector-effect': 'non-scaling-stroke',
+            'stroke-linejoin': 'round',
+            'font-size': atlas.data ? '10' : '8',
             'font-family': 'Georgia, serif',
             'pointer-events': 'none',
         });
@@ -785,41 +893,34 @@ function renderOverlay(idxMap, cw, ch) {
         gLabels.appendChild(g);
     }
 
-    // Move arrows
-    for (const mv of pendingMoves) {
-        const from = regions[mv.from_region_id];
-        const to   = regions[mv.to_region_id];
+    // The head always points at the destination, including short/reverse orders.
+    if (matrix) for (const mv of pendingMoves) {
+        const from=regions[mv.from_region_id], to=regions[mv.to_region_id];
         if (!from || !to) continue;
-
-        const x1 = toSVGX(from.x), y1 = toSVGY(from.y);
-        const x2 = toSVGX(to.x),   y2 = toSVGY(to.y);
-        const dx = x2 - x1, dy = y2 - y1;
-        const len = Math.sqrt(dx*dx + dy*dy) || 1;
-        const nx = dx/len, ny = dy/len;
-        const GAP = 22;
-
-        gArrows.appendChild(svgEl('line', {
-            x1: x1 + nx*GAP, y1: y1 + ny*GAP,
-            x2: x2 - nx*(GAP + 10), y2: y2 - ny*(GAP + 10),
-            stroke: '#d4a840',
-            'stroke-width': 2.5,
-            'stroke-dasharray': '9 5',
-            'marker-end': 'url(#arr-gold)',
-            opacity: 0.95,
-        }));
+        const arrow=plannedMoveArrow(from,to,matrix);
+        if (arrow) gArrows.append(arrow);
     }
+    document.getElementById('g-labels').replaceChildren(gLabels);
+    document.getElementById('g-arrows').replaceChildren(gArrows);
+    document.getElementById('g-connections').replaceChildren(gConn);
 }
 
 function renderMap() {
     if (!state) return;
     scaleCache = computeScale(state.regions);
-    const canvasData = renderCanvas();
+    if (atlas.data) atlas.prepare(state.regions);
+    const canvasData = atlas.data
+        ? atlas.render(state.regions, selectedFrom, new Set(validMoves[selectedFrom] || []),
+            new Set(pendingMoves.map(m => m.from_region_id)))
+        : renderCanvas();
+    strategicView.render();
     renderOverlay(canvasData.idxMap, canvasData.cw, canvasData.ch);
 }
 
 // ── Canvas interaction ────────────────────────────────────────────────────────
 
 function findNearestRegionId(nx, ny) {
+    if (atlas.data) return atlas.hit(nx, ny);
     let minDist = Infinity, nearestId = -1;
     for (const r of Object.values(state.regions)) {
         const dx = nx - normX(r.x), dy = ny - normY(r.y);
@@ -833,14 +934,21 @@ function initCanvasEvents() {
     const canvas = document.getElementById('map-canvas');
 
     canvas.addEventListener('click', (e) => {
-        if (resolving) return;
+        if (resolving || !state) return;
         const rect = canvas.getBoundingClientRect();
         const nx = (e.clientX - rect.left) / rect.width;
         const ny = (e.clientY - rect.top)  / rect.height;
         handleRegionClick(findNearestRegionId(nx, ny));
     });
 
-    canvas.addEventListener('mousemove', (e) => {
+    let hoverFrame=0, latestPointer;
+    canvas.addEventListener('mousemove', e => {
+        latestPointer={clientX:e.clientX,clientY:e.clientY};
+        if(hoverFrame)return;
+        hoverFrame=requestAnimationFrame(() => {
+        hoverFrame=0;
+        if (!state || resolving || mapCamera.dragging) return;
+        const e=latestPointer;
         const rect = canvas.getBoundingClientRect();
         const nx = (e.clientX - rect.left) / rect.width;
         const ny = (e.clientY - rect.top)  / rect.height;
@@ -848,7 +956,7 @@ function initCanvasEvents() {
 
         if (rid !== lastHoverId) {
             lastHoverId = rid;
-            updateRegionInfo(rid);
+            if (rid < 0) clearRegionInfo(); else updateRegionInfo(rid);
         }
 
         // Cursor hint
@@ -860,11 +968,12 @@ function initCanvasEvents() {
 
         if (validTargets.has(rid)) {
             canvas.style.cursor = 'crosshair';
-        } else if (r.owner === 'player_1' && validMoves[rid] && !committedFrom.has(rid)) {
+        } else if (r && r.owner === 'player_1' && validMoves[rid] && !committedFrom.has(rid)) {
             canvas.style.cursor = 'pointer';
         } else {
             canvas.style.cursor = 'default';
         }
+        });
     });
 }
 
@@ -884,7 +993,7 @@ function handleRegionClick(id) {
 
         const targets = validMoves[selectedFrom] || [];
         if (targets.includes(id)) {
-            pendingMoves.push({ from_region_id: selectedFrom, to_region_id: id });
+            orderHistory.record([...pendingMoves,{ from_region_id: selectedFrom, to_region_id: id }]);
             selectedFrom = null;
             renderMap(); updateMovesList(); updateMoveHint(); return;
         }
@@ -908,7 +1017,8 @@ function handleRegionClick(id) {
 }
 
 function removePendingMove(fromId) {
-    pendingMoves = pendingMoves.filter(m => m.from_region_id !== fromId);
+    if (resolving || gameOver) return;
+    orderHistory.record(pendingMoves.filter(m => m.from_region_id !== fromId));
     renderMap(); updateMovesList(); updateMoveHint();
 }
 
@@ -925,26 +1035,49 @@ function updateTopBar() {
 }
 
 function updateRegionInfo(id) {
+    clearTimeout(forecastTimer); forecastController?.abort();
+    const sequence = ++forecastSequence;
     const r = state.regions[id];
     if (!r) return;
+    const borderThreat = document.getElementById('show-threats').checked && threatView.key === JSON.stringify([state.turn,pendingMoves]) ? threatView.data?.entries.find(e => e.region_id === id) : null;
     const ownerNames  = { player_1: state.player_1.name, player_2: state.player_2.name, rogue: 'Neutral' };
     const ownerClass  = { player_1: 'p1-text', player_2: 'p2-text', rogue: 'rogue-text' };
     document.getElementById('region-info').innerHTML = `
         <div class="region-name">${escHtml(r.name)}${r.is_capital ? ' ★' : ''}</div>
-        <div class="region-row"><span>Owner</span><span class="${ownerClass[r.owner]}">${escHtml(ownerNames[r.owner])}</span></div>
-        <div class="region-row"><span>Terrain</span><span>${capitalise(r.terrain)}</span></div>
-        <div class="region-row"><span>Army</span><span>${r.army}</span></div>
-        <div class="region-row"><span>Growth</span><span>+${r.pop_rate}/turn</span></div>
-        <div class="region-row"><span>Defense</span><span>×${r.defense_bonus.toFixed(2)}</span></div>
+        <div class="region-meta"><span class="${ownerClass[r.owner]}">${escHtml(ownerNames[r.owner])}</span> · ${capitalise(r.terrain)}${r.port?' · Port':''}</div>
+        <div class="region-stats"><span><b>${r.army}</b> troops</span><span><b>+${r.pop_rate}</b>/turn</span><span><b>×${r.defense_bonus.toFixed(2)}</b> defense</span></div>
+        <div class="region-meta ${r.supplied===false?'region-isolated':''}">${r.owner==='rogue'?'Local militia':r.supplied===false?'Isolated supply':'Supplied'}${borderThreat ? ` · <span title="Assumes adjacent enemies attack together; ${borderThreat.garrison} defenders after orders">${Math.round(borderThreat.risk*100)}% potential loss risk</span>` : ''}</div>
+        <div id="battle-forecast"></div>
     `;
+    if (selectedFrom !== null && (validMoves[selectedFrom]||[]).includes(id)) {
+        const orders=[...pendingMoves.filter(m=>m.from_region_id!==selectedFrom),{from_region_id:selectedFrom,to_region_id:id}];
+        const target=document.getElementById('battle-forecast');target.textContent='Calculating forecast…';
+        forecastTimer=setTimeout(()=>{
+            forecastController=new AbortController();
+            api.forecast(gameId,orders,forecastController.signal).then(result=>{
+                if(sequence!==forecastSequence || result.turn!==state.turn)return;
+                const f=result.forecasts.find(item=>item.target===id);if(!f)return;
+                target.innerHTML=f.friendly?`<p>Reinforce with <b>${f.army}</b> troops.</p>`:
+                    `<p class="forecast-odds">${Math.round(f.win_probability*100)}% estimated victory</p>
+                    <details class="forecast-details"><summary>Forecast details</summary><p>${f.army} troops · ${f.effective_attack} effective strength against ${f.effective_defense} defense</p>
+                    <p>Losses if victorious: ${f.losses_on_win.join('–')}. Potential retreat survivors if defeated: ${f.retreat_survivors_on_loss.join('–')}.</p>
+                    <p>Approach: ${f.crossings.map(escHtml).join(', ')}${f.isolated_sources.length?' · Isolated attackers':''}</p>
+                    <small>Includes recruits and combined planned attacks. Assumes defenders stay; enemy moves can change the outcome. Retreat requires a friendly destination.</small></details>`;
+            }).catch(error=>{if(error.name!=='AbortError' && sequence===forecastSequence)target.textContent='Forecast unavailable. Hover again to retry.';});
+        },120);
+    }
 }
 
 function clearRegionInfo() {
+    clearTimeout(forecastTimer); forecastController?.abort();
+    ++forecastSequence;
     document.getElementById('region-info').innerHTML =
         '<p class="no-selection">Hover a region to inspect it.</p>';
 }
 
 function updateMovesList() {
+    orderHistory.updateButtons();
+    threatView.refresh();
     const list = document.getElementById('moves-list');
     list.classList.remove('hidden');
     if (pendingMoves.length === 0) {
@@ -956,7 +1089,7 @@ function updateMovesList() {
         const to   = state.regions[m.to_region_id];
         return `<div class="move-item">
             <span class="move-arrow">→</span>
-            <span class="move-regions"><b>${from.name}</b> → ${to.name}</span>
+            <span class="move-regions"><b>${escHtml(from.name)}</b> → ${escHtml(to.name)}</span>
             <button class="move-remove" onclick="removePendingMove(${m.from_region_id})" title="Cancel">×</button>
         </div>`;
     }).join('');
@@ -979,6 +1112,7 @@ function updateMoveHint() {
 }
 
 function showCombatLog(summary) {
+    battleReports.recap(summary);
     document.getElementById('combat-log-section').classList.remove('hidden');
     document.getElementById('combat-log').classList.remove('hidden');
     document.getElementById('log-turn').textContent = summary.turn;
@@ -988,15 +1122,7 @@ function showCombatLog(summary) {
         log.innerHTML = '<div class="log-entry" style="font-style:italic;color:#666880">No battles this turn.</div>';
         return;
     }
-    log.innerHTML = summary.combat_results.map(c => {
-        const fromR = state.regions[c.attacker_region_id];
-        const toR   = state.regions[c.defender_region_id];
-        return `<div class="log-entry">
-            <span class="log-outcome ${c.attacker_won ? 'won' : 'lost'}">${c.attacker_won ? 'Victory' : 'Repelled'}</span>
-            <br>${fromR ? fromR.name : '?'} → ${toR ? toR.name : '?'}
-            <br><span style="color:#555578">${c.attacker_army} vs ${c.effective_defender_army} eff. · ${c.survivors} survivors</span>
-        </div>`;
-    }).join('');
+    log.innerHTML = summary.combat_results.map(c => battleReports.battle(c)).join('');
 }
 
 function setResolving(on) {
@@ -1004,10 +1130,11 @@ function setResolving(on) {
     document.getElementById('resolving-overlay').classList.toggle('hidden', !on);
     document.getElementById('end-turn-btn').disabled = on;
     document.getElementById('abandon-btn').disabled = on;
+    orderHistory.updateButtons();
 }
 
 function abandon() {
-    if (gameOver || confirm('Abandon this campaign and return to the main menu?')) {
+    if (!resolving || document.getElementById('save-status').textContent.startsWith('Connection lost')) {
         sessionStorage.removeItem('gameId');
         sessionStorage.removeItem('presetId');
         window.location.href = 'index.html';
@@ -1017,36 +1144,61 @@ function abandon() {
 // ── Turn submission ───────────────────────────────────────────────────────────
 
 async function endTurn() {
-    if (resolving) return;
+    if (resolving || gameOver) return;
+    const submittedTurn=state.turn;
     setResolving(true);
     selectedFrom = null;
-
+    clearTimeout(forecastTimer); forecastController?.abort();
+    ++forecastSequence;
+    const status=document.getElementById('save-status');
+    status.textContent='Resolving…';
     try {
-        const result = await api.submitTurn(gameId, pendingMoves);
+        const result = await api.submitTurn(gameId, pendingMoves, state.turn);
         pendingMoves = [];
-        state = result.state;
-        updateTopBar();
-
-        if (result.game_over) {
-            renderMap();
-            handleGameOver(result.winner);
-            return;
+        orderHistory.reset();
+        status.textContent='Saved';
+        campaigns.remember(gameId,result.state);
+        campaignHistory.push({...result,state:undefined});
+        document.getElementById('resolving-overlay').classList.add('hidden');
+        try { await presentation.replay(result); }
+        finally { state=result.state; clearRegionInfo(); lastHoverId=null; }
+        const vm=await api.getValidMoves(gameId);
+        validMoves=Object.fromEntries(Object.entries(vm).map(([k,v])=>[+k,v]));
+        setResolving(false);
+        updateTopBar();renderMap();showCombatLog(result);renderTimeline();updateMovesList();updateMoveHint();
+        sidebar.showTurnReport();
+        if(result.game_over)handleGameOver(result.winner);
+    } catch(error) {
+        // A lost HTTP response may still have committed. Re-read before allowing
+        // another order, so retries never silently resolve the same turn twice.
+        try {
+            const latest=await api.getGame(gameId);
+            state=latest.state;campaignHistory=latest.history||[];pendingMoves=[];
+            orderHistory.reset();
+            clearRegionInfo();lastHoverId=null;
+            const vm=await api.getValidMoves(gameId);validMoves=vm;
+            campaigns.remember(gameId,state);updateTopBar();renderMap();updateMovesList();renderTimeline();
+            if(campaignHistory.length)showCombatLog(campaignHistory[campaignHistory.length-1]);
+            if(state.turn>submittedTurn)sidebar.showTurnReport();
+            status.textContent=`Saved through turn ${state.turn-1}`;
+            setResolving(false);updateMoveHint();
+            if(state.game_over)handleGameOver(state.winner);
+        } catch {
+            status.textContent='Connection lost — reload to recover saved campaign';
+            document.getElementById('resolving-overlay').classList.add('hidden');
+            document.getElementById('abandon-btn').disabled=false;
+            // Keep new turns blocked until the committed server state is known.
         }
-
-        const vm = await api.getValidMoves(gameId);
-        validMoves = {};
-        for (const [k, v] of Object.entries(vm)) validMoves[+k] = v;
-
-        setResolving(false);
-        renderMap();
-        showCombatLog(result);
-        updateMovesList();
-        updateMoveHint();
-
-    } catch (e) {
-        setResolving(false);
-        alert('Error: ' + e.message);
+        alert(error.message);
     }
+}
+
+function renderTimeline() {
+    document.getElementById('timeline-list').innerHTML=campaignHistory.slice().reverse().map(entry=>{
+        const captured=(entry.events||[]).filter(e=>e.type==='battle'&&e.won);
+        const text=captured.length?captured.map(e=>`${e.owner==='player_1'?'You':'AI'} captured ${state.regions[e.to]?.name||'territory'}`).join(' · '):'Frontiers held';
+        return `<p><b>Turn ${entry.turn}</b><br>${escHtml(text)}</p>`;
+    }).join('')||'<p>Your campaign begins here.</p>';
 }
 
 function handleGameOver(winner) {
@@ -1065,6 +1217,7 @@ function handleGameOver(winner) {
 
     // Game is done — kill Next Turn, repurpose Abandon
     gameOver = true;
+    orderHistory.updateButtons();
     document.getElementById('end-turn-btn').disabled = true;
     document.getElementById('abandon-btn').textContent = 'Back to Menu';
 
@@ -1074,7 +1227,7 @@ function handleGameOver(winner) {
     sessionStorage.setItem('p1regions', state.player_1.regions);
     sessionStorage.setItem('p2regions', state.player_2.regions);
 
-    setTimeout(() => { window.location.href = 'summary.html'; }, 3500);
+    // Keep the final map and timeline available for review.
 }
 
 // ── Bootstrap ─────────────────────────────────────────────────────────────────
@@ -1087,23 +1240,45 @@ async function init() {
 
     document.getElementById('end-turn-btn').addEventListener('click', endTurn);
     document.getElementById('abandon-btn').addEventListener('click', abandon);
+    sidebar.init();
+    presentation.init();
+    orderHistory.init();
+    strategicView.init();
+    battleReports.init();
+    document.getElementById('review-campaign').addEventListener('click',()=>document.getElementById('gameover-overlay').classList.add('hidden'));
+    document.getElementById('show-supply').addEventListener('change', renderMap);
+    document.getElementById('show-threats').addEventListener('change', () => threatView.refresh());
+    document.getElementById('show-atmosphere').addEventListener('change', () => world.render());
+    document.addEventListener('visibilitychange', () => document.body.classList.toggle('world-paused', document.hidden));
+    mapCamera.init(() => { if (state) renderMap(); });
     initCanvasEvents();
 
     // Resize canvas when window resizes (re-render the Voronoi map)
-    window.addEventListener('resize', () => { if (state) renderMap(); });
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer=setTimeout(() => { if (state) renderMap(); },120);
+    });
 
     try {
         const [gameData, vm] = await Promise.all([
             api.getGame(gameId),
             api.getValidMoves(gameId),
         ]);
+        await atlas.load(gameData.state.preset_id ?? (sessionStorage.getItem('presetId') || ''), gameData.state.regions);
         state = gameData.state;
+        campaigns.remember(gameId,state);
+        campaignHistory=gameData.history||[];
+        document.getElementById('campaign-title').textContent=state.campaign_name||'Campaign';
+        renderTimeline();
+        if(campaignHistory.length)showCombatLog(campaignHistory[campaignHistory.length-1]);
         validMoves = {};
         for (const [k, v] of Object.entries(vm)) validMoves[+k] = v;
 
         updateTopBar();
         renderMap();
         updateMoveHint();
+        if(state.game_over)handleGameOver(state.winner);
 
     } catch (e) {
         alert('Failed to load game: ' + e.message);

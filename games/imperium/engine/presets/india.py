@@ -1,5 +1,5 @@
 """
-Indian Subcontinent — 36 regions
+Indian Subcontinent — 37 regions
 Player 1 (north): Pataliputra    Player 2 (south): Vijayanagara
 Spans Indus → Bengal, Himalayas → Sri Lanka.
 """
@@ -53,6 +53,8 @@ _REGIONS = [
     ("Manipur",         "hills",  0.70, 0.22),  # 33
     ("Brahmaputra",     "forest", 0.62, 0.08),  # 34
     ("Tripura",         "forest", 0.65, 0.28),  # 35
+    # Former princely state of Jammu and Kashmir (fixed geographic outline).
+    ("Kashyap Meer",    "hills",  0.18, 0.04),  # 36
 ]
 
 PRESET = {
@@ -71,6 +73,8 @@ PRESET = {
     "extra_edges": [
         (28, 27),  # Sri Lanka — Madurai (Palk Strait)
         (28, 26),  # Sri Lanka — Coromandel
+        (36, 0),   # Kashyap Meer — Taxila
+        (36, 1),   # Kashyap Meer — Punjab
     ],
-    "removed_edges": [],
+    "removed_edges": [(36, 30)],  # Access through Taxila/Punjab, not directly to Kabul.
 }

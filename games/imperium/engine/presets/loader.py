@@ -16,6 +16,9 @@ Preset format:
         "removed_edges": [(int, int), ...],          # manually removed adjacencies
     }
 """
+import json
+from pathlib import Path
+
 from typing import Dict, List, Optional, Set, Tuple
 
 import numpy as np
@@ -79,6 +82,7 @@ def load_preset(
     player2_name: str = "Player 2",
     player1_is_ai: bool = False,
     player2_is_ai: bool = True,
+    start_region_id: Optional[int] = None,
 ) -> GameState:
     raw = preset["regions"]          # [(name, terrain, x, y), ...]
     coords = [(r[2], r[3]) for r in raw]
@@ -90,13 +94,24 @@ def load_preset(
         removed_edges=preset.get("removed_edges", []),
     )
 
+    geography_file = Path(__file__).with_name('geography') / f"{preset['id']}.json"
+    geography = json.loads(geography_file.read_text()) if geography_file.exists() else {}
+    if geography:
+        adj = [set(geography['neighbors'][str(i)]) for i in range(len(raw))]
+
     p1_start: Set[int] = {preset["player1_capital"]} | set(preset["player1_extra_starts"])
     p2_start: Set[int] = {preset["player2_capital"]} | set(preset["player2_extra_starts"])
+
+    p1_capital, p2_capital = preset["player1_capital"], preset["player2_capital"]
+    if start_region_id is not None:
+        from .starts import kingdom_layout
+        p1_start, p2_start, p2_capital = kingdom_layout(raw, adj, start_region_id)
+        p1_capital = start_region_id
 
     regions: Dict[int, Region] = {}
     for idx, (name, terrain_str, x, y) in enumerate(raw):
         terrain = TerrainType(terrain_str)
-        is_capital = idx in (preset["player1_capital"], preset["player2_capital"])
+        is_capital = idx in (p1_capital, p2_capital)
 
         if idx in p1_start:
             owner = Owner.PLAYER_1
@@ -125,13 +140,13 @@ def load_preset(
             id="player_1",
             name=player1_name,
             is_ai=player1_is_ai,
-            capital_region_id=preset["player1_capital"],
+            capital_region_id=p1_capital,
         ),
         Player(
             id="player_2",
             name=player2_name,
             is_ai=player2_is_ai,
-            capital_region_id=preset["player2_capital"],
+            capital_region_id=p2_capital,
         ),
     ]
 
@@ -140,4 +155,7 @@ def load_preset(
         players=players,
         turn=1,
         map_size=_map_size(len(regions)),
+        preset_id=preset['id'],
+        routes=geography.get('routes', {}),
+        ports=geography.get('ports', []),
     )

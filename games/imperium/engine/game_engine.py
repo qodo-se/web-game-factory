@@ -31,6 +31,8 @@ from .turn_resolver import ValidationError, resolve_turn, validate_actions
 class GameEngine:
     def __init__(self, state: GameState, seed: Optional[int] = None):
         self.state = state
+        self.campaign_name = "Campaign"
+        self.history = []
         self._base_seed = seed
         self._pending: Dict[str, TurnActions] = {}
 
@@ -44,6 +46,7 @@ class GameEngine:
         player2_name: str = "Player 2",
         player1_is_ai: bool = False,
         player2_is_ai: bool = True,
+        start_region_id: Optional[int] = None,
     ) -> "GameEngine":
         """Load a named real-world map preset (e.g. 'mediterranean', 'europe')."""
         from .presets import PRESETS
@@ -55,6 +58,7 @@ class GameEngine:
 
         state = load_preset(
             PRESETS[preset_id],
+            start_region_id=start_region_id,
             player1_name=player1_name,
             player2_name=player2_name,
             player1_is_ai=player1_is_ai,
@@ -81,6 +85,11 @@ class GameEngine:
             player1_is_ai=player1_is_ai,
             player2_is_ai=player2_is_ai,
         )
+        from .strategy import route_key
+        for region in state.regions.values():
+            for neighbor in region.neighbors:
+                state.routes[route_key(region.id, neighbor)] = 'pass' if 'hills' in (
+                    region.terrain.value, state.regions[neighbor].terrain.value) else 'road'
         return cls(state=state, seed=seed)
 
     # ── Player interaction ────────────────────────────────────────────────────

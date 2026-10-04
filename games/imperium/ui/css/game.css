@@ -736,6 +736,7 @@
 
 #planning-preview { position: absolute; z-index: 8; max-width: min(280px, calc(100% - 16px)); padding: 10px 12px; border: 1px solid #d4a840; border-radius: 6px; background: rgba(15,22,30,.96); color: #fff1ce; font: 12px/1.5 Arial, sans-serif; pointer-events: none; box-shadow: 0 4px 16px #0006; }
 .order-hit { pointer-events: stroke; cursor: pointer; }
+#map-world.is-planning .order-hit { cursor: crosshair; }
 .order-hit:focus { stroke: #ffffff70; outline: none; }
 .troop-projection { fill: #ffe09a; stroke: #14232e; stroke-width: 3px; paint-order: stroke; font: bold 11px Arial, sans-serif; }
 .order-pulse { animation: order-pulse .55s ease-out both; }

@@ -693,10 +693,16 @@ function plannedMoveArrow(from, to, matrix) {
     const group=svgEl('g',{'data-from':from.id,'data-to':to.id,'class':'planned-arrow'});
     const title=svgEl('title');title.textContent=`${from.name} → ${to.name}`;group.append(title);
     const path=`M ${s.x} ${s.y} Q ${c.x} ${c.y} ${h.x} ${h.y}`;
-    const hit=svgEl('path',{d:path,fill:'none',stroke:'transparent','stroke-width':18,
+    const hit=svgEl('path',{d:`M ${s.x} ${s.y} Q ${c.x} ${c.y} ${t.x} ${t.y}`,
+        fill:'none',stroke:'transparent','stroke-width':18,'stroke-linecap':'round',
         'vector-effect':'non-scaling-stroke',class:'order-hit',tabindex:0,role:'button',
         'aria-label':`Cancel ${from.name} to ${to.name}`});
-    const cancel=event=>{event.preventDefault();event.stopPropagation();removePendingMove(from.id);};
+    const cancel=event=>{
+        event.preventDefault();event.stopPropagation();
+        // While choosing a destination, an existing arrow must not steal the order.
+        if (event.type === 'click' && selectedFrom !== null) handleRegionClick(planning.regionAt(event));
+        else removePendingMove(from.id);
+    };
     hit.addEventListener('click',cancel);
     hit.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' ')cancel(event);});
     group.append(hit);
@@ -927,6 +933,7 @@ function renderOverlay(idxMap, cw, ch) {
 
 function renderMap() {
     if (!state) return;
+    document.getElementById('map-world').classList.toggle('is-planning', selectedFrom !== null);
     scaleCache = computeScale(state.regions);
     if (atlas.data) atlas.prepare(state.regions);
     const canvasData = atlas.data
@@ -962,7 +969,7 @@ function initCanvasEvents() {
     });
 
     let hoverFrame=0, latestPointer;
-    canvas.addEventListener('mousemove', e => {
+    document.getElementById('map-world').addEventListener('mousemove', e => {
         latestPointer={clientX:e.clientX,clientY:e.clientY};
         if(hoverFrame)return;
         hoverFrame=requestAnimationFrame(() => {

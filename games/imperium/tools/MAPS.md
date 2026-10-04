@@ -1,5 +1,8 @@
 # Campaign geography
 
+Start with the [map overview and interaction guide](../ui/maps/README.md).
+This document covers the active collection and asset generation.
+
 The active map collection is defined in `engine/presets/__init__.py`. Older
 presets and their atlas JSON remain bundled so existing saved campaigns can
 still render. They are not offered for new campaigns. Random generation also

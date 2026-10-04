@@ -10,6 +10,15 @@ const mapCamera = {
         const surface = this.world;
         this.onSettle = onSettle;
         let pointer = null, suppressClick = false;
+        this.cancelGesture = () => {
+            if (!pointer) return;
+            const id = pointer.id;
+            pointer = null;
+            suppressClick = true;
+            this.dragging = false;
+            this.viewport.classList.remove('is-panning');
+            if (surface.hasPointerCapture(id)) surface.releasePointerCapture(id);
+        };
         surface.addEventListener('wheel', e => {
             e.preventDefault();
             const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? this.viewport.clientHeight : 1;
@@ -56,7 +65,11 @@ const mapCamera = {
         };
         window.addEventListener('pointerup', finish);
         surface.addEventListener('pointercancel', finish);
-        surface.addEventListener('lostpointercapture', finish);
+        // Touch starts with implicit capture on the canvas. Its loss during
+        // transfer to the shared surface must not cancel the active gesture.
+        surface.addEventListener('lostpointercapture', e => {
+            if (e.target === surface) finish(e);
+        });
         surface.addEventListener('click', e => {
             if (!suppressClick) return;
             suppressClick = false;

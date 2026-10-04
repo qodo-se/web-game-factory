@@ -13,6 +13,12 @@ const planning = {
     sourceAt(event) {
         if (!this.allowed() || event.button !== 0 || event.shiftKey) return null;
         const id = this.regionAt(event), r = state.regions[id];
+        if (r && event.pointerType === 'touch') {
+            const matrix = document.getElementById('map-svg').getScreenCTM();
+            const counter = new DOMPoint(toSVGX(r.x), toSVGY(r.y)).matrixTransform(matrix);
+            // Counters stay the same screen size at every zoom level.
+            if (Math.hypot(event.clientX-counter.x, event.clientY-counter.y) > 24) return null;
+        }
         return r?.owner==='player_1' && validMoves[id]?.length && !pendingMoves.some(m=>m.from_region_id===id) ? id : null;
     },
     begin(id) {
@@ -99,10 +105,11 @@ const planning = {
         document.addEventListener('keydown',event=>{
             if(event.key!=='Escape' || event.target.closest('input,textarea,select,[contenteditable="true"]'))return;
             if(!this.allowed())return;
+            mapCamera.cancelGesture();
             this.clearDrag(); selectedFrom=null; clearRegionInfo(); lastHoverId=null;
             renderMap(); updateMoveHint();
         });
-        document.getElementById('map-canvas').addEventListener('mouseleave',()=>{
+        document.getElementById('map-world').addEventListener('mouseleave',()=>{
             if(!this.drag){clearRegionInfo();lastHoverId=null;}
         });
     }

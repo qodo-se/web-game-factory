@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IMPERIUM — Campaign Complete</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/game.css">
+</head>
+<body class="summary-page">
+    <div class="summary-card">
+        <div class="summary-result" id="result-title">—</div>
+        <div class="summary-winner" id="result-subtitle">—</div>
+
+        <div class="summary-stats">
+            <div class="summary-stat">
+                <div class="summary-stat-val" id="stat-turns">—</div>
+                <div class="summary-stat-label">Turns</div>
+            </div>
+            <div class="summary-stat">
+                <div class="summary-stat-val p1-text" id="stat-p1-regions">—</div>
+                <div class="summary-stat-label">Your Regions</div>
+            </div>
+            <div class="summary-stat">
+                <div class="summary-stat-val p2-text" id="stat-p2-regions">—</div>
+                <div class="summary-stat-label">AI Regions</div>
+            </div>
+        </div>
+
+        <button class="btn-primary" onclick="window.location.href='index.html'">
+            New Campaign
+        </button>
+    </div>
+
+    <script>
+        (function () {
+            const winner      = sessionStorage.getItem('winner');
+            const winnerName  = sessionStorage.getItem('winnerName') || 'Unknown';
+            const turns       = sessionStorage.getItem('turns') || '—';
+            const p1regions   = sessionStorage.getItem('p1regions') || '—';
+            const p2regions   = sessionStorage.getItem('p2regions') || '—';
+
+            if (!winner) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const isVictory = winner === 'player_1';
+
+            document.getElementById('result-title').textContent = isVictory ? 'VICTORY' : 'DEFEAT';
+            document.getElementById('result-title').classList.add(isVictory ? 'victory' : 'defeat');
+            document.getElementById('result-subtitle').textContent =
+                isVictory ? `${winnerName} has conquered the map.` : `${winnerName} has prevailed.`;
+
+            document.getElementById('stat-turns').textContent    = turns;
+            document.getElementById('stat-p1-regions').textContent = p1regions;
+            document.getElementById('stat-p2-regions').textContent = p2regions;
+        })();
+    </script>
+</body>
+</html>

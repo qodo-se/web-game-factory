@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IMPERIUM — Web Game Factory</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/game.css">
+</head>
+<body class="welcome-page">
+    <div class="welcome-card">
+        <div class="welcome-logo">
+            <h1>IMPERIUM</h1>
+            <p class="subtitle">A Turn-Based Strategy of Conquest</p>
+        </div>
+
+        <form id="new-game-form" class="new-game-form">
+            <div class="form-group">
+                <label for="player-name">Commander Name</label>
+                <input type="text" id="player-name" value="Consul" maxlength="24" autocomplete="off">
+            </div>
+
+            <div class="form-group">
+                <label for="campaign-name">Campaign name</label>
+                <input type="text" id="campaign-name" placeholder="My northern campaign" maxlength="80">
+            </div>
+            <div class="form-group">
+                <label>Map</label>
+                <div class="mode-tabs">
+                    <button type="button" class="tab active" data-mode="preset">Historical Preset</button>
+                    <button type="button" class="tab" data-mode="random">Random Map</button>
+                </div>
+            </div>
+
+            <div id="preset-options" class="form-group">
+                <label for="preset-select">Theater of War</label>
+                <select id="preset-select">
+                    <option value="">Loading maps…</option>
+                </select>
+                <p class="preset-desc" id="preset-desc"></p>
+                <label for="kingdom-select">Starting kingdom</label>
+                <select id="kingdom-select" disabled><option>Loading kingdoms…</option></select>
+                <p class="preset-desc" id="kingdom-preview" aria-live="polite"></p>
+            </div>
+
+            <div id="random-options" class="form-group hidden">
+                <label>Map Size</label>
+                <div class="size-options">
+                    <label class="radio-option">
+                        <input type="radio" name="map-size" value="small" checked> Small
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="map-size" value="medium"> Medium
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="map-size" value="large"> Large
+                    </label>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-primary" id="start-btn">Begin Campaign</button>
+
+            <p id="error-msg" class="error-msg hidden"></p>
+        </form>
+        <section id="saved-campaigns" hidden>
+            <h2>Your campaigns</h2>
+            <p class="save-explainer">Turns save automatically. Resume links are kept in this browser.</p>
+            <div id="campaign-list"></div>
+        </section>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/campaigns.js"></script>
+    <script src="js/welcome.js"></script>
+</body>
+</html>

@@ -665,7 +665,8 @@ function svgEl(tag, attrs) {
 
 // Construct planned arrows in screen pixels so gaps/head sizes remain stable
 // under camera zoom and non-uniform SVG scaling on random maps.
-function plannedMoveArrow(from, to, matrix) {
+function plannedMoveArrow(from, to, matrix, movement=null) {
+    const color=movement?({player_1:'#75baff',player_2:'#ff9085',rogue:'#d2cbb6'}[movement.owner]||'#ffe09a'):'#ffe09a';
     const a = new DOMPoint(toSVGX(from.x), toSVGY(from.y)).matrixTransform(matrix);
     const b = new DOMPoint(toSVGX(to.x), toSVGY(to.y)).matrixTransform(matrix);
     const dx=b.x-a.x, dy=b.y-a.y, distance=Math.hypot(dx,dy);
@@ -673,7 +674,7 @@ function plannedMoveArrow(from, to, matrix) {
     const ux=dx/distance, uy=dy/distance;
     // Nearby counters need a detour; trimming a short straight segment at both
     // ends would either reverse it or bury its head underneath the destination.
-    const bend=distance < 72 ? 36 : 0;
+    const bend=distance < 72 ? 36 : movement ? 20 : 0;
     const control={x:(a.x+b.x)/2-uy*bend, y:(a.y+b.y)/2+ux*bend};
     const startLength=Math.hypot(control.x-a.x,control.y-a.y);
     const endLength=Math.hypot(b.x-control.x,b.y-control.y);
@@ -690,9 +691,10 @@ function plannedMoveArrow(from, to, matrix) {
     const [s,c,t,h,left,right]=[start,control,tip,base,
         {x:base.x-ty*halfWidth,y:base.y+tx*halfWidth},
         {x:base.x+ty*halfWidth,y:base.y-tx*halfWidth}].map(point);
-    const group=svgEl('g',{'data-from':from.id,'data-to':to.id,'class':'planned-arrow'});
-    const title=svgEl('title');title.textContent=`${from.name} → ${to.name}`;group.append(title);
+    const group=svgEl('g',{'data-from':from.id,'data-to':to.id,'class':movement?'replay-arrow':'planned-arrow'});
+    const title=svgEl('title');title.textContent=`${from.name} → ${to.name}`+(movement?` · ${movement.army} troops${movement.type==='retreat'?' (retreat)':''}`:'');group.append(title);
     const path=`M ${s.x} ${s.y} Q ${c.x} ${c.y} ${h.x} ${h.y}`;
+    if(!movement) {
     const hit=svgEl('path',{d:`M ${s.x} ${s.y} Q ${c.x} ${c.y} ${t.x} ${t.y}`,
         fill:'none',stroke:'transparent','stroke-width':18,'stroke-linecap':'round',
         'vector-effect':'non-scaling-stroke',class:'order-hit',tabindex:0,role:'button',
@@ -706,12 +708,14 @@ function plannedMoveArrow(from, to, matrix) {
     hit.addEventListener('click',cancel);
     hit.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' ')cancel(event);});
     group.append(hit);
-    for (const [stroke,width] of [['#182730',7],['#ffe09a',3.5]]) {
+    }
+    for (const [stroke,width] of [['#182730',7],[color,3.5]]) {
         group.append(svgEl('path',{d:path,fill:'none',stroke,'stroke-width':width,
+            'stroke-dasharray':movement?.type==='retreat'?'6 5':'none',
             'stroke-linecap':'round','vector-effect':'non-scaling-stroke','class':'planned-arrow-shaft'}));
     }
     group.append(svgEl('polygon',{points:`${t.x},${t.y} ${left.x},${left.y} ${right.x},${right.y}`,
-        fill:'#ffe09a',stroke:'#182730','stroke-width':1.5,'stroke-linejoin':'round',
+        fill:color,stroke:'#182730','stroke-width':1.5,'stroke-linejoin':'round',
         'vector-effect':'non-scaling-stroke','class':'planned-arrow-head'}));
     return group;
 }
@@ -931,6 +935,12 @@ function renderOverlay(idxMap, cw, ch) {
         if (!from || !to) continue;
         const arrow=plannedMoveArrow(from,to,matrix);
         if (arrow) gArrows.append(arrow);
+    }
+    if(matrix&&campaignReplay.active)for(const movement of campaignReplay.movements()) {
+        const from=regions[movement.from],to=regions[movement.to];
+        if(!from||!to)continue;
+        const arrow=plannedMoveArrow(from,to,matrix,movement);
+        if(arrow)gArrows.append(arrow);
     }
     document.getElementById('g-labels').replaceChildren(gLabels);
     document.getElementById('g-arrows').replaceChildren(gArrows);

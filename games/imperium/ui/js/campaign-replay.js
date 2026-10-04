@@ -13,6 +13,15 @@ const campaignReplay = {
             this.seekFrame=requestAnimationFrame(()=>{this.seekFrame=null;this.show(this.seekIndex);});
         });
         document.addEventListener('visibilitychange',()=>{if(document.hidden)this.pause();});
+        document.addEventListener('keydown',event=>{
+            if(!this.active||event.defaultPrevented||event.isComposing||event.ctrlKey||event.metaKey||event.altKey||event.shiftKey)return;
+            if(event.key!=='ArrowLeft'&&event.key!=='ArrowRight')return;
+            const target=event.target;
+            if(target.id!=='campaign-replay-slider'&&(target.isContentEditable||target.closest('input,textarea,select')))return;
+            event.preventDefault();event.stopPropagation();
+            this.pause();cancelAnimationFrame(this.seekFrame);this.seekFrame=null;
+            this.show(this.index+(event.key==='ArrowRight'?1:-1));
+        },true);
     },
     async enter() {
         if(!gameOver||resolving||this.active||this.loading)return;
@@ -45,6 +54,18 @@ const campaignReplay = {
             }
         }
     },
+    movements() {
+        if(!this.active)return [];
+        const report=campaignHistory.find(entry=>entry.turn===this.frames[this.index].turn-1);
+        if(!report)return [];
+        const events=(report.events||[]).filter(event=>event.type==='movement'||event.type==='retreat');
+        if(events.length)return events;
+        const before=this.frames[this.index-1];
+        return (report.movements||[]).map(move=>{
+            const [from,to,army]=Array.isArray(move)?move:[move.from,move.to,move.army];
+            return {from,to,army,owner:before?.regions[from]?.owner,type:'movement'};
+        });
+    },
     show(index) {
         if(!this.active)return;
         this.index=Math.max(0,Math.min(this.frames.length-1,index));
@@ -52,7 +73,7 @@ const campaignReplay = {
         state={...this.finalState,...frame,regions:Object.fromEntries(Object.entries(this.finalState.regions).map(([id,r])=>[id,{...r,...frame.regions[id]}]))};
         clearRegionInfo();lastHoverId=null;
         updateTopBar();renderMap();updateMovesList();
-        document.getElementById('move-hint').textContent='Campaign replay — use the slider or arrow buttons to explore turns.';
+        document.getElementById('move-hint').textContent='Replay: ← / → to step. Arrows show this turn’s moves in faction colors; dashed arrows show retreats.';
         document.getElementById('campaign-replay-slider').value=this.index;
         const label=frame.turn===1?'Starting position':`After turn ${frame.turn-1}`;
         document.getElementById('campaign-replay-caption').textContent=`${label} · ${this.index+1}/${this.frames.length}`;

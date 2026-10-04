@@ -177,3 +177,22 @@ Headings support Enter/Space to toggle and arrow keys/Home/End to move focus.
 
 Turn report combines the turn recap and detailed battle explanations in one
 collapsible pane, with gains, losses and casualties above the battle details.
+
+## Post-game campaign replay
+
+After victory or defeat, choose Replay campaign on the result screen or under
+Campaign & map. Previous/next buttons and a turn slider show the starting position
+and each completed turn, including ownership, armies, supply, recruitment, player
+totals and that turn's report. Play advances once per second; Pause or slider input
+stops playback. Playback also pauses when the browser tab is hidden. Positions
+change instantly, including with reduced motion enabled. Zoom, pan, inspection and
+strategic map modes remain available. Exit replay restores the final campaign.
+
+Replay is read-only: orders and turn submission remain disabled, and inspecting
+history never updates the saved campaign or its resume entry. The live threat
+forecast is disabled during replay so it cannot show estimates from the final save
+on an earlier position. New turns atomically persist compact pre-turn ownership and
+army snapshots alongside their journal. Static map data is shared by replay frames.
+Older version-2 movement/battle/retreat journals can be reversed to recover exact
+positions. If a journal is incomplete, replay exposes only its contiguous recoverable
+suffix and labels the missing earlier history. No positions are guessed.

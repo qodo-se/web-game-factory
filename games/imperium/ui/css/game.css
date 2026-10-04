@@ -698,3 +698,13 @@
 .region-summary #battle-forecast .forecast-odds { font-size:13px; margin:7px 0 3px; }
 .forecast-details summary { cursor:pointer; font-size:11px; color:#d2c4a2; }
 .sidebar-section.is-expanded { min-height:90px; }
+
+#campaign-replay-controls { position:absolute; bottom:55px; left:16px; right:16px; z-index:16; padding:12px; border:1px solid #66716d; border-radius:5px; background:rgba(20,29,35,.96); color:#eee5cf; font:12px/1.5 Arial,sans-serif; }
+#campaign-replay-controls[hidden],#open-campaign-replay[hidden] { display:none; }
+.campaign-replay-row { display:flex; align-items:center; gap:9px; flex-wrap:wrap; }
+#campaign-replay-caption { flex:1; }
+#campaign-replay-controls button { background:#293b40; color:#eee5cf; border:1px solid #647178; padding:7px 12px; cursor:pointer; }
+#campaign-replay-controls button:disabled { opacity:.4; cursor:default; }
+#campaign-replay-slider { width:100%; margin:12px 0 4px; accent-color:var(--gold); }
+#campaign-replay-note { color:#b6bec0; }
+#replay-campaign { margin-top:20px; }

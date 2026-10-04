@@ -981,6 +981,7 @@ function initCanvasEvents() {
 
 function handleRegionClick(id) {
     if (resolving || id < 0) return;
+    if (gameOver) { updateRegionInfo(id); return; }
 
     const r = state.regions[id];
     const committedFrom = new Set(pendingMoves.map(m => m.from_region_id));
@@ -1025,7 +1026,8 @@ function removePendingMove(fromId) {
 // ── UI updates ────────────────────────────────────────────────────────────────
 
 function updateTopBar() {
-    document.getElementById('turn-num').textContent   = state.turn;
+    document.getElementById('turn-label').textContent = campaignReplay.active?'Replay':'Turn';
+    document.getElementById('turn-num').textContent = campaignReplay.active?(state.turn===1?'Start':state.turn-1):state.turn;
     document.getElementById('p1-name').textContent    = state.player_1.name;
     document.getElementById('p1-regions').textContent = state.player_1.regions;
     document.getElementById('p1-army').textContent    = state.player_1.total_army;
@@ -1217,6 +1219,7 @@ function handleGameOver(winner) {
 
     // Game is done — kill Next Turn, repurpose Abandon
     gameOver = true;
+    document.getElementById('open-campaign-replay').hidden=false;
     orderHistory.updateButtons();
     document.getElementById('end-turn-btn').disabled = true;
     document.getElementById('abandon-btn').textContent = 'Back to Menu';
@@ -1242,6 +1245,7 @@ async function init() {
     document.getElementById('abandon-btn').addEventListener('click', abandon);
     sidebar.init();
     presentation.init();
+    campaignReplay.init();
     orderHistory.init();
     strategicView.init();
     battleReports.init();

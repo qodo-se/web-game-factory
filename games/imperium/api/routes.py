@@ -10,6 +10,7 @@ from games.imperium.engine.presets import list_presets
 from games.imperium.engine.strategy import supplied_regions, growth, defense_factor, forecast
 from games.imperium.engine.turn_resolver import validate_actions, ValidationError
 from games.imperium.api import store
+from games.imperium.engine.replay import snapshot, campaign_states
 
 router = APIRouter(prefix="/api/imperium", tags=["imperium"])
 
@@ -216,12 +217,33 @@ def submit_turn(game_id: str, req: TurnRequest):
             engine.submit_actions('player_1', actions)
         except (ValueError, ValidationError) as error:
             raise HTTPException(status_code=400, detail=str(error))
+        replay_before = snapshot(engine.state)
         summary = engine.resolve_turn()
         result = _serialize_summary(summary, _serialize_state(engine))
         # Persist the state and journal together; only return success after commit.
-        engine.history.append({key: value for key, value in result.items() if key != 'state'})
+        engine.history.append({**{key: value for key, value in result.items() if key != 'state'},
+                               'replay_before': replay_before})
         try:
             store.save(game_id, engine, req.expected_turn)
         except store.ConflictError as error:
             raise HTTPException(status_code=409, detail=str(error))
         return result
+
+
+@router.get("/games/{game_id}/replay")
+def get_campaign_replay(game_id: str):
+    engine = store.get(game_id)
+    if not engine:
+        raise HTTPException(status_code=404, detail="Game not found.")
+    if not engine.state.game_over:
+        raise HTTPException(status_code=400, detail="Campaign replay is available after the game ends.")
+    frames = []
+    for position in campaign_states(engine):
+        view = _serialize_state(GameEngine(position))
+        # Static geography, names, neighbors and terrain already exist in the client.
+        frames.append({key: view[key] for key in
+                       ('turn', 'game_over', 'winner', 'player_1', 'player_2', 'rogue_regions')})
+        frames[-1]['regions'] = {rid: {key: region[key] for key in
+                                      ('owner', 'army', 'pop_rate', 'supplied', 'defense_bonus')}
+                                  for rid, region in view['regions'].items()}
+    return {'frames': frames, 'complete': frames[0]['turn'] == 1}

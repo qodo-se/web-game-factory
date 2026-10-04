@@ -26,6 +26,7 @@ const api = {
     getStarts: (id) => _req('GET', `/api/imperium/presets/${id}/starts`),
     threats: (id, moves) => _req('POST', `/api/imperium/games/${id}/threats`, {moves}),
     newGame:       (body)      => _req('POST', '/api/imperium/games', body),
+    getReplay: (id) => _req('GET', `/api/imperium/games/${id}/replay`),
     getGame:       (id)        => _req('GET',  `/api/imperium/games/${id}`),
     getValidMoves: (id)        => _req('GET',  `/api/imperium/games/${id}/valid-moves`),
     forecast:      (id, moves, signal) => _req('POST', `/api/imperium/games/${id}/forecast`, { moves }, signal),

@@ -12,7 +12,7 @@
     <!-- Top bar -->
     <div id="top-bar">
         <span class="game-title">IMPERIUM</span>
-        <span class="turn-badge">Turn <span id="turn-num">—</span></span>
+        <span class="turn-badge"><span id="turn-label">Turn</span> <span id="turn-num">—</span></span>
         <div class="player-stats">
             <div class="stat-block">
                 <div class="stat-name p1-text" id="p1-name">—</div>
@@ -67,6 +67,17 @@
                 <span id="replay-caption" role="status"></span>
                 <button type="button" id="skip-replay">Skip replay</button>
             </div>
+            <div id="campaign-replay-controls" hidden aria-label="Campaign replay">
+                <div class="campaign-replay-row">
+                    <button type="button" id="campaign-replay-prev" aria-label="Previous turn">←</button>
+                    <button type="button" id="campaign-replay-play" aria-pressed="false">Play</button>
+                    <button type="button" id="campaign-replay-next" aria-label="Next turn">→</button>
+                    <output id="campaign-replay-caption" aria-live="polite"></output>
+                    <button type="button" id="campaign-replay-exit">Exit replay</button>
+                </div>
+                <input type="range" id="campaign-replay-slider" min="0" max="0" value="0" aria-label="Replay turn">
+                <small id="campaign-replay-note"></small>
+            </div>
             <!-- Legend -->
             <div class="map-legend">
                 <div class="legend-item">
@@ -92,6 +103,7 @@
             <div id="gameover-overlay" class="hidden">
                 <div class="gameover-title" id="gameover-title">—</div>
                 <div class="gameover-subtitle" id="gameover-subtitle">—</div>
+                    <button type="button" class="btn-secondary" id="replay-campaign">Replay campaign</button>
                     <button type="button" class="btn-secondary" id="review-campaign">Review map & timeline</button>
             </div>
         </div>
@@ -106,6 +118,7 @@
                 <div class="sidebar-body" id="sidebar-settings-body" role="region" aria-labelledby="sidebar-settings-toggle" hidden>
 <div class="campaign-tools">
                 <strong id="campaign-title"></strong>
+                <button type="button" id="open-campaign-replay" hidden>Replay campaign</button>
                 <button type="button" id="sound-toggle" aria-pressed="false">Sound off</button>
                 <label for="map-mode">Map view</label>
                 <select id="map-mode"><option value="ownership">Ownership</option><option value="army">Army strength</option><option value="recruitment">Recruitment</option></select>
@@ -177,6 +190,7 @@
     <script src="js/world.js"></script>
     <script src="js/tactics.js"></script>
     <script src="js/sidebar.js"></script>
+    <script src="js/campaign-replay.js"></script>
     <script src="js/game.js"></script>
 </body>
 </html>

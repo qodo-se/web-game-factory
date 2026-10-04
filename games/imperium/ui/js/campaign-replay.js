@@ -17,6 +17,7 @@ const campaignReplay = {
             if(!this.active||event.defaultPrevented||event.isComposing||event.ctrlKey||event.metaKey||event.altKey||event.shiftKey)return;
             if(event.key!=='ArrowLeft'&&event.key!=='ArrowRight')return;
             const target=event.target;
+            if(target.getAttribute('role')==='separator')return;
             if(target.id!=='campaign-replay-slider'&&(target.isContentEditable||target.closest('input,textarea,select')))return;
             event.preventDefault();event.stopPropagation();
             this.pause();cancelAnimationFrame(this.seekFrame);this.seekFrame=null;
@@ -36,7 +37,7 @@ const campaignReplay = {
             this.finalState=structuredClone(state);this.finalValidMoves=validMoves;
             this.savedThreats=document.getElementById('show-threats').checked;
             this.savedSidebar=sessionStorage.getItem('imperium-sidebar-section');
-            this.active=true;selectedFrom=null;pendingMoves=[];validMoves={};
+            this.active=true;document.body.classList.add('is-campaign-replay');selectedFrom=null;pendingMoves=[];validMoves={};
             document.getElementById('show-threats').checked=false;
             document.getElementById('show-threats').disabled=true;
             document.getElementById('gameover-overlay').classList.add('hidden');
@@ -112,7 +113,7 @@ const campaignReplay = {
     exit() {
         if(!this.active)return;
         this.pause();cancelAnimationFrame(this.seekFrame);this.seekFrame=null;
-        this.active=false;state=this.finalState;validMoves=this.finalValidMoves;
+        this.active=false;document.body.classList.remove('is-campaign-replay');state=this.finalState;validMoves=this.finalValidMoves;
         for(const id of ['replay-campaign','open-campaign-replay'])document.getElementById(id).disabled=false;
         document.getElementById('campaign-replay-controls').hidden=true;
         document.getElementById('show-threats').disabled=false;

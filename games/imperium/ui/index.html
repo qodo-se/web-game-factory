@@ -6,6 +6,7 @@
     <title>IMPERIUM — Web Game Factory</title>
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/game.css">
+    <link rel="stylesheet" href="css/polish.css">
 </head>
 <body class="welcome-page">
     <div class="welcome-card">
@@ -27,12 +28,12 @@
             <fieldset class="map-picker">
                 <legend>Theater of War</legend>
                 <div class="map-categories" role="group" aria-label="Map category">
-                    <button type="button" data-category="world" aria-pressed="true">World Campaigns</button>
+                    <button type="button" data-category="world" aria-pressed="true">Regional Maps</button>
                     <button type="button" data-category="historical" aria-pressed="false">Historical Battles</button>
                 </div>
                 <p id="category-description" class="preset-desc">Choose a theater for an open-ended campaign of conquest.</p>
                 <div id="map-grid" class="map-grid" aria-busy="true">
-                    <p>Loading maps…</p>
+                    <div class="map-skeleton" aria-hidden="true"></div><div class="map-skeleton" aria-hidden="true"></div><div class="map-skeleton" aria-hidden="true"></div><p class="sr-only" role="status">Loading maps…</p>
                 </div>
             </fieldset>
             <div id="preset-options" class="form-group">
@@ -45,7 +46,8 @@
 
             <button type="submit" class="btn-primary" id="start-btn">Begin Campaign</button>
 
-            <p id="error-msg" class="error-msg hidden"></p>
+            <p id="error-msg" class="error-msg hidden" role="alert"></p>
+            <button type="button" id="retry-maps" class="btn-secondary" hidden>Retry loading maps</button>
         </form>
         <section id="saved-campaigns" hidden>
             <h2>Your campaigns</h2>

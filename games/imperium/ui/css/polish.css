@@ -1,0 +1,147 @@
+/* Shared presentation layer; map geometry and game rules are unchanged. */
+:root { --bg:#111a1d; --surface:#1c272a; --surface-hi:#273438; --border:#3b494a; --text:#eee9dc; --text-dim:#b3bdb8; --gold:#dfc184; --gold-dim:#dfc18414; --p1:#8ebfe9; --p2:#efa296; --success:#9bcea6; --danger:#f0a096; }
+body { font-family:Arial,sans-serif; }
+button,input,select { font-family:inherit; }
+button,a,input,select,summary { touch-action:manipulation; }
+button { border-radius:5px; }
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible { outline:2px solid var(--gold); outline-offset:3px; }
+button:not(:disabled),a,summary { transition:background-color .15s,color .15s,border-color .15s; }
+input,select { border-radius:5px; }
+input[type=checkbox],input[type=radio] { accent-color:var(--gold); }
+.stat-values,.region-stats,#turn-recap,#campaign-replay-caption { font-variant-numeric:tabular-nums; }
+.welcome-page { background:radial-gradient(ellipse at top,#35413a55,transparent 65%),var(--bg); }
+.welcome-card { width:min(1100px,100%); padding:36px; border-radius:12px; box-shadow:0 16px 60px #0004; background:linear-gradient(135deg,#dfc18405,transparent),var(--surface); }
+.welcome-logo { margin-bottom:28px; }
+.welcome-logo h1 { font-family:Georgia,serif; font-size:2.6rem; text-shadow:none; }
+.new-game-form { display:grid; grid-template-columns:1fr 1fr; gap:0 20px; }
+.map-picker,#preset-options,#start-btn,#error-msg,#retry-maps { grid-column:1/-1; }
+.map-categories { padding:4px; border-radius:8px; background:var(--bg); gap:4px; }
+.map-categories button { background:transparent; border-color:transparent; font-size:14px; }
+.map-categories button[aria-pressed=true] { background:var(--surface-hi); border-color:var(--border); box-shadow:inset 0 -2px var(--gold); }
+.map-card { margin:0; padding:10px; background:#152125; text-transform:none; letter-spacing:0; overflow:hidden; }
+.map-card img { background:#1d3037; }
+.map-card strong { line-height:1.4; font-size:15px; }
+.map-card span { line-height:1.5; font-size:12px; }
+.map-card:has(input:checked) { background:#dfc1840c; box-shadow:0 0 0 1px var(--gold); }
+.map-card:has(input:checked)::after { content:'Selected'; position:absolute; top:18px; left:18px; background:#152125ed; color:var(--gold); padding:4px 8px; border-radius:4px; font-size:11px; }
+.preset-desc { font-style:normal; font-size:13px; line-height:1.6; }
+.map-skeleton { height:205px; border-radius:8px; background:linear-gradient(135deg,#31413e,#202e32); border:1px solid var(--border); }
+#retry-maps { justify-self:center; margin-top:12px; }
+[hidden] { display:none !important; }
+.game-page { height:100dvh; }
+#top-bar { flex-basis:48px; padding:0 14px; gap:20px; }
+#top-bar .game-title { font-family:Georgia,serif; font-size:.95rem; }
+#top-bar .player-stats { gap:24px; }
+#bottom-bar { flex-basis:52px; padding:6px 12px; }
+#bottom-bar .move-hint { font-style:normal; line-height:1.4; }
+#side-panel { flex-basis:256px; }
+.sidebar-toggle { min-height:40px; padding:10px 12px; font-size:12px; letter-spacing:0; }
+.sidebar-toggle[aria-expanded=true] { box-shadow:inset 3px 0 var(--gold); }
+.sidebar-chevron { transition:transform .16s; }
+.sidebar-body { padding:12px; scrollbar-width:thin; scrollbar-color:var(--border) transparent; }
+.region-summary { padding:10px 12px; background:linear-gradient(110deg,#dfc18408,transparent),var(--surface); }
+.region-name { font-weight:600; }
+.region-stats { gap:4px 10px; }
+.campaign-tools { gap:8px; }
+.campaign-tools label { text-transform:none; letter-spacing:0; margin:3px 0; font-size:12px; }
+.campaign-tools button,.order-tools button,#map-mode { background:var(--surface-hi); border-color:var(--border); }
+.move-item { border-bottom-color:#3b494a66; }
+.move-remove { min-width:30px; min-height:30px; }
+.map-navigation { background:#1c272af2; border-color:#70817a; box-shadow:0 2px 8px #0002; }
+#map-navigation-help { max-width:420px; line-height:1.5; border-radius:4px; background:#1c272ae6; }
+.map-legend { background:#1c272ae6; border-radius:5px; border-color:#70817a80; padding:6px 9px; gap:8px 12px; }
+#g-labels .region-hover > text { fill:#fff5ce; stroke:#17252c; stroke-width:3.5px; paint-order:stroke; }
+.report-totals { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin:10px 0; }
+.report-totals span { padding:9px 4px; text-align:center; border-radius:5px; background:#ffffff05; font-size:11px; color:var(--text-dim); }
+.report-totals strong { display:block; color:var(--text); font-size:21px; margin-bottom:4px; }
+.report-group { padding:10px 0; border-top:1px solid #3b494a88; }
+.report-group h3 { font-size:11px; text-transform:uppercase; letter-spacing:.07em; color:var(--text-dim); }
+#turn-recap p { font-size:12px; }
+.log-entry { border-bottom:0; border-left:2px solid var(--border); margin:12px 0; padding:4px 0 4px 10px !important; }
+.log-entry:has(.won) { border-left-color:var(--success); }
+.log-entry:has(.lost) { border-left-color:var(--danger); }
+.region-link { color:var(--text); font-weight:600; text-decoration-color:#dfc18466; }
+.region-link:hover { color:var(--gold); }
+.log-outcome { display:block; font-size:12px; }
+.turn-battles-heading { margin-top:16px; padding-top:12px; }
+#campaign-replay-controls { bottom:12px; left:12px; right:12px; max-width:760px; margin:auto; padding:12px 16px; border-color:#738179; border-radius:10px; background:#1c272af5; box-shadow:0 4px 24px #0005; }
+#campaign-replay-caption { font-size:16px; font-weight:600; }
+#campaign-replay-controls button { min-height:38px; border-color:var(--border); background:var(--surface-hi); }
+#campaign-replay-play { min-width:66px; color:var(--gold); }
+#campaign-replay-slider { height:24px; margin:5px 0; cursor:pointer; }
+.replay-legend { display:flex; flex-wrap:wrap; gap:6px 16px; margin-bottom:4px; font-size:11px; }
+#campaign-replay-note { font-size:10px; }
+.is-campaign-replay .map-legend { display:none; }
+#load-screen { position:fixed; inset:0; z-index:100; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; padding:24px; text-align:center; background:var(--bg); }
+#load-preview { width:min(420px,85vw); max-height:40vh; object-fit:contain; border:1px solid var(--border); border-radius:12px; background:var(--surface); }
+#load-title { font:normal 26px Georgia,serif; color:var(--gold); }
+#load-message { max-width:540px; color:var(--text-dim); font-size:14px; line-height:1.6; }
+#load-actions { display:flex; flex-direction:column; gap:18px; }
+#load-actions a { color:var(--text); font-size:14px; }
+@media (prefers-reduced-motion:no-preference) {
+    .sidebar-body:not([hidden]) { animation:panel-appear .16s ease-out; }
+    @keyframes panel-appear { from { opacity:.5; } to { opacity:1; } }
+}
+@media (max-width:700px) {
+    #top-bar { flex-basis:auto; padding:8px 10px; }
+    #bottom-bar { flex-basis:auto; }
+    #side-panel { flex-basis:auto; }
+    #map-container { min-height:360px; flex-basis:360px; }
+    #campaign-replay-controls { padding:8px; bottom:8px; left:8px; right:8px; }
+    .campaign-replay-row { gap:5px; }
+    #campaign-replay-caption { order:-1; flex-basis:100%; font-size:14px; }
+    #campaign-replay-exit { margin-left:auto; }
+    #campaign-replay-note { display:block; line-height:1.3; }
+    .replay-legend { gap:6px; font-size:10px; }
+}
+@media (max-width:620px) {
+    .welcome-card { padding:24px 14px; }
+    .new-game-form { display:block; }
+    .map-card strong { font-size:13px; }
+    .map-card span { font-size:11px; }
+    .map-card:has(input:checked)::after { top:14px; left:14px; font-size:10px; padding:3px 5px; }
+    .map-card input { top:14px; right:14px; }
+}
+
+/* Map presentation controls. */
+.ui-icon { width:16px; height:16px; flex:0 0 16px; vertical-align:middle; }
+.sidebar-toggle { gap:8px; }
+.map-navigation button { display:inline-flex; align-items:center; justify-content:center; gap:5px; font-size:12px; }
+#map-navigation-help:not([hidden]) { display:block; top:64px; pointer-events:auto; }
+#side-panel { flex-basis:var(--sidebar-width,256px); }
+#sidebar-resize { flex:0 0 7px; background:var(--surface); cursor:col-resize; touch-action:none; border-left:1px solid var(--border); }
+#sidebar-resize:hover,#sidebar-resize:focus-visible { background:var(--gold); outline:none; }
+.resizing-sidebar { cursor:col-resize; user-select:none; }
+#label-size { font:12px Arial,sans-serif; }
+#faction-shape-key { line-height:1.6; color:var(--text); }
+.faction-shapes .map-legend .legend-item:nth-child(2) .legend-dot { border-radius:2px; }
+.faction-shapes .map-legend .legend-item:nth-child(3) .legend-dot { border-radius:0; transform:rotate(45deg); }
+.army-counter { paint-order:stroke fill; }
+.battle-location { margin-top:6px; }
+.map-card .battle-factions { color:var(--text); font-size:12px; line-height:1.5; margin-top:5px; }
+#gameover-overlay { background:linear-gradient(0deg,#101a1de6,#101a1d40); padding:24px; overflow-y:auto; }
+.gameover-card { width:min(460px,100%); margin:auto; padding:28px; border:1px solid #dfc18466; background:#1c272af5; border-radius:12px; box-shadow:0 16px 60px #0005; text-align:center; }
+.ending-kicker { text-transform:uppercase; letter-spacing:.16em; font-size:11px; color:var(--text-dim); margin-bottom:16px; }
+.gameover-title { font:normal clamp(24px,5vw,40px) Georgia,serif; letter-spacing:.15em; }
+.gameover-subtitle { margin:16px 0 24px; font-size:14px; line-height:1.6; letter-spacing:0; }
+.gameover-card .btn-secondary { display:block; width:100%; margin:10px 0 0 !important; padding:12px; text-decoration:none; color:var(--text); font:13px Arial,sans-serif; border-radius:5px; }
+.gameover-card #replay-campaign { background:var(--gold); color:var(--bg); border-color:var(--gold); font-weight:600; }
+.is-campaign-replay #orders-section,.is-campaign-replay #rules-section,.is-campaign-replay #end-turn-btn,
+.is-campaign-replay #planning-preview,.is-campaign-replay #map-navigation-help,.is-campaign-replay #map-help-toggle { display:none !important; }
+.is-campaign-replay #bottom-bar { min-height:44px; }
+#map-container:fullscreen { width:100vw; height:100dvh; background:#213943; }
+.map-focus #map-container { position:fixed; inset:0; z-index:60; width:100%; height:100dvh; }
+.map-focus #top-bar,.map-focus #side-panel,.map-focus #bottom-bar,.map-focus #sidebar-resize,.map-focus #battle-status { visibility:hidden; }
+@media (max-width:700px) {
+    #sidebar-resize { display:none; }
+    #side-panel { flex-basis:auto; }
+    .map-navigation { left:8px; right:8px; justify-content:flex-end; flex-wrap:wrap; }
+    .map-navigation button { padding:4px 6px; min-height:32px; }
+    #map-navigation-help:not([hidden]) { top:98px; left:8px; right:8px; max-width:none; }
+    .is-campaign-replay #bottom-bar { grid-template-columns:1fr auto; }
+    .is-campaign-replay #move-hint { display:none; }
+    .gameover-card { padding:18px; }
+}
+#map-theme { font:12px Arial,sans-serif; }
+#map-container[data-theme="dark"] { background:#0c1921; color-scheme:dark; }
+.campaign-tools label[for] { flex-basis:100%; }

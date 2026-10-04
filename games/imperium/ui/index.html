@@ -24,38 +24,17 @@
                 <label for="campaign-name">Campaign name</label>
                 <input type="text" id="campaign-name" placeholder="My northern campaign" maxlength="80">
             </div>
-            <div class="form-group">
-                <label>Map</label>
-                <div class="mode-tabs">
-                    <button type="button" class="tab active" data-mode="preset">Historical Preset</button>
-                    <button type="button" class="tab" data-mode="random">Random Map</button>
+            <fieldset class="map-picker">
+                <legend>Theater of War</legend>
+                <div id="map-grid" class="map-grid" aria-busy="true">
+                    <p>Loading maps…</p>
                 </div>
-            </div>
-
+            </fieldset>
             <div id="preset-options" class="form-group">
-                <label for="preset-select">Theater of War</label>
-                <select id="preset-select">
-                    <option value="">Loading maps…</option>
-                </select>
                 <p class="preset-desc" id="preset-desc"></p>
                 <label for="kingdom-select">Starting kingdom</label>
                 <select id="kingdom-select" disabled><option>Loading kingdoms…</option></select>
                 <p class="preset-desc" id="kingdom-preview" aria-live="polite"></p>
-            </div>
-
-            <div id="random-options" class="form-group hidden">
-                <label>Map Size</label>
-                <div class="size-options">
-                    <label class="radio-option">
-                        <input type="radio" name="map-size" value="small" checked> Small
-                    </label>
-                    <label class="radio-option">
-                        <input type="radio" name="map-size" value="medium"> Medium
-                    </label>
-                    <label class="radio-option">
-                        <input type="radio" name="map-size" value="large"> Large
-                    </label>
-                </div>
             </div>
 
             <button type="submit" class="btn-primary" id="start-btn">Begin Campaign</button>

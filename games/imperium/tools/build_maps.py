@@ -22,6 +22,18 @@ BOUNDS = {
     'eastern_europe': [10, 40, 55, 62], 'mediterranean': [-12, 24, 49, 52],
     'middle_east': [18, 12, 72, 45], 'central_asia': [44, 25, 136, 61],
     'india': [62, 5, 98, 37.5], 'southeast_asia': [90, -11, 133, 25],
+    'americas': [-170, -57, -30, 78],
+    'africa_middle_east': [-19, -36, 64, 43],
+    'southeast_asia_oceania': [90, -48, 180, 26],
+}
+
+
+# Restrict expanded theaters to their continents, rather than assigning nearby
+# European/Asian land to the closest gameplay region across an ocean.
+COUNTRIES = {
+    'americas': set('CAN USA MEX GRL BLZ GTM HND SLV NIC CRI PAN CUB HTI DOM JAM BHS TTO BRB ATG DMA GRD KNA LCA VCT COL VEN GUY SUR ECU PER BRA BOL PRY URY ARG CHL PRI FLK FRA NLD MAF SXM CUW ABW TCA SPM MSR VIR BLM AIA VGB CYM BMU USG'.split()),
+    'africa_middle_east': set('MAR SAH DZA TUN LBY EGY MRT MLI NER TCD SDN SDS BFA SEN GMB GNB GIN SLE LBR CIV GHA TGO BEN NGA CMR CAF GNQ GAB COG COD AGO NAM ZAF BWA ZWE ZMB MWI MOZ SWZ LSO MDG TZA BDI RWA UGA KEN ETH ERI DJI SOM SOL COM SYC MUS STP CPV TUR SYR LBN ISR PSX JOR IRQ IRN SAU YEM OMN ARE QAT BHR KWT'.split()),
+    'southeast_asia_oceania': set('MMR THA LAO KHM VNM MYS SGP BRN IDN PHL TLS PNG AUS NZL'.split()),
 }
 
 
@@ -47,7 +59,8 @@ def half_plane(a, b):
 
 def build(source, only=None):
     reader = shapefile.Reader(str(source), encoding='utf-8')
-    provinces = [shape(s.__geo_interface__).buffer(0) for s in reader.shapes()]
+    provinces = [(r.record['adm0_a3'], shape(r.shape.__geo_interface__).buffer(0))
+                 for r in reader.iterShapeRecords()]
     for key, coords in ANCHORS.items():
         if only and key != only:
             continue
@@ -67,7 +80,9 @@ def build(source, only=None):
                 fixed[region_id] = transform(project, shape(feature['geometry']))
         generated_ids = [i for i in range(len(points)) if i not in fixed]
         pieces = []
-        for province in provinces:
+        for country, province in provinces:
+            if key in COUNTRIES and country not in COUNTRIES[key]:
+                continue
             if province.intersects(frame):
                 # Keep original topology until after dissolving province boundaries.
                 g = transform(project, province.intersection(frame))

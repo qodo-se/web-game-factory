@@ -1,11 +1,11 @@
 import threading
 from dataclasses import asdict
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Literal
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from games.imperium.engine.game_engine import GameEngine
-from games.imperium.engine.models import MapSize, Move, TurnActions
+from games.imperium.engine.models import Move, TurnActions
 from games.imperium.engine.presets import list_presets
 from games.imperium.engine.strategy import supplied_regions, growth, defense_factor, forecast
 from games.imperium.engine.turn_resolver import validate_actions, ValidationError
@@ -28,9 +28,8 @@ def _get_game_lock(game_id):
 class NewGameRequest(BaseModel):
     player_name: str = Field(default="Player", max_length=40)
     campaign_name: str = Field(default="", max_length=80)
-    mode: str = "preset"          # "preset" | "random"
-    preset_id: Optional[str] = "mediterranean"
-    map_size: Optional[str] = "small"
+    mode: Literal["preset"] = "preset"
+    preset_id: str = "mediterranean"
     start_region_id: Optional[int] = Field(default=None, ge=0, strict=True)
 
 
@@ -129,30 +128,18 @@ def get_starts(preset_id: str):
 @router.post("/games")
 def new_game(req: NewGameRequest):
     try:
-        if req.mode == "preset":
-            engine = GameEngine.from_preset(
-                preset_id=req.preset_id,
-                start_region_id=req.start_region_id,
-                player1_name=req.player_name,
-                player2_name="AI",
-                player1_is_ai=False,
-                player2_is_ai=True,
-            )
-        else:
-            if req.start_region_id is not None:
-                raise ValueError("Starting kingdoms are available on preset maps.")
-            size_map = {"small": MapSize.SMALL, "medium": MapSize.MEDIUM, "large": MapSize.LARGE}
-            engine = GameEngine.new_game(
-                map_size=size_map.get(req.map_size, MapSize.SMALL),
-                player1_name=req.player_name,
-                player2_name="AI",
-                player1_is_ai=False,
-                player2_is_ai=True,
-            )
+        engine = GameEngine.from_preset(
+            preset_id=req.preset_id,
+            start_region_id=req.start_region_id,
+            player1_name=req.player_name,
+            player2_name="AI",
+            player1_is_ai=False,
+            player2_is_ai=True,
+        )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-    engine.campaign_name = req.campaign_name.strip() or f"{req.player_name} — {(req.preset_id or 'Random map').replace('_', ' ').title() if req.mode == 'preset' else 'Random map'}"
+    engine.campaign_name = req.campaign_name.strip() or f"{req.player_name} — {req.preset_id.replace('_', ' ').title()}"
     game_id = store.create(engine)
     return {"game_id": game_id, "state": _serialize_state(engine), "history": engine.history}
 

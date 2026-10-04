@@ -693,6 +693,19 @@ function plannedMoveArrow(from, to, matrix) {
     const group=svgEl('g',{'data-from':from.id,'data-to':to.id,'class':'planned-arrow'});
     const title=svgEl('title');title.textContent=`${from.name} → ${to.name}`;group.append(title);
     const path=`M ${s.x} ${s.y} Q ${c.x} ${c.y} ${h.x} ${h.y}`;
+    const hit=svgEl('path',{d:`M ${s.x} ${s.y} Q ${c.x} ${c.y} ${t.x} ${t.y}`,
+        fill:'none',stroke:'transparent','stroke-width':18,'stroke-linecap':'round',
+        'vector-effect':'non-scaling-stroke',class:'order-hit',tabindex:0,role:'button',
+        'aria-label':`Cancel ${from.name} to ${to.name}`});
+    const cancel=event=>{
+        event.preventDefault();event.stopPropagation();
+        // While choosing a destination, an existing arrow must not steal the order.
+        if (event.type === 'click' && selectedFrom !== null) handleRegionClick(planning.regionAt(event));
+        else removePendingMove(from.id);
+    };
+    hit.addEventListener('click',cancel);
+    hit.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' ')cancel(event);});
+    group.append(hit);
     for (const [stroke,width] of [['#182730',7],['#ffe09a',3.5]]) {
         group.append(svgEl('path',{d:path,fill:'none',stroke,'stroke-width':width,
             'stroke-linecap':'round','vector-effect':'non-scaling-stroke','class':'planned-arrow-shaft'}));
@@ -708,9 +721,9 @@ function renderTerrainEffects(paths,selected,targets,committed,transform='',outl
     const fragment=document.createDocumentFragment();
     for(const feature of paths) {
         const active=feature.id===selected, target=targets.has(feature.id), moving=committed.has(feature.id);
-        if(!active && !target && !moving)continue;
+        if(selected===null && !moving)continue;
         fragment.appendChild(svgEl('path',{d:feature.d,transform,'fill-rule':'evenodd',
-            fill:moving?'rgba(30,37,37,.2)':outlined?'none':active?'rgba(255,230,130,.25)':'rgba(230,190,70,.2)',
+            fill:!active && !target && selected!==null?'rgba(5,12,20,.32)':moving?'rgba(30,37,37,.2)':outlined?target?'rgba(230,190,70,.14)':'none':active?'rgba(255,230,130,.25)':'rgba(230,190,70,.2)',
             stroke:outlined && (active||target)?active?'#f6eacb':'#d4b772':'none',
             'stroke-width':active?2:1.5}));
     }
@@ -805,6 +818,7 @@ function renderOverlay(idxMap, cw, ch) {
         return {x:best.x+width/2, y:best.y+10};
     }
 
+    const projections = planning.projections();
     for (const r of Object.values(regions)) {
         const x = toSVGX(r.x), y = toSVGY(r.y);
         const isSelected  = r.id === selectedFrom;
@@ -871,6 +885,18 @@ function renderOverlay(idxMap, cw, ch) {
         });
         armyEl.textContent = strategicView.mode==='recruitment'?`+${r.pop_rate}`:r.army;
         g.appendChild(armyEl);
+        const projection=projections.get(r.id);
+        if(projection) {
+            const friendly=r.owner==='player_1';
+            const value=friendly?(projection.outgoing?0:r.army+r.pop_rate)+projection.incoming:projection.incoming;
+            const caption=friendly?`→ ${value}`:`⚔ ${value}`;
+            const position=labelPosition(x,y,caption);
+            const badge=svgEl('text',{x:position.x,y:position.y,'text-anchor':'middle',class:'troop-projection',
+                'data-region':r.id});
+            badge.textContent=caption;
+            const title=svgEl('title'); title.textContent=friendly?'Projected garrison after recruitment and your orders, before enemy actions':'Combined planned attackers, including recruitment; battle outcome not predicted';
+            badge.append(title);g.append(badge);
+        }
 
         // Region name — just below the army circle
         const label = labelPosition(x, y, r.name);
@@ -907,6 +933,7 @@ function renderOverlay(idxMap, cw, ch) {
 
 function renderMap() {
     if (!state) return;
+    document.getElementById('map-world').classList.toggle('is-planning', selectedFrom !== null);
     scaleCache = computeScale(state.regions);
     if (atlas.data) atlas.prepare(state.regions);
     const canvasData = atlas.data
@@ -942,7 +969,7 @@ function initCanvasEvents() {
     });
 
     let hoverFrame=0, latestPointer;
-    canvas.addEventListener('mousemove', e => {
+    document.getElementById('map-world').addEventListener('mousemove', e => {
         latestPointer={clientX:e.clientX,clientY:e.clientY};
         if(hoverFrame)return;
         hoverFrame=requestAnimationFrame(() => {
@@ -989,6 +1016,7 @@ function handleRegionClick(id) {
     if (selectedFrom !== null) {
         if (id === selectedFrom) {
             selectedFrom = null;
+            clearRegionInfo(); lastHoverId=null;
             renderMap(); updateMoveHint(); return;
         }
 
@@ -996,7 +1024,8 @@ function handleRegionClick(id) {
         if (targets.includes(id)) {
             orderHistory.record([...pendingMoves,{ from_region_id: selectedFrom, to_region_id: id }]);
             selectedFrom = null;
-            renderMap(); updateMovesList(); updateMoveHint(); return;
+            clearRegionInfo(); lastHoverId=null;
+            renderMap(); planning.pulse(id); updateMovesList(); updateMoveHint(); return;
         }
 
         // Switch selection to another own region
@@ -1006,6 +1035,7 @@ function handleRegionClick(id) {
         }
 
         selectedFrom = null;
+        clearRegionInfo(); lastHoverId=null;
         renderMap(); updateMoveHint(); return;
     }
 
@@ -1020,6 +1050,7 @@ function handleRegionClick(id) {
 function removePendingMove(fromId) {
     if (resolving || gameOver) return;
     orderHistory.record(pendingMoves.filter(m => m.from_region_id !== fromId));
+    selectedFrom=null; clearRegionInfo(); lastHoverId=null;
     renderMap(); updateMovesList(); updateMoveHint();
 }
 
@@ -1037,6 +1068,7 @@ function updateTopBar() {
 }
 
 function updateRegionInfo(id) {
+    planning.hidePreview();
     clearTimeout(forecastTimer); forecastController?.abort();
     const sequence = ++forecastSequence;
     const r = state.regions[id];
@@ -1054,23 +1086,26 @@ function updateRegionInfo(id) {
     if (selectedFrom !== null && (validMoves[selectedFrom]||[]).includes(id)) {
         const orders=[...pendingMoves.filter(m=>m.from_region_id!==selectedFrom),{from_region_id:selectedFrom,to_region_id:id}];
         const target=document.getElementById('battle-forecast');target.textContent='Calculating forecast…';
+        planning.preview(id, `${r.name} · Calculating forecast…`);
         forecastTimer=setTimeout(()=>{
             forecastController=new AbortController();
             api.forecast(gameId,orders,forecastController.signal).then(result=>{
                 if(sequence!==forecastSequence || result.turn!==state.turn)return;
                 const f=result.forecasts.find(item=>item.target===id);if(!f)return;
+                planning.preview(id, f.friendly?`${r.name} · +${f.army} reinforcements (includes recruits)`:`${r.name} · ${f.army} attackers · ${f.effective_defense} defense · ${Math.round(f.win_probability*100)}% victory chance. Includes recruits and queued attacks; enemy orders may change this.`);
                 target.innerHTML=f.friendly?`<p>Reinforce with <b>${f.army}</b> troops.</p>`:
                     `<p class="forecast-odds">${Math.round(f.win_probability*100)}% estimated victory</p>
                     <details class="forecast-details"><summary>Forecast details</summary><p>${f.army} troops · ${f.effective_attack} effective strength against ${f.effective_defense} defense</p>
                     <p>Losses if victorious: ${f.losses_on_win.join('–')}. Potential retreat survivors if defeated: ${f.retreat_survivors_on_loss.join('–')}.</p>
                     <p>Approach: ${f.crossings.map(escHtml).join(', ')}${f.isolated_sources.length?' · Isolated attackers':''}</p>
                     <small>Includes recruits and combined planned attacks. Assumes defenders stay; enemy moves can change the outcome. Retreat requires a friendly destination.</small></details>`;
-            }).catch(error=>{if(error.name!=='AbortError' && sequence===forecastSequence)target.textContent='Forecast unavailable. Hover again to retry.';});
+            }).catch(error=>{if(error.name!=='AbortError' && sequence===forecastSequence){target.textContent='Forecast unavailable. Hover again to retry.';planning.preview(id,'Forecast unavailable. Hover again to retry.');}});
         },120);
     }
 }
 
 function clearRegionInfo() {
+    planning.hidePreview();
     clearTimeout(forecastTimer); forecastController?.abort();
     ++forecastSequence;
     document.getElementById('region-info').innerHTML =
@@ -1149,6 +1184,7 @@ async function endTurn() {
     if (resolving || gameOver) return;
     const submittedTurn=state.turn;
     setResolving(true);
+    planning.clearDrag(); planning.hidePreview();
     selectedFrom = null;
     clearTimeout(forecastTimer); forecastController?.abort();
     ++forecastSequence;
@@ -1256,6 +1292,7 @@ async function init() {
     document.addEventListener('visibilitychange', () => document.body.classList.toggle('world-paused', document.hidden));
     mapCamera.init(() => { if (state) renderMap(); });
     initCanvasEvents();
+    planning.init();
 
     // Resize canvas when window resizes (re-render the Voronoi map)
     let resizeTimer;

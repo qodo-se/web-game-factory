@@ -6,10 +6,20 @@ const mapCamera = {
     init(onSettle) {
         this.viewport = document.getElementById('map-container');
         this.world = document.getElementById('map-world');
-        const canvas = document.getElementById('map-canvas');
+        // Terrain and interactive SVG orders share one gesture surface.
+        const surface = this.world;
         this.onSettle = onSettle;
         let pointer = null, suppressClick = false;
-        canvas.addEventListener('wheel', e => {
+        this.cancelGesture = () => {
+            if (!pointer) return;
+            const id = pointer.id;
+            pointer = null;
+            suppressClick = true;
+            this.dragging = false;
+            this.viewport.classList.remove('is-panning');
+            if (surface.hasPointerCapture(id)) surface.releasePointerCapture(id);
+        };
+        surface.addEventListener('wheel', e => {
             e.preventDefault();
             const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? this.viewport.clientHeight : 1;
             if (e.shiftKey && !e.ctrlKey) {
@@ -23,40 +33,49 @@ const mapCamera = {
                     e.clientX - rect.left, e.clientY - rect.top);
             }
         }, { passive: false });
-        canvas.addEventListener('pointerdown', e => {
+        surface.addEventListener('pointerdown', e => {
             if (pointer || (e.button !== 0 && e.button !== 1)) return;
             suppressClick = false;
             pointer = { id:e.pointerId, startX:e.clientX, startY:e.clientY,
-                x:e.clientX, y:e.clientY };
-            canvas.setPointerCapture(e.pointerId);
+                x:e.clientX, y:e.clientY, source:e.target.closest('.order-hit') ? null : planning.sourceAt(e) };
             if (e.button === 1) e.preventDefault();
         });
-        canvas.addEventListener('pointermove', e => {
+        surface.addEventListener('pointermove', e => {
             if (!pointer || e.pointerId !== pointer.id) return;
             if (!this.dragging && Math.hypot(e.clientX-pointer.startX, e.clientY-pointer.startY) > 5) {
                 this.dragging = true;
-                this.viewport.classList.add('is-panning');
+                surface.setPointerCapture(e.pointerId);
+                if (pointer.source !== null) planning.begin(pointer.source);
+                else this.viewport.classList.add('is-panning');
             }
-            if (this.dragging) this.pan(e.clientX-pointer.x, e.clientY-pointer.y);
+            if (this.dragging) {
+                if (pointer.source !== null) planning.move(e);
+                else this.pan(e.clientX-pointer.x, e.clientY-pointer.y);
+            }
             pointer.x=e.clientX; pointer.y=e.clientY;
         });
         const finish = e => {
             if (!pointer || e.pointerId !== pointer.id) return;
             suppressClick = this.dragging || e.type === 'pointercancel';
+            if (this.dragging && pointer.source !== null) planning.finish(e, e.type !== 'pointerup');
             pointer = null;
             this.dragging = false;
             this.viewport.classList.remove('is-panning');
-            if (canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
+            if (surface.hasPointerCapture(e.pointerId)) surface.releasePointerCapture(e.pointerId);
         };
-        canvas.addEventListener('pointerup', finish);
-        canvas.addEventListener('pointercancel', finish);
-        canvas.addEventListener('lostpointercapture', finish);
-        canvas.addEventListener('click', e => {
+        window.addEventListener('pointerup', finish);
+        surface.addEventListener('pointercancel', finish);
+        // Touch starts with implicit capture on the canvas. Its loss during
+        // transfer to the shared surface must not cancel the active gesture.
+        surface.addEventListener('lostpointercapture', e => {
+            if (e.target === surface) finish(e);
+        });
+        surface.addEventListener('click', e => {
             if (!suppressClick) return;
             suppressClick = false;
             e.preventDefault(); e.stopImmediatePropagation();
         }, true);
-        canvas.addEventListener('auxclick', e => { if (e.button === 1) e.preventDefault(); });
+        surface.addEventListener('auxclick', e => { if (e.button === 1) e.preventDefault(); });
         document.getElementById('map-zoom-in').addEventListener('click', () => this.zoomCenter(1.3));
         document.getElementById('map-zoom-out').addEventListener('click', () => this.zoomCenter(1/1.3));
         document.getElementById('map-reset').addEventListener('click', () => this.reset());
@@ -100,6 +119,7 @@ const mapCamera = {
         this.onSettle();
     },
     apply() {
+        planning.hidePreview();
         const w=this.viewport.clientWidth, h=this.viewport.clientHeight;
         this.x=Math.max(w*(1-this.zoom), Math.min(0,this.x));
         this.y=Math.max(h*(1-this.zoom), Math.min(0,this.y));

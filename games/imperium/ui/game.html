@@ -51,6 +51,7 @@
                 <g id="g-connections"></g>
                 <g id="g-arrows"></g>
                 <g id="g-labels"></g>
+                <g id="g-planning" pointer-events="none"></g>
                 <g id="g-replay" pointer-events="none"></g>
             </svg>
 
@@ -61,7 +62,8 @@
                 <button type="button" id="map-zoom-in" aria-label="Zoom in" title="Zoom in (+)">+</button>
                 <button type="button" id="map-reset" title="Reset map view (0)">Reset view</button>
             </div>
-            <p id="map-navigation-help">Scroll or pinch to zoom · Drag to pan · Shift + scroll to pan</p>
+            <p id="map-navigation-help">Drag armies to move · On touch, drag counters to move or land to pan · Shift-drag to pan · Scroll to zoom · Esc to cancel</p>
+            <div id="planning-preview" hidden role="status"></div>
 
             <div id="replay-controls" hidden>
                 <span id="replay-caption" role="status"></span>
@@ -191,6 +193,7 @@
     <script src="js/tactics.js"></script>
     <script src="js/sidebar.js"></script>
     <script src="js/campaign-replay.js"></script>
+    <script src="js/planning.js"></script>
     <script src="js/game.js"></script>
 </body>
 </html>

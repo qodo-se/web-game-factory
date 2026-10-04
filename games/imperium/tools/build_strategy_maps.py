@@ -14,6 +14,9 @@ from shapely.ops import unary_union, transform
 
 ROOT = Path(__file__).resolve().parents[1]
 SEAS = {
+    'americas': [('Pacific Ocean',-133,-8),('Atlantic Ocean',-42,25),('Caribbean Sea',-74,15)],
+    'africa_middle_east': [('Atlantic Ocean',-10,-15),('Indian Ocean',57,-12),('Arabian Sea',60,16)],
+    'southeast_asia_oceania': [('Indian Ocean',106,-25),('Pacific Ocean',166,5),('Tasman Sea',163,-36)],
     'india': [('Arabian Sea',66,16),('Bay of Bengal',88,13)],
     'mediterranean': [('Mediterranean Sea',18,34),('Black Sea',34,43)],
     'europe': [('Atlantic Ocean',-9,49),('North Sea',3,57),('Black Sea',34,43)],
@@ -33,7 +36,7 @@ def lines(g):
             yield from lines(child)
 
 
-def build(archive):
+def build(archive, only=None):
     rivers=[]
     for item in shapefile.Reader(str(archive)).iterShapeRecords():
         p=item.record.as_dict()
@@ -42,6 +45,7 @@ def build(archive):
     folder=ROOT/'engine/presets/geography';folder.mkdir(exist_ok=True)
     for path in sorted((ROOT/'ui/maps').glob('*.json')):
         data=json.loads(path.read_text());key=data['id']
+        if only and key != only: continue
         preset=runpy.run_path(str(ROOT/'engine/presets'/f'{key}.py'))['PRESET']
         west,south,east,north=data['bounds']
         project=lambda x,y:((x-west)/(east-west),(north-y)/(north-south))
@@ -99,4 +103,4 @@ def build(archive):
         print(key,len(routes),'routes,',len(waterways),'river segments')
 
 
-if __name__=='__main__':build(Path(sys.argv[1]))
+if __name__=='__main__':build(Path(sys.argv[1]), sys.argv[2] if len(sys.argv)>2 else None)

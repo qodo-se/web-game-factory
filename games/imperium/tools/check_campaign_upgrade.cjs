@@ -12,7 +12,7 @@ const base=process.env.IMPERIUM_TEST_API||'http://127.0.0.1:8080';
   await page.addInitScript(base=>localStorage.setItem('IMPERIUM_API_BASE',base),base);
   await page.goto(ui);await page.waitForFunction(()=>!document.getElementById('start-btn').disabled);
   await page.locator('#campaign-name').fill('The Northern Road');
-  await page.locator('#preset-select').selectOption('india');await page.locator('#start-btn').click();
+  await page.locator('input[value="india"]').check();await page.waitForFunction(()=>!document.getElementById('start-btn').disabled);await page.locator('#start-btn').click();
   await page.waitForFunction(()=>typeof atlas!=='undefined'&&atlas.geometry);
   assert.equal(await page.locator('#campaign-title').textContent(),'The Northern Road');
   const initial=await page.evaluate(()=>({id:gameId,turn:state.turn,from:state.player_1.capital,

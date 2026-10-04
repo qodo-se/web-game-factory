@@ -9,7 +9,7 @@ const base=process.env.IMPERIUM_TEST_API||'http://127.0.0.1:8080';
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.addInitScript(base=>localStorage.setItem('IMPERIUM_API_BASE',base),base);
   await page.goto(ui);await page.waitForFunction(()=>!document.getElementById('start-btn').disabled);
-  await page.selectOption('#preset-select','india');
+  await page.locator('input[value="india"]').check();await page.waitForFunction(()=>!document.getElementById('start-btn').disabled);
   await page.waitForFunction(()=>!document.getElementById('kingdom-select').disabled);
   await page.selectOption('#kingdom-select','36');
   assert.match(await page.locator('#kingdom-preview').textContent(),/Kashyap Meer/);

@@ -1,111 +1,106 @@
 (async function () {
-    const form       = document.getElementById('new-game-form');
-    const startBtn   = document.getElementById('start-btn');
-    const errorMsg   = document.getElementById('error-msg');
-    const presetSel  = document.getElementById('preset-select');
-    const presetDesc = document.getElementById('preset-desc');
-    const presetOpts = document.getElementById('preset-options');
-    const randomOpts = document.getElementById('random-options');
-    const tabs       = document.querySelectorAll('.mode-tabs .tab');
-
-    campaigns.render();
-    let mode = 'preset';
-    let presetsData = [];
-    let starts = [], loadSequence = 0;
+    const form = document.getElementById('new-game-form');
+    const startBtn = document.getElementById('start-btn');
+    const errorMsg = document.getElementById('error-msg');
+    const grid = document.getElementById('map-grid');
+    const description = document.getElementById('preset-desc');
     const kingdom = document.getElementById('kingdom-select');
     const preview = document.getElementById('kingdom-preview');
+    let selected = '', starts = [], sequence = 0, ready = false, submitting = false;
+    campaigns.render();
+
+    function updateControls() {
+        form.querySelectorAll('input, select, button').forEach(el => { el.disabled = submitting; });
+        kingdom.disabled = submitting || !ready;
+        startBtn.disabled = submitting || !ready;
+    }
+    function showError(message) {
+        errorMsg.textContent = message;
+        errorMsg.classList.remove('hidden');
+    }
     function previewKingdom() {
         const choice = starts.find(c => String(c.id ?? '') === kingdom.value);
         preview.textContent = choice ? `${choice.regions.join(' · ')}. ${choice.army} troops · +${choice.growth} recruits/turn. Rival seat: ${choice.rival}. ${choice.difficulty} — based on starting army strength, not a victory prediction.` : '';
     }
     kingdom.addEventListener('change', previewKingdom);
-
-    // ── Mode tabs ────────────────────────────────────────────────────────────
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            tabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            mode = tab.dataset.mode;
-            startBtn.disabled = mode === 'preset' && kingdom.disabled;
-            if (mode === 'preset') {
-                presetOpts.classList.remove('hidden');
-                randomOpts.classList.add('hidden');
-            } else {
-                presetOpts.classList.add('hidden');
-                randomOpts.classList.remove('hidden');
-            }
-        });
-    });
-
-    // ── Load presets ─────────────────────────────────────────────────────────
-    function showError(msg) {
-        errorMsg.textContent = msg;
-        errorMsg.classList.remove('hidden');
-    }
-
-    async function updateDesc() {
-        const selected = presetsData.find(p => p.id === presetSel.value);
-        presetDesc.textContent = selected ? selected.description : '';
-        const sequence = ++loadSequence;
-        kingdom.disabled = true; startBtn.disabled = mode === 'preset';
-        preview.textContent = 'Loading starting kingdoms…';
+    async function chooseMap(preset) {
+        if (submitting) return;
+        selected = preset.id;
+        description.textContent = preset.description;
+        errorMsg.classList.add('hidden');
+        const request = ++sequence;
+        ready = false;
+        kingdom.replaceChildren(new Option('Loading kingdoms…', ''));
+        preview.textContent = '';
+        updateControls();
         try {
-            const choices = await api.getStarts(presetSel.value);
-            if (sequence !== loadSequence) return;
+            const choices = await api.getStarts(selected);
+            if (request !== sequence) return;
+            if (!choices.length) throw new Error('No starting kingdoms available. Choose another map.');
             starts = choices;
             kingdom.replaceChildren(...choices.map(c => new Option(c.id === null ? `Recommended — ${c.name}` : c.name, c.id ?? '')));
-            kingdom.disabled = false; startBtn.disabled = false; previewKingdom();
+            ready = true;
+            previewKingdom();
         } catch (error) {
-            if (sequence !== loadSequence) return;
-            preview.textContent = 'Kingdoms unavailable. Choose another map to retry.';
+            if (request !== sequence) return;
+            kingdom.replaceChildren(new Option('Kingdoms unavailable', ''));
             showError(error.message);
+        } finally {
+            if (request === sequence) updateControls();
         }
     }
-
-    presetSel.addEventListener('change', updateDesc);
-
-    // ── Form submit — registered before async load so early clicks are caught ─
-    startBtn.disabled = true;
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        if (startBtn.disabled) return;
-        errorMsg.classList.add('hidden');
-
+    updateControls();
+    form.addEventListener('submit', async event => {
+        event.preventDefault();
+        if (submitting || !ready) return;
         const playerName = document.getElementById('player-name').value.trim() || 'Consul';
-        startBtn.disabled = true;
+        const body = {
+            player_name: playerName,
+            campaign_name: document.getElementById('campaign-name').value.trim(),
+            mode: 'preset', preset_id: selected,
+            start_region_id: kingdom.value === '' ? null : Number(kingdom.value),
+        };
+        submitting = true;
+        updateControls();
+        errorMsg.classList.add('hidden');
         startBtn.textContent = 'Marshalling forces…';
-
-        const body = { player_name: playerName, campaign_name: document.getElementById('campaign-name').value.trim(), mode };
-        if (mode === 'preset') {
-            body.preset_id = presetSel.value;
-            body.start_region_id = kingdom.value === '' ? null : Number(kingdom.value);
-        } else {
-            body.map_size = document.querySelector('input[name="map-size"]:checked').value;
-        }
-
         try {
             const result = await api.newGame(body);
             campaigns.remember(result.game_id, result.state);
             sessionStorage.setItem('gameId', result.game_id);
             sessionStorage.setItem('playerName', playerName);
-            sessionStorage.setItem('presetId', mode === 'preset' ? body.preset_id : '');
+            sessionStorage.setItem('presetId', body.preset_id);
             window.location.href = 'game.html';
-        } catch (e) {
-            showError(e.message);
-            startBtn.disabled = false;
+        } catch (error) {
+            showError(error.message);
+            submitting = false;
+            updateControls();
             startBtn.textContent = 'Begin Campaign';
         }
     });
-
-    // ── Load presets (after handler is registered) ────────────────────────────
     try {
-        presetsData = await api.getPresets();
-        presetSel.innerHTML = presetsData
-            .map(p => `<option value="${p.id}">${p.name} (${p.region_count} regions)</option>`)
-            .join('');
-        await updateDesc();
-    } catch (e) {
-        presetSel.innerHTML = '<option value="">Failed to load</option>';
-        showError(e.message);
+        const presets = await api.getPresets();
+        if (!presets.length) throw new Error('No maps available. Please reload to try again.');
+        grid.replaceChildren(...presets.map((preset, index) => {
+            const card = document.createElement('label');
+            card.className = 'map-card';
+            const radio = document.createElement('input');
+            radio.type = 'radio'; radio.name = 'preset'; radio.value = preset.id;
+            radio.checked = index === 0;
+            radio.addEventListener('change', () => { if (radio.checked) chooseMap(preset); });
+            const image = document.createElement('img');
+            image.src = `maps/thumbnails/${encodeURIComponent(preset.id)}.svg`;
+            image.alt = ''; image.width = 300; image.height = 180;
+            const title = document.createElement('strong'); title.textContent = preset.name;
+            const detail = document.createElement('span'); detail.textContent = `${preset.region_count} regions`;
+            card.append(radio, image, title, detail);
+            return card;
+        }));
+        grid.setAttribute('aria-busy', 'false');
+        await chooseMap(presets[0]);
+    } catch (error) {
+        grid.textContent = 'Maps unavailable. Please reload to try again.';
+        grid.setAttribute('aria-busy', 'false');
+        showError(error.message);
     }
 })();

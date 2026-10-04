@@ -80,15 +80,26 @@ The boundary builder records the exact source feature IDs in the GeoJSON.
 
 ## Map navigation
 
-Preset and random maps support cursor-centered wheel/trackpad pinch zoom (1–5×),
-left-button or middle-button drag to pan, horizontal scrolling, Shift+scroll to
-pan, and fixed +/−/Reset view controls. Focus the map to use +/−, arrow keys, and
-0/Home to reset. Camera position survives turns and adjusts on viewport resize.
-Dragging suppresses territory clicks. Atlas geometry is repainted at higher
+New campaigns use the seven curated presets. Existing random campaigns remain
+loadable; their public creation API has been removed. For the active collection
+and reproducible asset builds, see [Campaign geography](../../tools/MAPS.md).
+
+Maps support cursor-centered wheel/trackpad pinch zoom (1–5×), horizontal scrolling,
+Shift+scroll to pan, and fixed +/−/Reset view controls. With a mouse, drag a movable
+owned region to plan an order; drag elsewhere, middle-drag, or Shift-drag to pan.
+On touch, drag within 24 screen pixels of an available army counter to plan an
+order; drag the surrounding land to pan, including your own territory.
+Click a source and destination as an alternative. Escape cancels the current
+gesture, including a press that has not yet become a drag. When no source is
+selected, click an arrow shaft or tip to cancel its order; when a source is
+selected, clicks over arrows choose destinations instead. Focus the map to use
++/−, arrow keys, and 0/Home to reset. Camera position survives turns and adjusts on viewport resize.
+Releasing a drag does not also select a territory. Drops outside the visible map
+are cancelled. Atlas geometry is repainted at higher
 resolution after zoom gestures settle.
 
 To exercise creation, zoom/pan, move planning, turn submission, resizing, and
-random maps against the running local API and UI:
+legacy random-map rendering with a saved-state fixture against the local UI/API:
 
 ```sh
 node games/imperium/tools/check_map_camera.cjs

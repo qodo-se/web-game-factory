@@ -102,3 +102,46 @@ input[type=checkbox],input[type=radio] { accent-color:var(--gold); }
     .map-card:has(input:checked)::after { top:14px; left:14px; font-size:10px; padding:3px 5px; }
     .map-card input { top:14px; right:14px; }
 }
+
+/* Map presentation controls. */
+.ui-icon { width:16px; height:16px; flex:0 0 16px; vertical-align:middle; }
+.sidebar-toggle { gap:8px; }
+.map-navigation button { display:inline-flex; align-items:center; justify-content:center; gap:5px; font-size:12px; }
+#map-navigation-help:not([hidden]) { display:block; top:64px; pointer-events:auto; }
+#side-panel { flex-basis:var(--sidebar-width,256px); }
+#sidebar-resize { flex:0 0 7px; background:var(--surface); cursor:col-resize; touch-action:none; border-left:1px solid var(--border); }
+#sidebar-resize:hover,#sidebar-resize:focus-visible { background:var(--gold); outline:none; }
+.resizing-sidebar { cursor:col-resize; user-select:none; }
+#label-size { font:12px Arial,sans-serif; }
+#faction-shape-key { line-height:1.6; color:var(--text); }
+.faction-shapes .map-legend .legend-item:nth-child(2) .legend-dot { border-radius:2px; }
+.faction-shapes .map-legend .legend-item:nth-child(3) .legend-dot { border-radius:0; transform:rotate(45deg); }
+.army-counter { paint-order:stroke fill; }
+.battle-location { margin-top:6px; }
+.map-card .battle-factions { color:var(--text); font-size:12px; line-height:1.5; margin-top:5px; }
+#gameover-overlay { background:linear-gradient(0deg,#101a1de6,#101a1d40); padding:24px; overflow-y:auto; }
+.gameover-card { width:min(460px,100%); margin:auto; padding:28px; border:1px solid #dfc18466; background:#1c272af5; border-radius:12px; box-shadow:0 16px 60px #0005; text-align:center; }
+.ending-kicker { text-transform:uppercase; letter-spacing:.16em; font-size:11px; color:var(--text-dim); margin-bottom:16px; }
+.gameover-title { font:normal clamp(24px,5vw,40px) Georgia,serif; letter-spacing:.15em; }
+.gameover-subtitle { margin:16px 0 24px; font-size:14px; line-height:1.6; letter-spacing:0; }
+.gameover-card .btn-secondary { display:block; width:100%; margin:10px 0 0 !important; padding:12px; text-decoration:none; color:var(--text); font:13px Arial,sans-serif; border-radius:5px; }
+.gameover-card #replay-campaign { background:var(--gold); color:var(--bg); border-color:var(--gold); font-weight:600; }
+.is-campaign-replay #orders-section,.is-campaign-replay #rules-section,.is-campaign-replay #end-turn-btn,
+.is-campaign-replay #planning-preview,.is-campaign-replay #map-navigation-help,.is-campaign-replay #map-help-toggle { display:none !important; }
+.is-campaign-replay #bottom-bar { min-height:44px; }
+#map-container:fullscreen { width:100vw; height:100dvh; background:#213943; }
+.map-focus #map-container { position:fixed; inset:0; z-index:60; width:100%; height:100dvh; }
+.map-focus #top-bar,.map-focus #side-panel,.map-focus #bottom-bar,.map-focus #sidebar-resize,.map-focus #battle-status { visibility:hidden; }
+@media (max-width:700px) {
+    #sidebar-resize { display:none; }
+    #side-panel { flex-basis:auto; }
+    .map-navigation { left:8px; right:8px; justify-content:flex-end; flex-wrap:wrap; }
+    .map-navigation button { padding:4px 6px; min-height:32px; }
+    #map-navigation-help:not([hidden]) { top:98px; left:8px; right:8px; max-width:none; }
+    .is-campaign-replay #bottom-bar { grid-template-columns:1fr auto; }
+    .is-campaign-replay #move-hint { display:none; }
+    .gameover-card { padding:18px; }
+}
+#map-theme { font:12px Arial,sans-serif; }
+#map-container[data-theme="dark"] { background:#0c1921; color-scheme:dark; }
+.campaign-tools label[for] { flex-basis:100%; }

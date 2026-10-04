@@ -150,6 +150,13 @@
             const title = document.createElement('strong'); title.textContent = preset.name;
             const detail = document.createElement('span'); detail.textContent = `${preset.battle?.date ? preset.battle.date+' · ' : ''}${preset.region_count} ${preset.category === 'historical' ? 'sectors' : 'regions · Regional campaign'}`;
             card.append(radio, image, title, detail);
+            if(preset.battle) {
+                const location=document.createElement('span');location.className='battle-location';
+                location.textContent={waterloo:'Waterloo, Belgium',sekigahara:'Sekigahara, Japan',hastings:'East Sussex, England',hattin:'Horns of Hattin, Galilee',gettysburg:'Pennsylvania, United States'}[preset.id]||'';
+                const factions=document.createElement('span');factions.className='battle-factions';
+                factions.textContent=(preset.battle.sides||[]).join(' vs ');
+                card.append(location,factions);
+            }
             return card;
         }));
         grid.setAttribute('aria-busy', 'false');

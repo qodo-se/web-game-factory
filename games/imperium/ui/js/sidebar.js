@@ -7,13 +7,15 @@ const sidebar = {
         for(const [index,button] of buttons.entries()) {
             button.addEventListener('click',()=>this.open(button.getAttribute('aria-expanded')==='true'?null:this.sections[index].dataset.sidebarSection));
             button.addEventListener('keydown',event=>{
+                const visible=buttons.filter(b=>b.getClientRects().length);
+                const current=visible.indexOf(button);
                 let target;
-                if(event.key==='ArrowDown')target=(index+1)%buttons.length;
-                else if(event.key==='ArrowUp')target=(index-1+buttons.length)%buttons.length;
+                if(event.key==='ArrowDown')target=(current+1)%visible.length;
+                else if(event.key==='ArrowUp')target=(current-1+visible.length)%visible.length;
                 else if(event.key==='Home')target=0;
-                else if(event.key==='End')target=buttons.length-1;
+                else if(event.key==='End')target=visible.length-1;
                 else return;
-                event.preventDefault();buttons[target].focus();
+                event.preventDefault();visible[target].focus();
             });
         }
         let active='orders';

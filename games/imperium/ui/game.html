@@ -73,8 +73,10 @@
                 <output id="map-zoom-level" aria-label="Map zoom">100%</output>
                 <button type="button" id="map-zoom-in" aria-label="Zoom in" title="Zoom in (+)">+</button>
                 <button type="button" id="map-reset" title="Reset map view (0)">Reset view</button>
+                <button type="button" id="map-help-toggle" aria-expanded="false" aria-controls="map-navigation-help">Controls</button>
+                <button type="button" id="map-fullscreen" aria-pressed="false">Fullscreen</button>
             </div>
-            <p id="map-navigation-help">Click or tap source, then destination to move · Drag anywhere to pan · Scroll to zoom · Esc to cancel</p>
+            <p id="map-navigation-help" hidden>Click or tap source, then destination to move · Drag anywhere to pan · Scroll to zoom · Esc to cancel</p>
             <div id="planning-preview" hidden role="status"></div>
 
             <div id="replay-controls" hidden>
@@ -116,14 +118,16 @@
 
             <!-- Game over overlay -->
             <div id="gameover-overlay" class="hidden">
-                <div class="gameover-title" id="gameover-title">—</div>
+                <div class="gameover-card"><p class="ending-kicker">Campaign complete</p><div class="gameover-title" id="gameover-title">—</div>
                 <div class="gameover-subtitle" id="gameover-subtitle">—</div>
                     <button type="button" class="btn-secondary" id="replay-campaign">Replay campaign</button>
                     <button type="button" class="btn-secondary" id="review-campaign">Review map & timeline</button>
+                    <a class="btn-secondary" href="index.html">Return to campaigns</a></div>
             </div>
         </div>
 
         <!-- Side panel -->
+        <div id="sidebar-resize" role="separator" tabindex="0" aria-label="Sidebar width" aria-orientation="vertical" aria-valuemin="220" aria-valuemax="420" aria-valuenow="256" title="Drag to resize; arrow keys adjust width"></div>
         <div id="side-panel">
             <section id="region-info-section" class="region-summary" aria-label="Region">
                 <div id="region-info"><p class="no-selection">Hover a region to inspect it.</p></div>
@@ -141,6 +145,12 @@
                     <option value="mouse">Mouse — scroll to zoom</option>
                     <option value="touchpad">Touchpad — scroll to pan</option>
                 </select>
+                <label for="map-theme">Map theme</label>
+                <select id="map-theme"><option value="system">System preference</option><option value="light">Light terrain</option><option value="dark">Dark terrain</option></select>
+                <label for="label-size">Map label size</label>
+                <select id="label-size"><option value="small">Small</option><option value="medium" selected>Medium</option><option value="large">Large</option></select>
+                <label><input type="checkbox" id="faction-shapes"> Faction shapes & patterns</label>
+                <small id="faction-shape-key" hidden>○ Your troops / diagonal lines · □ Rival / horizontal lines · ◇ Neutral / dots</small>
                 <label for="map-mode">Map view</label>
                 <select id="map-mode"><option value="ownership">Ownership</option><option value="army">Army strength</option><option value="recruitment">Recruitment</option></select>
                 <small id="map-mode-legend" hidden></small>
@@ -213,6 +223,7 @@
     <script src="js/sidebar.js"></script>
     <script src="js/campaign-replay.js"></script>
     <script src="js/planning.js"></script>
+    <script src="js/interface.js"></script>
     <script src="js/game.js"></script>
 </body>
 </html>

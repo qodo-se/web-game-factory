@@ -17,6 +17,7 @@ const campaignReplay = {
             if(!this.active||event.defaultPrevented||event.isComposing||event.ctrlKey||event.metaKey||event.altKey||event.shiftKey)return;
             if(event.key!=='ArrowLeft'&&event.key!=='ArrowRight')return;
             const target=event.target;
+            if(target.getAttribute('role')==='separator')return;
             if(target.id!=='campaign-replay-slider'&&(target.isContentEditable||target.closest('input,textarea,select')))return;
             event.preventDefault();event.stopPropagation();
             this.pause();cancelAnimationFrame(this.seekFrame);this.seekFrame=null;

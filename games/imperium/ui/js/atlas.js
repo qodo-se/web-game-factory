@@ -142,7 +142,7 @@ const atlas = {
         if(canvas.width!==pixelWidth || canvas.height!==pixelHeight) {
             canvas.width=pixelWidth; canvas.height=pixelHeight;
         }
-        const key=JSON.stringify([pixelWidth,pixelHeight,...this.data.regions.map(f=>[regions[f.id].owner,regions[f.id].terrain])]);
+        const key=JSON.stringify([pixelWidth,pixelHeight,interfaceView.factionShapes,interfaceView.darkMap,...this.data.regions.map(f=>[regions[f.id].owner,regions[f.id].terrain])]);
         if(this.baseKey!==key) {
             this.paintBase(canvas.getContext('2d'),regions,pixelWidth/w,pixelHeight/h);
             this.baseKey=key;
@@ -152,9 +152,10 @@ const atlas = {
     },
     paintBase(ctx, regions, scaleX, scaleY) {
         const {w,h,paths,land}=this.geometry;
+        const dark=interfaceView.darkMap;
         ctx.setTransform(scaleX,0,0,scaleY,0,0);
         const ocean = ctx.createLinearGradient(0,0,0,h);
-        ocean.addColorStop(0, this.data.category==='historical' ? '#303930' : '#263e49'); ocean.addColorStop(1, this.data.category==='historical' ? '#202c2b' : '#1c303a');
+        ocean.addColorStop(0,dark?'#14252e':this.data.category==='historical'?'#303930':'#263e49'); ocean.addColorStop(1,dark?'#0c1921':this.data.category==='historical'?'#202c2b':'#1c303a');
         ctx.fillStyle = ocean; ctx.fillRect(0,0,w,h);
         // Fine graticule, spaced in geographic degrees.
         const [west,south,east,north] = this.data.bounds;
@@ -173,9 +174,13 @@ const atlas = {
         if (!this.terrainImage) for(const label of this.data.water_labels||[])ctx.fillText(label.name,this.x(label.center[0])*w,this.y(label.center[1])*h);
         if (this.terrainImage) {
             const l=this.layout;
+            ctx.save();
             ctx.drawImage(this.terrainImage,l.left,l.top,l.width,l.height);
+            if(dark) {ctx.fillStyle='rgba(8,18,24,.56)';ctx.fillRect(l.left,l.top,l.width,l.height);}
+            ctx.restore();
         }
-        const terrain = { plains:'#b4b49a', city:'#bab8a0', coast:'#bfc0a5',
+        const factionPatterns={};
+        const terrain = dark ? {plains:'#35443f',city:'#414b48',coast:'#3c504e',forest:'#283e35',hills:'#45453e',desert:'#504b3c'} : { plains:'#b4b49a', city:'#bab8a0', coast:'#bfc0a5',
             forest:'#899b85', hills:'#a9a393', desert:'#c8ba98' };
         this.data.regions.forEach((feature,i) => {
             const r = regions[feature.id], path = paths[i];
@@ -185,7 +190,7 @@ const atlas = {
             }
             if(r.terrain==='hills' && this.data.category !== 'historical') {
                 ctx.save();ctx.clip(path,'evenodd');
-                ctx.strokeStyle='rgba(72,64,49,.19)';ctx.lineWidth=.65;
+                ctx.strokeStyle=dark?'rgba(198,200,174,.18)':'rgba(72,64,49,.19)';ctx.lineWidth=.65;
                 ctx.stroke(this.geometry.relief[i]);ctx.restore();
             }
             if (r.owner !== 'rogue') {
@@ -194,7 +199,17 @@ const atlas = {
                 ctx.fill(path, 'evenodd');
                 ctx.globalAlpha = 1;
             }
-            ctx.strokeStyle = r.owner==='player_1'?'#577792':r.owner==='player_2'?'#98695c':'rgba(40,49,44,.48)';
+            if(interfaceView.factionShapes) {
+                if(!factionPatterns[r.owner]) {
+                const tile=document.createElement('canvas');tile.width=tile.height=12;
+                const ink=tile.getContext('2d');ink.strokeStyle=dark?'rgba(216,223,212,.22)':'rgba(20,32,35,.23)';ink.fillStyle=dark?'rgba(216,223,212,.25)':'rgba(20,32,35,.25)';ink.lineWidth=1;
+                if(r.owner==='rogue') {ink.beginPath();ink.arc(6,6,1,0,Math.PI*2);ink.fill();}
+                else {ink.beginPath();if(r.owner==='player_1'){ink.moveTo(0,12);ink.lineTo(12,0);}else{ink.moveTo(0,6);ink.lineTo(12,6);}ink.stroke();}
+                factionPatterns[r.owner]=ctx.createPattern(tile,'repeat');
+                }
+                ctx.fillStyle=factionPatterns[r.owner];ctx.fill(path,'evenodd');
+            }
+            ctx.strokeStyle = r.owner==='player_1'?(dark?'#7fa4bd':'#577792'):r.owner==='player_2'?(dark?'#c38e7c':'#98695c'):(dark?'rgba(191,206,191,.48)':'rgba(40,49,44,.48)');
             ctx.lineWidth = this.terrainImage ? .7 : r.owner==='rogue'?.55:1.5; ctx.globalAlpha=this.terrainImage?.65:1; ctx.stroke(path);ctx.globalAlpha=1;
         });
         if (this.data.category === 'historical' && !this.terrainImage) {

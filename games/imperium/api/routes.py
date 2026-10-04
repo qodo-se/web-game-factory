@@ -71,6 +71,7 @@ def _serialize_state(engine: GameEngine) -> dict:
     p2 = s.get_player("player_2")
     return {
         "turn": s.turn,
+        "battle": s.battle,
         "preset_id": s.preset_id,
         "routes": s.routes,
         "campaign_name": engine.campaign_name,

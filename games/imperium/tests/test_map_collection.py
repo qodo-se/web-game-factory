@@ -16,11 +16,11 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class CollectionTests(unittest.TestCase):
     def test_collection_and_random_rejection(self):
-        self.assertEqual(set(PRESETS), {'mediterranean', 'europe', 'india', 'central_asia',
-            'americas', 'africa_middle_east', 'southeast_asia_oceania'})
+        self.assertEqual({key for key,p in PRESETS.items() if p.get('category', 'world') == 'world'}, {'mediterranean', 'europe', 'india', 'central_asia',
+            'americas', 'africa_middle_east', 'southeast_asia_oceania', 'balochistan_borderlands_expanded'})
         with self.assertRaises(ValidationError):
             NewGameRequest(mode='random')
-        for key in ['eastern_europe', 'western_europe', 'middle_east', 'southeast_asia']:
+        for key in ['eastern_europe', 'western_europe', 'middle_east', 'southeast_asia', 'pakistan_afghanistan', 'balochistan_borderlands']:
             with self.assertRaises(ValueError):
                 GameEngine.from_preset(key)
 
@@ -58,6 +58,7 @@ class CollectionTests(unittest.TestCase):
     def test_expanded_land_coverage(self):
         # Test actual inland locations, including territories with non-ISO source codes.
         samples = {
+            'balochistan_borderlands_expanded': [(62.20,34.35),(69.18,34.53),(66.99,30.18),(63.05,26.00),(60.86,29.50),(60.64,25.29),(62.33,27.37),(61.50,31.03)],
             'africa_middle_east': [(31.6, 4.85), (-1.5, 12.4), (47, -20), (53, 29)],
             'americas': [(-53, 4), (-150, 64), (-68, -54), (-99, 19)],
             'southeast_asia_oceania': [(121, 16), (117, 6), (135, -4), (149, -33), (176, -38), (171, -44)],
@@ -78,8 +79,43 @@ class CollectionTests(unittest.TestCase):
                     for region in data['regions'] for polygon in region['polygons'])
                 self.assertTrue(covered, (key, lon, lat))
 
+    def test_borderlands_scope_and_cross_border_routes(self):
+        preset = PRESETS['balochistan_borderlands_expanded']
+        data = json.loads((ROOT / 'ui/maps/balochistan_borderlands_expanded.json').read_text())
+        west, south, east, north = data['bounds']
+
+        def contains(lon, lat):
+            x, y = (lon-west)/(east-west), (north-lat)/(north-south)
+            def ring_contains(ring):
+                inside = False
+                for (ax, ay), (bx, by) in zip(ring, ring[1:]):
+                    if (ay > y) != (by > y) and x < (bx-ax)*(y-ay)/(by-ay)+ax:
+                        inside = not inside
+                return inside
+            return any(ring_contains(p[0]) and not any(ring_contains(h) for h in p[1:])
+                       for region in data['regions'] for p in region['polygons'])
+
+        # Exclusion must remove land, not just rename or reassign its sectors.
+        for lon, lat in [(74.30,35.92), (75.64,35.30), (73.47,34.37),
+                         (57.08,30.28)]:
+            self.assertFalse(contains(lon, lat), (lon, lat))
+        for lon, lat in [(60.86,29.50), (62.33,27.37), (60.68,27.20),
+                         (60.64,25.29), (66.99,30.18), (65.72,31.63), (71.58,34.02),
+                         (74.35,31.55), (67.01,24.86), (68.37,25.40), (71.47,30.20),
+                         (69.80,24.75), (73.04,33.60), (66.90,36.75), (68.86,36.73),
+                         (70.58,37.12), (73.20,37.02), (74.70,37.32), (64.77,35.92)]:
+            self.assertTrue(contains(lon, lat), (lon, lat))
+        self.assertTrue({'Gilgit', 'Baltistan'}.isdisjoint(r[0] for r in preset['regions']))
+        state = GameEngine.from_preset('balochistan_borderlands_expanded').state
+        countries = preset['anchor_countries']
+        crossings = {frozenset((countries[a], countries[b]))
+                     for a, region in state.regions.items() for b in region.neighbors
+                     if countries[a] != countries[b]}
+        for pair in [('IRN','PAK'), ('IRN','AFG'), ('PAK','AFG')]:
+            self.assertIn(frozenset(pair), crossings)
+
     def test_old_campaigns_remain_readable(self):
-        for key in ['eastern_europe', 'western_europe', 'middle_east', 'southeast_asia']:
+        for key in ['eastern_europe', 'western_europe', 'middle_east', 'southeast_asia', 'pakistan_afghanistan', 'balochistan_borderlands']:
             preset = runpy.run_path(str(ROOT / f'engine/presets/{key}.py'))['PRESET']
             restored = _decode(_encode(GameEngine(load_preset(preset))))
             self.assertEqual(restored.state.preset_id, key)

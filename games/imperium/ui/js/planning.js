@@ -1,6 +1,5 @@
 // Small transient overlays; pointer movement never repaints the terrain.
 const planning = {
-    drag: null, frame: 0, target: null,
     allowed() { return state && !resolving && !gameOver && !campaignReplay.active; },
     regionAt(event) {
         const viewport = document.getElementById('map-container').getBoundingClientRect();
@@ -10,60 +9,8 @@ const planning = {
         const x = (event.clientX-box.left)/box.width, y = (event.clientY-box.top)/box.height;
         return x<0 || y<0 || x>1 || y>1 ? -1 : findNearestRegionId(x,y);
     },
-    sourceAt(event) {
-        if (!this.allowed() || event.button !== 0 || event.shiftKey) return null;
-        const id = this.regionAt(event), r = state.regions[id];
-        if (r && event.pointerType === 'touch') {
-            const matrix = document.getElementById('map-svg').getScreenCTM();
-            const counter = new DOMPoint(toSVGX(r.x), toSVGY(r.y)).matrixTransform(matrix);
-            // Counters stay the same screen size at every zoom level.
-            if (Math.hypot(event.clientX-counter.x, event.clientY-counter.y) > 24) return null;
-        }
-        return r?.owner==='player_1' && validMoves[id]?.length && !pendingMoves.some(m=>m.from_region_id===id) ? id : null;
-    },
-    begin(id) {
-        if (!this.allowed()) return;
-        this.drag={from:id}; selectedFrom=id;
-        clearRegionInfo(); lastHoverId=null;
-        renderMap(); updateMoveHint();
-    },
-    move(event) {
-        if (!this.drag) return;
-        this.point={clientX:event.clientX,clientY:event.clientY};
-        if (this.frame) return;
-        this.frame=requestAnimationFrame(()=>{ this.frame=0; this.drawDrag(); });
-    },
-    drawDrag() {
-        if (!this.drag || !this.allowed()) return;
-        const id=this.regionAt(this.point), valid=(validMoves[this.drag.from]||[]).includes(id);
-        if (id!==this.target) {
-            this.target=id;
-            if (valid) updateRegionInfo(id); else clearRegionInfo();
-        }
-        const matrix=document.getElementById('map-svg').getScreenCTM();
-        const from=state.regions[this.drag.from];
-        const a=new DOMPoint(toSVGX(from.x),toSVGY(from.y)).matrixTransform(matrix);
-        const inv=matrix.inverse();
-        const start=new DOMPoint(a.x,a.y).matrixTransform(inv);
-        const end=new DOMPoint(this.point.clientX,this.point.clientY).matrixTransform(inv);
-        document.getElementById('g-planning').replaceChildren(svgEl('path',{
-            d:`M${start.x} ${start.y} L${end.x} ${end.y}`,fill:'none',
-            stroke:valid?'#ffe09a':'#e18d78','stroke-width':3,'stroke-dasharray':'6 5',
-            'vector-effect':'non-scaling-stroke'}));
-        document.getElementById('map-canvas').style.cursor=valid?'crosshair':'not-allowed';
-    },
-    finish(event, cancelled=false) {
-        if (!this.drag) return;
-        const from=this.drag.from, to=this.regionAt(event);
-        this.clearDrag();
-        if (!cancelled && this.allowed() && (validMoves[from]||[]).includes(to)) {
-            selectedFrom=from; handleRegionClick(to);
-        } else {
-            selectedFrom=null; clearRegionInfo(); renderMap(); updateMoveHint();
-        }
-    },
-    clearDrag() {
-        this.drag=null; this.target=null; cancelAnimationFrame(this.frame); this.frame=0;
+    clearEffects() {
+        clearTimeout(this.pulseTimer);
         document.getElementById('g-planning').replaceChildren();
         document.getElementById('map-canvas').style.cursor='default';
     },
@@ -106,11 +53,11 @@ const planning = {
             if(event.key!=='Escape' || event.target.closest('input,textarea,select,[contenteditable="true"]'))return;
             if(!this.allowed())return;
             mapCamera.cancelGesture();
-            this.clearDrag(); selectedFrom=null; clearRegionInfo(); lastHoverId=null;
+            this.clearEffects(); selectedFrom=null; clearRegionInfo(); lastHoverId=null;
             renderMap(); updateMoveHint();
         });
         document.getElementById('map-world').addEventListener('mouseleave',()=>{
-            if(!this.drag){clearRegionInfo();lastHoverId=null;}
+            clearRegionInfo();lastHoverId=null;
         });
     }
 };

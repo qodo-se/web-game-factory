@@ -20,7 +20,7 @@ const assert=require('node:assert/strict');
   });
   assert.ok(plan);
   const point=id=>page.evaluate(id=>{const r=state.regions[id],p=new DOMPoint(toSVGX(r.x),toSVGY(r.y)).matrixTransform(document.getElementById('map-svg').getScreenCTM());return {x:p.x,y:p.y};},id);
-  const reset=()=>page.evaluate(()=>{pendingMoves=[];selectedFrom=null;lastHoverId=null;planning.clearDrag();clearRegionInfo();mapCamera.reset();renderMap();});
+  const reset=()=>page.evaluate(()=>{pendingMoves=[];selectedFrom=null;lastHoverId=null;planning.clearEffects();clearRegionInfo();mapCamera.reset();renderMap();});
   const queue=()=>page.evaluate(({from,to})=>{handleRegionClick(from);handleRegionClick(to);},plan);
   // Escape before the threshold must invalidate both later movement and release-click.
   for(const moveAfterEscape of [false,true]){
@@ -54,7 +54,7 @@ const assert=require('node:assert/strict');
   await page.waitForFunction(()=>!document.getElementById('planning-preview').hidden&&document.getElementById('planning-preview').textContent.includes('victory chance'));
   await page.mouse.click(destination.x,destination.y);
   assert.equal(await page.evaluate(()=>pendingMoves.length),2,'Destination click preserves the first order');
-  // Native touch over owned land pans; touching an army counter still places an order.
+  // Native touch drags pan over both owned land and army counters.
   await reset();await page.evaluate(()=>{mapCamera.zoomAt(3,600,450);renderMap();});
   const land=await page.evaluate(()=>{
    const vp=mapCamera.viewport.getBoundingClientRect(),matrix=document.getElementById('map-svg').getScreenCTM();
@@ -77,9 +77,21 @@ const assert=require('node:assert/strict');
   const after=await page.evaluate(()=>[mapCamera.x,mapCamera.y]);
   assert.ok(Math.abs(after[0]-(before[0]-40))<1&&Math.abs(after[1]-(before[1]-35))<1,'Touch pan follows the entire gesture');
   assert.equal(await page.evaluate(()=>pendingMoves.length),0);
-  await reset();await touchDrag(await point(plan.from),await point(plan.to));
-  assert.equal(await page.evaluate(()=>pendingMoves.length),1,'Touch counter drag still plans a move');
+  await reset();
+  await page.evaluate(id=>{const r=state.regions[id];mapCamera.zoomAt(1.5,toSVGX(r.x),toSVGY(r.y));renderMap();},plan.from);
+  const counter=await point(plan.from), beforeCounter=await page.evaluate(()=>[mapCamera.x,mapCamera.y]);
+  await touchDrag(counter,{x:counter.x-30,y:counter.y-25});
+  assert.notDeepEqual(await page.evaluate(()=>[mapCamera.x,mapCamera.y]),beforeCounter);
+  assert.equal(await page.evaluate(()=>pendingMoves.length),0,'Touch counter drag only pans');
+  assert.equal(await page.evaluate(()=>selectedFrom),null);
+  await reset();
+  for (const id of [plan.from,plan.to]) {
+   await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[await point(id)]});
+   await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+  }
+  await page.waitForFunction(()=>pendingMoves.length===1);
+
   await cdp.detach();assert.deepEqual(errors,[]);
-  console.log('Escape before drag, arrow tips, selection/forecast through arrows, touch land pan and touch counter orders passed.');
+  console.log('Escape before drag, arrow tips, selection/forecast through arrows, touch land/counter panning and tap orders passed.');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

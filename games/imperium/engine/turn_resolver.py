@@ -228,6 +228,18 @@ def resolve_turn(
     elif p2_count == 0:
         winner, game_over = "player_1", True
 
+    if state.battle and not game_over:
+        strengths = {p.id: state.total_army(p.id) for p in state.players}
+        if any(strength == 0 for strength in strengths.values()) or state.turn >= state.battle['turn_limit']:
+            # With no recruitment, a side without troops cannot recover.
+            # At the limit: objective control, then surviving army, then defender.
+            def battle_score(player):
+                return (strengths[player.id] > 0,
+                        sum(state.regions[r].owner.value == player.id for r in state.battle['objectives']),
+                        strengths[player.id], player.id == state.battle['defender'])
+            winner = max(state.players, key=battle_score).id
+            game_over = True
+
     state.turn += 1
     state.winner = winner
     state.game_over = game_over

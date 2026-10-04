@@ -196,3 +196,18 @@ army snapshots alongside their journal. Static map data is shared by replay fram
 Older version-2 movement/battle/retreat journals can be reversed to recover exact
 positions. If a journal is incomplete, replay exposes only its contiguous recoverable
 suffix and labels the missing earlier history. No positions are guessed.
+
+## Historical Battles
+
+World Campaigns retain the conquest and recruitment rules above. Historical
+Battles offer Waterloo, Sekigahara, Hastings and Hattin, with either historical
+side playable. They start with fixed forces and no recruitment, including in
+isolated sectors. Three gold diamonds mark objectives. After turn 20, control
+of more objectives wins; ties use remaining army strength, then the defender
+named in the battle status tooltip. Eliminating the opposing force or taking
+all its territory wins early. Headquarters remain supply sources, not instant
+victory targets. Standard simultaneous movement, terrain, supply and retreat
+rules apply.
+
+These are topographic reconstructions using measured modern elevation,
+interpreted historical landscape detail and terrain-aware gameplay sectors. See [battlefield sources and assumptions](tools/BATTLES.md).

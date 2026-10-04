@@ -744,3 +744,41 @@
 @keyframes order-pulse { from { opacity: 1; } to { opacity: 0; stroke-width: 12px; } }
 @keyframes order-placed { from { opacity: .15; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .order-pulse, .order-placed { animation: none; } }
+
+.map-categories { display: flex; gap: 8px; margin-bottom: 12px; }
+.map-categories button { flex: 1; padding: 12px 8px; border: 1px solid var(--border); border-radius: 6px; background: #131d27; color: var(--text-dim); cursor: pointer; font: inherit; }
+.map-categories button[aria-pressed="true"] { border-color: var(--gold); color: var(--gold); background: #29271f; }
+.map-categories button:focus-visible { outline: 2px solid var(--p1); outline-offset: 3px; }
+#battle-briefing { margin: 12px 0 20px; padding: 14px 16px; border-left: 3px solid var(--gold); background: #1b252c; font: 13px/1.6 Arial, sans-serif; }
+#battle-briefing p { margin: 0 0 8px; }
+#battle-briefing summary { cursor: pointer; color: var(--gold); }
+#battle-briefing a { display: inline-block; margin: 4px 16px 0 0; color: #b7d5ee; }
+#battle-status { flex: 0 0 auto; padding: 8px 20px; border-bottom: 1px solid var(--border); background: #24271f; color: #e1d9bc; font: 12px/1.5 Arial, sans-serif; display: flex; gap: 8px 20px; flex-wrap: wrap; }
+#battle-status[hidden] { display: none; }
+#battle-title { color: var(--gold); }
+#battle-rules { color: var(--text-dim); }
+@media (max-width: 620px) { #battle-status { padding: 6px 10px; gap: 3px 12px; font-size: 11px; } #battle-rules { width: 100%; } }
+
+@media (max-width: 700px) {
+    .game-page { height: 100dvh; }
+    #top-bar { flex: 0 0 auto; padding: 8px 10px; gap: 6px 16px; flex-wrap: wrap; }
+    #top-bar .game-title { font-size: .85rem; }
+    #top-bar .player-stats { flex: 1 1 100%; min-width: 0; gap: 10px; justify-content: space-between; }
+    .stat-block { flex: 1; min-width: 0; }
+    .stat-name { font-size: .6rem; overflow-wrap: anywhere; }
+    .stat-values { font-size: .7rem; }
+    #main { flex-direction: column; min-height: 0; overflow-y: auto; }
+    #map-container { flex: 1 0 240px; min-height: 240px; }
+    #side-panel { width: 100%; flex: 0 0 auto; overflow: visible; border-left: 0; border-top: 1px solid var(--border); }
+    .sidebar-section.is-expanded { flex: 0 0 auto; min-height: 0; }
+    .sidebar-body { flex: 0 0 auto; max-height: 50dvh; }
+    .region-summary { max-height: 30dvh; padding: 8px 12px; }
+    .map-navigation { top: 8px; right: 8px; }
+    #map-navigation-help { display: none; }
+    #bottom-bar { flex: 0 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 5px 10px; padding: 7px 10px; }
+    #bottom-bar .move-hint { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: .65rem; }
+    #abandon-btn, #end-turn-btn { padding: 9px 10px; font-size: .75rem; }
+}
+#battle-terrain-notes { font: 12px/1.5 Arial, sans-serif; color: var(--text-dim); }
+#battle-terrain-notes summary { color: var(--gold); cursor: pointer; }
+#battle-terrain-notes a { color: #9ec8e8; }

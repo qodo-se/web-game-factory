@@ -14,6 +14,9 @@ from shapely.ops import unary_union, transform
 
 ROOT = Path(__file__).resolve().parents[1]
 SEAS = {
+    'balochistan_borderlands_expanded': [('Arabian Sea',64,24)],
+    'balochistan_borderlands': [('Arabian Sea',64,24.7)],
+    'pakistan_afghanistan': [('Arabian Sea',65,23.7)],
     'americas': [('Pacific Ocean',-133,-8),('Atlantic Ocean',-42,25),('Caribbean Sea',-74,15)],
     'africa_middle_east': [('Atlantic Ocean',-10,-15),('Indian Ocean',57,-12),('Arabian Sea',60,16)],
     'southeast_asia_oceania': [('Indian Ocean',106,-25),('Pacific Ocean',166,5),('Tasman Sea',163,-36)],
@@ -46,6 +49,7 @@ def build(archive, only=None):
     for path in sorted((ROOT/'ui/maps').glob('*.json')):
         data=json.loads(path.read_text());key=data['id']
         if only and key != only: continue
+        if data.get('category') == 'historical': continue  # Built by build_battle_maps.py
         preset=runpy.run_path(str(ROOT/'engine/presets'/f'{key}.py'))['PRESET']
         west,south,east,north=data['bounds']
         project=lambda x,y:((x-west)/(east-west),(north-y)/(north-south))

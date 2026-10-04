@@ -32,7 +32,8 @@ def starting_choices(preset):
     from .loader import load_preset
     from ..strategy import growth, supplied_regions
     choices = []
-    for capital in [None, *range(len(preset['regions']))]:
+    capitals = preset['battle']['capitals'] if 'battle' in preset else [None, *range(len(preset['regions']))]
+    for capital in capitals:
         state = load_preset(preset, start_region_id=capital)
         friendly = state.owned_regions('player_1')
         rival = state.owned_regions('player_2')
@@ -40,7 +41,8 @@ def starting_choices(preset):
         opposition = sum(r.army for r in rival)
         ratio = strength / max(1, opposition)
         seat = state.get_player('player_1').capital_region_id
-        choices.append(dict(id=capital, name=state.regions[seat].name,
+        label = state.battle['factions']['player_1'] if state.battle else state.regions[seat].name
+        choices.append(dict(id=capital, name=label,
             regions=[r.name for r in friendly], army=strength,
             growth=sum(growth(r, supplied_regions(state)) for r in friendly),
             rival=state.regions[state.get_player('player_2').capital_region_id].name,

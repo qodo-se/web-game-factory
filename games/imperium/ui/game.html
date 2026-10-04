@@ -32,6 +32,11 @@
         </div>
     </div>
 
+    <div id="battle-status" hidden>
+        <strong id="battle-title"></strong>
+        <span id="battle-progress"></span>
+        <span id="battle-rules">Capture the gold objectives · Fixed forces · Ties: army strength, then defender</span>
+    </div>
     <!-- Main -->
     <div id="main">
 
@@ -62,7 +67,7 @@
                 <button type="button" id="map-zoom-in" aria-label="Zoom in" title="Zoom in (+)">+</button>
                 <button type="button" id="map-reset" title="Reset map view (0)">Reset view</button>
             </div>
-            <p id="map-navigation-help">Drag armies to move · On touch, drag counters to move or land to pan · Shift-drag to pan · Scroll to zoom · Esc to cancel</p>
+            <p id="map-navigation-help">Click or tap source, then destination to move · Drag anywhere to pan · Scroll to zoom · Esc to cancel</p>
             <div id="planning-preview" hidden role="status"></div>
 
             <div id="replay-controls" hidden>
@@ -71,9 +76,9 @@
             </div>
             <div id="campaign-replay-controls" hidden aria-label="Campaign replay">
                 <div class="campaign-replay-row">
-                    <button type="button" id="campaign-replay-prev" aria-label="Previous turn">←</button>
+                    <button type="button" id="campaign-replay-prev" aria-label="Previous turn" aria-keyshortcuts="ArrowLeft" title="Previous turn (←)">←</button>
                     <button type="button" id="campaign-replay-play" aria-pressed="false">Play</button>
-                    <button type="button" id="campaign-replay-next" aria-label="Next turn">→</button>
+                    <button type="button" id="campaign-replay-next" aria-label="Next turn" aria-keyshortcuts="ArrowRight" title="Next turn (→)">→</button>
                     <output id="campaign-replay-caption" aria-live="polite"></output>
                     <button type="button" id="campaign-replay-exit">Exit replay</button>
                 </div>
@@ -120,8 +125,14 @@
                 <div class="sidebar-body" id="sidebar-settings-body" role="region" aria-labelledby="sidebar-settings-toggle" hidden>
 <div class="campaign-tools">
                 <strong id="campaign-title"></strong>
+                <details id="battle-terrain-notes" hidden><summary>Terrain & historical sources</summary><p id="battle-terrain-description"></p><a href="maps/battle-sources.html" target="_blank" rel="noopener">Read reconstruction notes & credits</a></details>
                 <button type="button" id="open-campaign-replay" hidden>Replay campaign</button>
                 <button type="button" id="sound-toggle" aria-pressed="false">Sound off</button>
+                <label for="map-input-mode">Scroll controls</label>
+                <select id="map-input-mode">
+                    <option value="mouse">Mouse — scroll to zoom</option>
+                    <option value="touchpad">Touchpad — scroll to pan</option>
+                </select>
                 <label for="map-mode">Map view</label>
                 <select id="map-mode"><option value="ownership">Ownership</option><option value="army">Army strength</option><option value="recruitment">Recruitment</option></select>
                 <small id="map-mode-legend" hidden></small>
@@ -166,7 +177,7 @@
                 <h2 class="sidebar-heading"><button type="button" class="sidebar-toggle" id="sidebar-rules-toggle" aria-expanded="false" aria-controls="sidebar-rules-body">Supply & combat rules<span class="sidebar-chevron" aria-hidden="true">›</span></button></h2>
                 <div class="sidebar-body" id="sidebar-rules-body" role="region" aria-labelledby="sidebar-rules-toggle" hidden>
 <div class="rules-help">
-                    <p>Owned cities and your capital supply connected friendly regions, including ports linked by sea lanes. Isolated regions gain half their normal recruits, attack at 75% strength, and defend at 85%.</p>
+                    <p id="supply-rules">Owned cities and your capital supply connected friendly regions, including ports linked by sea lanes. Isolated regions gain half their normal recruits, attack at 75% strength, and defend at 85%.</p>
                     <p>River crossings add 20% defensive advantage; mountain passes 15%; sea landings 25%. Terrain bonuses also apply. Forecasts assume defenders stay put; both sides move simultaneously.</p>
                     <p>Defeated survivors retreat after all battles, if a friendly route remains. Entire armies still move with each order.</p>
                 </div>

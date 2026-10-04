@@ -29,6 +29,8 @@ def supplied_regions(state):
 
 
 def growth(region, supplied):
+    if region.pop_rate == 0:
+        return 0
     if region.owner == Owner.ROGUE:
         return int(region.pop_rate * .7)
     return region.pop_rate if region.id in supplied else max(1, region.pop_rate // 2)

@@ -80,22 +80,20 @@ The boundary builder records the exact source feature IDs in the GeoJSON.
 
 ## Map navigation
 
-New campaigns use the seven curated presets. Existing random campaigns remain
+New campaigns offer eight World Campaigns and five Historical Battles.
+See [battlefield sources and reconstruction notes](../../tools/BATTLES.md). Existing random campaigns remain
 loadable; their public creation API has been removed. For the active collection
 and reproducible asset builds, see [Campaign geography](../../tools/MAPS.md).
 
 Maps support cursor-centered wheel/trackpad pinch zoom (1–5×), horizontal scrolling,
-Shift+scroll to pan, and fixed +/−/Reset view controls. With a mouse, drag a movable
-owned region to plan an order; drag elsewhere, middle-drag, or Shift-drag to pan.
-On touch, drag within 24 screen pixels of an available army counter to plan an
-order; drag the surrounding land to pan, including your own territory.
-Click a source and destination as an alternative. Escape cancels the current
+Shift+scroll to pan, and fixed +/−/Reset view controls. Drag anywhere on the map, including armies and order arrows, to pan.
+Click or tap a source and then a destination to plan an army move.
+Escape cancels the current
 gesture, including a press that has not yet become a drag. When no source is
 selected, click an arrow shaft or tip to cancel its order; when a source is
 selected, clicks over arrows choose destinations instead. Focus the map to use
 +/−, arrow keys, and 0/Home to reset. Camera position survives turns and adjusts on viewport resize.
-Releasing a drag does not also select a territory. Drops outside the visible map
-are cancelled. Atlas geometry is repainted at higher
+Releasing a drag does not also select a territory. Dragging never places an army order. Atlas geometry is repainted at higher
 resolution after zoom gestures settle.
 
 To exercise creation, zoom/pan, move planning, turn submission, resizing, and
@@ -129,3 +127,11 @@ Kashyap Meer retains its explicit Taxila/Punjab connections.
 
 Hill marks are symbolic terrain shading, not elevation measurements. River
 geometry is sourced; sea-label positions are manually placed.
+
+Scroll controls can be selected in **Campaign & map → Scroll controls** and are
+saved on the device. Macs default to Touchpad: two-finger scrolling pans on both
+axes, while pinch zooms (ctrl+wheel in Chromium and GestureEvent in Safari).
+Mouse mode keeps wheel-to-zoom and Shift-scroll panning. Dragging pans in either mode, including when starting over an army.
+At 100% the entire map fits, so zoom in before panning to explore details.
+Container resizing (including mobile sidebar changes) redraws the atlas and
+rescales/clamps the camera without waiting for a window resize.

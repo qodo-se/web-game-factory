@@ -103,7 +103,17 @@ def load_preset(
     p2_start: Set[int] = {preset["player2_capital"]} | set(preset["player2_extra_starts"])
 
     p1_capital, p2_capital = preset["player1_capital"], preset["player2_capital"]
-    if start_region_id is not None:
+    battle = preset.get('battle')
+    side = 0
+    if battle:
+        if start_region_id not in (None, *battle['capitals']):
+            raise ValueError('Choose one of the two historical sides.')
+        side = 1 if start_region_id == battle['capitals'][1] else 0
+        if side:
+            p1_start, p2_start = p2_start, p1_start
+            p1_capital, p2_capital = p2_capital, p1_capital
+        player2_name = battle['sides'][1-side]
+    elif start_region_id is not None:
         from .starts import kingdom_layout
         p1_start, p2_start, p2_capital = kingdom_layout(raw, adj, start_region_id)
         p1_capital = start_region_id
@@ -128,7 +138,8 @@ def load_preset(
             name=name,
             terrain=terrain,
             owner=owner,
-            army=max(1, army),
+            army=battle['sites'][idx][5] if battle else max(1, army),
+            reinforcement_rate=0 if battle else None,
             neighbors=sorted(adj[idx]),
             is_capital=is_capital,
             x=round(x, 4),
@@ -158,4 +169,12 @@ def load_preset(
         preset_id=preset['id'],
         routes=geography.get('routes', {}),
         ports=geography.get('ports', []),
+        battle={
+            'name': preset['name'], 'date': battle['date'],
+            'factions': {'player_1': battle['sides'][side], 'player_2': battle['sides'][1-side]},
+            'commanders': {'player_1': battle['commanders'][side], 'player_2': battle['commanders'][1-side]},
+            'objectives': list(battle['objectives']), 'turn_limit': 20,
+            'defender': 'player_1' if side == battle['defender'] else 'player_2',
+            'context': battle['context'],
+        } if battle else None,
     )

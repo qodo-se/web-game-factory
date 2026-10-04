@@ -7,7 +7,8 @@ const assert=require('node:assert/strict');
  const page=await browser.newPage({viewport:{width:1440,height:1000}}), errors=[];
  page.on('pageerror',e=>errors.push(e.message));
  const base=process.env.IMPERIUM_TEST_URL||'http://localhost:3000';
- await page.goto(base); await page.locator('input[value="india"]').check();
+ await page.addInitScript(()=>localStorage.setItem('imperium-map-input-mode','mouse'));
+        await page.goto(base); await page.locator('input[value="india"]').check();
  await page.waitForFunction(()=>!document.getElementById('start-btn').disabled);
  await page.locator('#start-btn').click();await page.waitForURL('**/game.html');
  await page.waitForFunction(()=>atlas.geometry);
@@ -20,8 +21,13 @@ const assert=require('node:assert/strict');
  assert.ok(pair);
  const point=id=>page.evaluate(id=>{const r=state.regions[id],m=document.getElementById('map-svg').getScreenCTM(),p=new DOMPoint(toSVGX(r.x),toSVGY(r.y)).matrixTransform(m);return {x:p.x,y:p.y};},id);
  async function drag(from,to){const a=await point(from),b=await point(to);await page.mouse.move(a.x,a.y);await page.mouse.down();await page.mouse.move(b.x,b.y,{steps:12});await page.mouse.up();}
- const cameraBefore=await page.evaluate(()=>[mapCamera.x,mapCamera.y]);
+ async function clickMove(from,to){const a=await point(from),b=await point(to);await page.mouse.click(a.x,a.y);await page.mouse.click(b.x,b.y);}
+ // Dragging from an army never plans an order, including at the fully zoomed-out view.
  await drag(...pair);
+ assert.equal(await page.evaluate(()=>pendingMoves.length),0);
+ assert.equal(await page.evaluate(()=>selectedFrom),null);
+ const cameraBefore=await page.evaluate(()=>[mapCamera.x,mapCamera.y]);
+ await clickMove(...pair);
  assert.equal(await page.evaluate(()=>pendingMoves.length),1);
  assert.deepEqual(await page.evaluate(()=>[mapCamera.x,mapCamera.y]),cameraBefore);
  assert.match(await page.locator(`.troop-projection[data-region="${pair[0]}"]`).textContent(),/→ 0/);
@@ -65,10 +71,10 @@ const assert=require('node:assert/strict');
  // Invalid drops do not add an order.
  await page.mouse.move(a.x,a.y);await page.mouse.down();await page.mouse.move(5,80,{steps:8});await page.mouse.up();
  assert.equal(await page.evaluate(()=>pendingMoves.length),0);
- // Shift-drag on an army still pans when zoomed.
+ // Plain drag on an army pans when zoomed.
  await page.locator('#map-zoom-in').click(); await page.waitForTimeout(180);
  const start=await point(pair[0]);const old=await page.evaluate(()=>[mapCamera.x,mapCamera.y]);
- await page.keyboard.down('Shift');await page.mouse.move(start.x,start.y);await page.mouse.down();await page.mouse.move(start.x-40,start.y-35,{steps:8});await page.mouse.up();await page.keyboard.up('Shift');
+ await page.mouse.move(start.x,start.y);await page.mouse.down();await page.mouse.move(start.x-40,start.y-35,{steps:8});await page.mouse.up();
  assert.notDeepEqual(await page.evaluate(()=>[mapCamera.x,mapCamera.y]),old);
  assert.equal(await page.evaluate(()=>pendingMoves.length),0);
  await page.locator('#map-reset').click();
@@ -111,6 +117,6 @@ const assert=require('node:assert/strict');
  assert.ok((await page.locator(`.troop-projection[data-region="${combined.target}"]`).textContent()).startsWith(`⚔ ${combined.expected}`));
  await page.screenshot({path:'/tmp/imperium-interactive-planning.png',fullPage:true});
  assert.deepEqual(errors,[]);
- console.log('Drag orders, arrow cancellation, wheel/touch/Shift-pan over arrows, off-map drops, undo, hover forecast, projections and Escape passed.');
+ console.log('Click orders, army drag panning, arrow cancellation, wheel/touch/Shift-pan over arrows, off-map drops, undo, hover forecast, projections and Escape passed.');
  } finally {await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

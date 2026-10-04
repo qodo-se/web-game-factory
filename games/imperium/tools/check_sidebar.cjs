@@ -45,6 +45,21 @@ const base=process.env.IMPERIUM_TEST_API||'http://127.0.0.1:8080';
   await page.evaluate(()=>updateRegionInfo(state.player_1.capital));
   await page.setViewportSize({width:1500,height:1000});await page.waitForTimeout(200);
   await page.screenshot({path:'/tmp/imperium-sidebar.png'});
+  for (const size of [{width:390,height:844},{width:667,height:375}]) {
+   await page.setViewportSize(size);
+   await page.evaluate(()=>sidebar.open('settings'));
+   await page.waitForFunction(()=>atlas.geometry.h===document.getElementById('map-container').clientHeight);
+   const settings=page.locator('#sidebar-settings-body');
+   assert.ok(await settings.evaluate(e=>e.clientHeight-28>=140), 'Mobile settings need room for usable controls');
+   await page.locator('#map-mode').selectOption('army');
+   await page.locator('#show-supply').check();
+   assert.equal(await page.locator('#show-supply').isChecked(),true);
+   await page.locator('#sidebar-rules-toggle').click();
+   await page.waitForFunction(()=>atlas.geometry.h===document.getElementById('map-container').clientHeight);
+   assert.equal(await page.locator('.sidebar-body:visible').count(),1);
+   assert.ok(await page.locator('#sidebar-rules-body').evaluate(e=>e.clientHeight-28>=140));
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+  }
   assert.deepEqual(errors,[]);
   console.log('Pinned region and five collapsible sections, exclusive expansion, remaining-height layout at 3 heights, independent scrolling, all-collapsed state, keyboard controls and reload persistence passed.');
  }finally{await browser.close()}

@@ -1,0 +1,8 @@
+# Build-time only. Do not add these packages to the API container.
+numpy==2.5.3
+scipy==1.18.1
+shapely==2.1.2
+pillow==12.3.0
+rasterio==1.5.2
+scikit-image==0.26.0
+contourpy==1.4.0

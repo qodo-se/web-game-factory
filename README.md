@@ -46,10 +46,40 @@ combat, supply, replay, and campaign features.
 - GCP project with the following services enabled:
   - `run.googleapis.com`
   - `artifactregistry.googleapis.com`
+  - `sqladmin.googleapis.com`
+  - `secretmanager.googleapis.com`
 - Artifact Registry Docker repo: `europe-west4-docker.pkg.dev/<PROJECT>/web-game-factory/`
 - Workload Identity Federation pool + GitHub OIDC provider scoped to this repo
 
-> **Future:** `vpcaccess.googleapis.com` and `secretmanager.googleapis.com` will be required once the API connects to Cloud SQL.
+### Production campaign storage
+
+The API uses the `imperium` database on `test-postgres-instance` in
+`europe-west4`. The `imperium_app` PostgreSQL login owns only this database and
+has no role-creation or database-creation privileges.
+
+Cloud Run mounts the instance at `/cloudsql/<instance-connection-name>` using
+its authenticated Cloud SQL connection. The database URL uses that Unix socket
+with `sslmode=disable` for the local socket; the Cloud SQL proxy encrypts and
+authenticates the remote connection. No authorized public client networks are
+needed.
+
+The runtime identity is `wgf-api-runtime@<PROJECT>.iam.gserviceaccount.com`.
+It needs `roles/cloudsql.client` on the project and
+`roles/secretmanager.secretAccessor` on the `wgf-api-database-url` secret only.
+The deployer must be able to act as this runtime identity.
+
+`api/Makefile` explicitly applies the runtime identity, Cloud SQL attachment,
+and `DATABASE_URL` Secret Manager binding on every deployment. Secret version
+`1` is pinned; when rotating credentials, override `DATABASE_URL_SECRET` with
+the new version and redeploy. Never commit or print the database URL.
+
+For another environment, provision its database, login, secret and IAM grants
+first, then override `CLOUD_SQL_INSTANCE`, `DATABASE_URL_SECRET` and
+`RUNTIME_SERVICE_ACCOUNT` when running `make deploy-api`.
+
+The `/health` endpoint checks only that the API process is running. After a
+deployment, verify creating a campaign, submitting a turn and reloading the
+campaign through the website to exercise durable storage.
 
 ### GitHub Secrets (required)
 

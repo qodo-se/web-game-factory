@@ -144,11 +144,18 @@ const battleReports = {
         const box=document.getElementById('turn-recap');box.classList.remove('hidden');
         const data=this.summarize(summary);
         const fought=[...new Set((summary.combat_results||[]).filter(c=>c.attacker_owner==='player_1'||c.defender_owner==='player_1').map(c=>c.defender_region_id))];
+        const movements=(summary.events||[]).filter(e=>e.type==='movement'&&e.owner==='player_1');
         box.innerHTML=`<div class="panel-label">Turn ${summary.turn} recap</div>
-            <p>${data.known?`<strong>${data.gained.length}</strong> gained · <strong>${data.lost.length}</strong> lost · <strong>${data.casualties}</strong> casualties`:'Detailed totals unavailable for this older turn.'}</p>
+            ${data.known?`<div class="report-totals"><span><strong>${data.gained.length}</strong>Gained</span><span><strong>${data.lost.length}</strong>Lost</span><span><strong>${data.casualties}</strong>Casualties</span></div>`:'<p>Detailed totals unavailable for this older turn.</p>'}
+            <section class="report-group"><h3>Territory</h3>
             ${data.gained.length?`<p>Gained: ${data.gained.map(id=>this.link(id)).join(', ')}</p>`:''}
             ${data.lost.length?`<p>Lost: ${data.lost.map(id=>this.link(id)).join(', ')}</p>`:''}
-            ${fought.length?`<p>Battles: ${fought.map(id=>this.link(id)).join(', ')}</p>`:'<small>No battles involving your armies.</small>'}
-            <small>Changes are measured across the whole turn. Casualties include routed troops unable to retreat.</small>`;
+            ${data.known&&!data.gained.length&&!data.lost.length?'<p>No territory changed hands for your side.</p>':''}</section>
+            <section class="report-group"><h3>Battles</h3>
+            ${fought.length?`<p>${fought.map(id=>this.link(id)).join(', ')}</p>`:'<p>No battles involving your armies.</p>'}</section>
+            <section class="report-group"><h3>Troop movements</h3>
+            ${movements.length?movements.map(e=>`<p><strong>${e.army}</strong> troops · ${this.link(e.from)} → ${this.link(e.to)}</p>`).join(''):'<p>No recorded advances by your armies.</p>'}
+            <small>${state.battle?'Fixed forces: no recruitment.':'Troop counts include recruits added before movement.'}</small></section>
+            <small>Casualties include routed troops unable to retreat.</small>`;
     }
 };

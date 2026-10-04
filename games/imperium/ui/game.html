@@ -6,9 +6,16 @@
     <title>IMPERIUM — Campaign</title>
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/game.css">
+    <link rel="stylesheet" href="css/polish.css">
 </head>
 <body class="game-page">
 
+    <div id="load-screen" role="status" aria-live="polite">
+        <img id="load-preview" alt="" hidden>
+        <h1 id="load-title">Opening your campaign</h1>
+        <p id="load-message">Loading the map and your saved position…</p>
+        <div id="load-actions" hidden><button type="button" class="btn-primary" id="retry-game">Try again</button><a href="index.html">Back to campaigns</a></div>
+    </div>
     <!-- Top bar -->
     <div id="top-bar">
         <span class="game-title">IMPERIUM</span>
@@ -83,6 +90,7 @@
                     <button type="button" id="campaign-replay-exit">Exit replay</button>
                 </div>
                 <input type="range" id="campaign-replay-slider" min="0" max="0" value="0" aria-label="Replay turn">
+                <div class="replay-legend" aria-label="Movement legend"><span class="p1-text">→ Your troops</span><span class="p2-text">→ Rival troops</span><span>⇢ Dashed: retreat</span></div>
                 <small id="campaign-replay-note"></small>
             </div>
             <!-- Legend -->

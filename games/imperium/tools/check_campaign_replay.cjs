@@ -99,6 +99,14 @@ print(json.dumps(dict(normal=normal,legacy=legacy,partial=partial,start=start,ta
   assert.equal(await page.evaluate(()=>campaignReplay.index),paused);
   await page.click('#campaign-replay-play');await page.waitForFunction(()=>campaignReplay.index===3&&!campaignReplay.playing);
   await page.screenshot({path:'/tmp/imperium-campaign-replay.png'});
+  await page.setViewportSize({width:390,height:844});
+  const replayLayout=await page.locator('#campaign-replay-controls').evaluate(el=>{
+   const box=el.getBoundingClientRect(),map=el.parentElement.getBoundingClientRect();
+   return {fits:box.left>=map.left&&box.right<=map.right&&box.top>=map.top&&box.bottom<=map.bottom};
+  });
+  assert.equal(replayLayout.fits,true);
+  await page.screenshot({path:'/tmp/imperium-replay-mobile.png'});
+  await page.setViewportSize({width:1500,height:1000});
   await page.click('#campaign-replay-exit');assert.equal(await page.locator('#campaign-replay-controls').isVisible(),false);
   assert.equal(await page.locator('.replay-arrow').count(),0);
   assert.equal(await page.evaluate(()=>state.turn),4);

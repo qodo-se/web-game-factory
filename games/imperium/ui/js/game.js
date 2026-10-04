@@ -807,7 +807,7 @@ function renderOverlay(idxMap, cw, ch) {
     })) : [];
     function labelPosition(x, y, name) {
         if (!atlas.data) return {x, y:y+24};
-        const width=name.length*5.4+4;
+        const width=name.length*6+4;
         const candidates=[[0,25],[0,-23],[width/2+20,4],[-width/2-20,4],[0,39],[0,-37]];
         let best, leastOverlap=Infinity;
         for (const [dx,dy] of candidates) {
@@ -831,7 +831,7 @@ function renderOverlay(idxMap, cw, ch) {
         const isTarget    = validTargets.has(r.id);
         const isCommitted = committedFrom.has(r.id);
 
-        const g = svgEl('g', { 'data-id': r.id,
+        const g = svgEl('g', { 'data-id': r.id, class:r.id===lastHoverId?'region-hover':'',
             transform: `translate(${x} ${y}) scale(${1/mapCamera.zoom}) translate(${-x} ${-y})` });
         if (state.battle?.objectives.includes(r.id)) {
             g.appendChild(svgEl('path', {d:`M${x} ${y-22} L${x+22} ${y} L${x} ${y+22} L${x-22} ${y} Z`,
@@ -851,7 +851,7 @@ function renderOverlay(idxMap, cw, ch) {
         if (isSelected) {
             g.appendChild(svgEl('circle', {
                 cx: x, cy: y, r: 20,
-                fill: 'none', stroke: 'rgba(255,255,255,0.85)',
+                fill: 'rgba(228,196,124,.12)', stroke: '#f2d99b',
                 'stroke-width': 2.5,
             }));
         }
@@ -915,16 +915,17 @@ function renderOverlay(idxMap, cw, ch) {
             'text-anchor': 'middle',
             fill: atlas.data ? '#f5f0df' : (isSelected ? '#f0e8d0' : 'rgba(230,218,190,0.68)'),
             stroke: atlas.data ? '#26332e' : 'none',
-            'stroke-width': atlas.data ? 2.5 : 0,
+            'stroke-width': atlas.data ? 3 : 0,
             'paint-order': 'stroke',
             'vector-effect': 'non-scaling-stroke',
             'stroke-linejoin': 'round',
             'font-size': atlas.data ? '10' : '8',
-            'font-family': 'Georgia, serif',
+            'font-family': 'Arial, sans-serif',
+            'font-weight': 600,
             'pointer-events': 'none',
         });
         nameEl.textContent = r.name;
-        g.appendChild(nameEl);
+        if(cw>=600||mapCamera.zoom>=1.6||isSelected||isTarget||r.is_capital)g.appendChild(nameEl);
 
         gLabels.appendChild(g);
     }
@@ -984,6 +985,10 @@ function initCanvasEvents() {
         handleRegionClick(findNearestRegionId(nx, ny));
     });
 
+    document.getElementById('map-world').addEventListener('mouseleave',()=>{
+        document.querySelector('#g-labels .region-hover')?.classList.remove('region-hover');
+        lastHoverId=null;
+    });
     let hoverFrame=0, latestPointer;
     document.getElementById('map-world').addEventListener('mousemove', e => {
         latestPointer={clientX:e.clientX,clientY:e.clientY};
@@ -998,6 +1003,8 @@ function initCanvasEvents() {
         const rid = findNearestRegionId(nx, ny);
 
         if (rid !== lastHoverId) {
+            document.querySelector('#g-labels .region-hover')?.classList.remove('region-hover');
+            document.querySelector(`#g-labels [data-id="${rid}"]`)?.classList.add('region-hover');
             lastHoverId = rid;
             if (rid < 0) clearRegionInfo(); else updateRegionInfo(rid);
         }
@@ -1328,6 +1335,13 @@ async function init() {
     initCanvasEvents();
     planning.init();
 
+    const loadScreen=document.getElementById('load-screen');
+    document.getElementById('retry-game').addEventListener('click',()=>location.reload());
+    const preview=document.getElementById('load-preview');
+    const preset=sessionStorage.getItem('presetId');
+    if(preset) { preview.src=`maps/thumbnails/${encodeURIComponent(preset)}.svg`;preview.hidden=false;preview.onerror=()=>{preview.hidden=true;}; }
+    document.getElementById('main').inert=true;
+    document.getElementById('bottom-bar').inert=true;
     try {
         const [gameData, vm] = await Promise.all([
             api.getGame(gameId),
@@ -1347,10 +1361,15 @@ async function init() {
         renderMap();
         updateMoveHint();
         if(state.game_over)handleGameOver(state.winner);
+        loadScreen.hidden=true;
+        document.getElementById('main').inert=false;
+        document.getElementById('bottom-bar').inert=false;
 
     } catch (e) {
-        alert('Failed to load game: ' + e.message);
-        window.location.href = 'index.html';
+        document.getElementById('load-title').textContent='Your campaign could not open';
+        document.getElementById('load-message').textContent=e.message+' Your saved campaign has not been changed.';
+        document.getElementById('load-actions').hidden=false;
+        document.getElementById('retry-game').focus();
     }
 }
 

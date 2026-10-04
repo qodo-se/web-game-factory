@@ -189,7 +189,7 @@ const atlas = {
                 ctx.stroke(this.geometry.relief[i]);ctx.restore();
             }
             if (r.owner !== 'rogue') {
-                ctx.fillStyle = r.owner === 'player_1' ? 'rgba(65,106,143,.42)' : 'rgba(160,83,68,.40)';
+                ctx.fillStyle = r.owner === 'player_1' ? 'rgba(65,106,143,.36)' : 'rgba(160,83,68,.34)';
                 ctx.globalAlpha = this.terrainImage ? .28 : 1;
                 ctx.fill(path, 'evenodd');
                 ctx.globalAlpha = 1;

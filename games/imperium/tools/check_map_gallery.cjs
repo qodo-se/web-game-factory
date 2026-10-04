@@ -80,7 +80,7 @@ const apiBase = process.env.IMPERIUM_TEST_API || 'http://localhost:8091';
         assert.ok(await page.locator('#kingdom-select').isDisabled());
         assert.equal(await page.locator('.map-card').count(),0);
         assert.match(await page.locator('#map-grid').textContent(),/No maps available/);
-        await page.getByRole('button',{name:'World Campaigns'}).click();
+        await page.getByRole('button',{name:'Regional Maps'}).click();
         await page.waitForFunction(()=>!document.getElementById('start-btn').disabled);
         assert.deepEqual(errors,[]);
         console.log('Gallery, mobile layout, stale preview, new campaigns, maps and turns passed.');

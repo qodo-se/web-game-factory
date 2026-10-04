@@ -7,6 +7,9 @@
     const kingdom = document.getElementById('kingdom-select');
     const preview = document.getElementById('kingdom-preview');
     let historical = false;
+    let retryAction=()=>location.reload();
+    const retry=document.getElementById('retry-maps');
+    retry.addEventListener('click',()=>retryAction());
     let selected = '', starts = [], sequence = 0, ready = false, submitting = false;
     campaigns.render();
 
@@ -18,6 +21,7 @@
     function showError(message) {
         errorMsg.textContent = message;
         errorMsg.classList.remove('hidden');
+        retry.hidden=false;
     }
     function previewKingdom() {
         const choice = starts.find(c => String(c.id ?? '') === kingdom.value);
@@ -29,6 +33,8 @@
     async function chooseMap(preset) {
         if (submitting) return;
         selected = preset.id;
+        retry.hidden=true;
+        retryAction=()=>chooseMap(preset);
         historical = preset.category === 'historical';
         document.getElementById('starting-label').textContent = historical ? 'Choose your side' : 'Starting kingdom';
         startBtn.textContent = historical ? 'Begin Battle' : 'Begin Campaign';
@@ -99,7 +105,8 @@
             sessionStorage.setItem('presetId', body.preset_id);
             window.location.href = 'game.html';
         } catch (error) {
-            showError(error.message);
+            showError('Could not begin the campaign. '+error.message+' You can try Begin again.');
+            retry.hidden=true;
             submitting = false;
             updateControls();
             startBtn.textContent = historical ? 'Begin Battle' : 'Begin Campaign';
@@ -109,6 +116,7 @@
         const presets = await api.getPresets();
         if (!presets.length) throw new Error('No maps available. Please reload to try again.');
         function showCategory(category, preferred) {
+        retry.hidden=true;
         const visible = presets.filter(p => (p.category || 'world') === category);
         const active = preferred || visible[0];
         document.querySelectorAll('[data-category]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.category === category)));
@@ -138,9 +146,9 @@
             radio.addEventListener('change', () => { if (radio.checked) chooseMap(preset); });
             const image = document.createElement('img');
             image.src = `maps/thumbnails/${encodeURIComponent(preset.id)}.svg`;
-            image.alt = ''; image.width = 300; image.height = 180;
+            image.alt = ''; image.loading='lazy'; image.decoding='async'; image.width = 300; image.height = 180;
             const title = document.createElement('strong'); title.textContent = preset.name;
-            const detail = document.createElement('span'); detail.textContent = `${preset.region_count} ${preset.category === 'historical' ? 'sectors · 20 turns' : 'regions'}`;
+            const detail = document.createElement('span'); detail.textContent = `${preset.battle?.date ? preset.battle.date+' · ' : ''}${preset.region_count} ${preset.category === 'historical' ? 'sectors' : 'regions · Regional campaign'}`;
             card.append(radio, image, title, detail);
             return card;
         }));

@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/game.css">
     <link rel="stylesheet" href="css/polish.css">
+    <link rel="stylesheet" href="css/standing-orders.css">
 </head>
 <body class="game-page">
 
@@ -77,6 +78,8 @@
                 <button type="button" id="map-fullscreen" aria-pressed="false">Fullscreen</button>
             </div>
             <p id="map-navigation-help" hidden>Click or tap source, then destination to move · Drag anywhere to pan · Scroll to zoom · Esc to cancel</p>
+            <div id="map-order-menu" hidden role="dialog" aria-label="Region orders"></div>
+            <div id="map-order-composer" hidden role="region" aria-label="Plan route on map"></div>
             <div id="planning-preview" hidden role="status"></div>
 
             <div id="replay-controls" hidden>
@@ -170,6 +173,7 @@
                     <button id="clear-orders" type="button" disabled>Clear orders</button>
                 </div>
                 <span id="order-status" class="sr-only" role="status"></span>
+            <div id="standing-orders"></div>
             <div id="moves-list">
                 <p class="no-moves-msg">No moves planned. Click one of your regions to order an advance.</p>
             </div>
@@ -225,6 +229,8 @@
     <script src="js/campaign-replay.js"></script>
     <script src="js/planning.js"></script>
     <script src="js/interface.js"></script>
+    <script src="js/map-orders.js"></script>
+    <script src="js/standing-orders.js"></script>
     <script src="js/game.js"></script>
 </body>
 </html>

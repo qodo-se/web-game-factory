@@ -2,19 +2,37 @@
 const orderHistory = {
     undoStack: [], redoStack: [],
     copy: moves => moves.map(m=>({...m})),
-    record(next) {
-        if(resolving || gameOver || JSON.stringify(next)===JSON.stringify(pendingMoves))return;
-        this.undoStack.push(this.copy(pendingMoves));
+    snapshot() { return standingOrders.clone({moves:standingOrders.manual(),orders:standingOrders.orders}); },
+    recordPlan(moves, orders) {
+        if(resolving||gameOver)return;
+        const before=this.snapshot(),after=standingOrders.clone({moves,orders});
+        if(JSON.stringify(before)===JSON.stringify(after))return;
+        this.undoStack.push(before);
         if(this.undoStack.length>100)this.undoStack.shift();
-        this.redoStack=[];
-        pendingMoves=this.copy(next);
+        this.redoStack=[];this.apply(after);
+    },
+    apply(plan) {
+        pendingMoves=this.copy(plan.moves);standingOrders.orders=standingOrders.clone(plan.orders);
+        standingOrders.sync();standingOrders.saveDraft();
+    },
+    record(next) {
+        const orders=standingOrders.clone(standingOrders.orders);
+        const ids=new Set(next.map(m=>m.standing_id).filter(Boolean));
+        const manual=next.filter(m=>!m.standing_id);
+        for(const order of orders) {
+            if(pendingMoves.some(m=>m.standing_id===order.id)&&!ids.has(order.id) ||
+                manual.some(m=>m.from_region_id===order.path[0])) {
+                order.paused=true;order.reason='Paused by a manual change.';
+            }
+        }
+        this.recordPlan(manual,orders);
     },
     restore(redo=false) {
         if(resolving || gameOver)return;
         const source=redo?this.redoStack:this.undoStack;
         const destination=redo?this.undoStack:this.redoStack;
         if(!source.length)return;
-        destination.push(this.copy(pendingMoves));pendingMoves=source.pop();
+        destination.push(this.snapshot());this.apply(source.pop());standingOrders.editor=null;
         this.changed(redo?'Order redone.':'Order undone.');
     },
     changed(message) {
@@ -28,14 +46,14 @@ const orderHistory = {
         const locked=resolving||gameOver||!state;
         document.getElementById('undo-order').disabled=locked||!this.undoStack.length;
         document.getElementById('redo-order').disabled=locked||!this.redoStack.length;
-        document.getElementById('clear-orders').disabled=locked||!pendingMoves.length;
+        document.getElementById('clear-orders').disabled=locked||(!pendingMoves.length&&!standingOrders.orders.length);
     },
     init() {
         document.getElementById('undo-order').addEventListener('click',()=>this.restore());
         document.getElementById('redo-order').addEventListener('click',()=>this.restore(true));
         document.getElementById('clear-orders').addEventListener('click',()=>{
-            if(resolving||gameOver||!pendingMoves.length)return;
-            this.record([]);this.changed('Orders cleared. Undo restores the plan.');
+            if(resolving||gameOver)return;
+            standingOrders.editor=null;this.recordPlan([],[]);this.changed('Orders cleared. Undo restores the plan.');
         });
         document.addEventListener('keydown',event=>{
             if(!(event.ctrlKey||event.metaKey)||event.altKey||event.target.closest('input,textarea,select,[contenteditable="true"]'))return;
@@ -156,6 +174,7 @@ const battleReports = {
             <section class="report-group"><h3>Troop movements</h3>
             ${movements.length?movements.map(e=>`<p><strong>${e.army}</strong> troops · ${this.link(e.from)} → ${this.link(e.to)}</p>`).join(''):'<p>No recorded advances by your armies.</p>'}
             <small>${state.battle?'Fixed forces: no recruitment.':'Troop counts include recruits added before movement.'}</small></section>
+            ${(summary.events||[]).some(e=>e.type==='standing_order')?`<section class="report-group"><h3>Standing orders</h3>${summary.events.filter(e=>e.type==='standing_order').map(e=>`<p>${this.link(e.region_id)} · ${escHtml(e.status)}: ${escHtml(e.message)}</p>`).join('')}</section>`:''}
             <small>Casualties include routed troops unable to retreat.</small>`;
     }
 };

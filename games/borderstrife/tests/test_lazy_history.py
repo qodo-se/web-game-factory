@@ -54,7 +54,7 @@ class LazyHistoryTests(unittest.TestCase):
 
     def test_legacy_pages_reuse_reconstruction_and_do_not_modify_save(self):
         engine=self.engine(120);engine.state.game_over=True
-        store._execute('INSERT INTO imperium_campaigns VALUES (?, ?, ?, ?)',
+        store._execute('INSERT INTO imperium_campaigns (id, revision, payload, updated_at) VALUES (?, ?, ?, ?)',
                        ('completed-legacy',121,store._encode(engine),'now'))
         before=store._encode(store.get('completed-legacy'))
         with patch.object(routes,'_legacy_replays',routes.OrderedDict()), patch.object(routes,'campaign_states',wraps=campaign_states) as rebuild:
@@ -69,7 +69,7 @@ class LazyHistoryTests(unittest.TestCase):
 
     def test_legacy_cache_is_bounded_and_invalidates_changed_state(self):
         engine=self.engine(2);engine.state.game_over=True
-        store._execute('INSERT INTO imperium_campaigns VALUES (?, ?, ?, ?)',('cached',3,store._encode(engine),'now'))
+        store._execute('INSERT INTO imperium_campaigns (id, revision, payload, updated_at) VALUES (?, ?, ?, ?)',('cached',3,store._encode(engine),'now'))
         with patch.object(routes,'_legacy_replays',routes.OrderedDict()) as cache, patch.object(routes,'_LEGACY_CACHE_BYTES',1):
             get_campaign_replay('cached',0,1)
             self.assertFalse(cache)

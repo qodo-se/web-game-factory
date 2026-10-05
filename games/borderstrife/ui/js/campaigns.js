@@ -8,7 +8,7 @@ const campaigns = {
     },
     remember(id, state) {
         const saved={id,name:state.campaign_name||'Campaign',preset:state.preset_id||'',turn:state.turn,
-            finished:state.game_over,updated:new Date().toISOString()};
+            finished:state.game_over,expires:state.expires_at,updated:new Date().toISOString()};
         const entries=[saved,...this.list().filter(item=>item.id!==id)].slice(0,50);
         try { localStorage.setItem(this.key,JSON.stringify(entries)); } catch { /* Server save still succeeded. */ }
     },
@@ -34,7 +34,17 @@ const campaigns = {
                     location.href='game.html';
                 } catch(error) { detail.textContent=error.message;button.disabled=false; }
             });
-            container.append(button);
+            const row=document.createElement('div');row.className='campaign-save-row';
+            const expiry=document.createElement('small');expiry.textContent=campaignFiles.expiry(item.expires);
+            const status=document.createElement('p');status.setAttribute('role','status');
+            const download=document.createElement('button');download.type='button';download.className='btn-secondary';download.textContent='Download save';
+            download.addEventListener('click',()=>campaignFiles.download(item.id,download,status));
+            if(item.expires && new Date(item.expires)<=new Date()) {
+                button.disabled=true;download.disabled=true;
+                detail.textContent=`Turn ${item.turn} · Expired`;
+                expiry.textContent='Restore a downloaded save to play or replay this campaign.';
+            }
+            row.append(button,download,expiry,status);container.append(row);
         }
     },
 };

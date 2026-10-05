@@ -8,7 +8,7 @@ import atexit
 import threading
 from contextlib import closing
 from dataclasses import asdict
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import json
 import os
 from pathlib import Path
@@ -71,6 +71,17 @@ JOURNAL_SCHEMA = '''CREATE TABLE IF NOT EXISTS imperium_campaign_turns
  turn INTEGER NOT NULL, payload TEXT NOT NULL, PRIMARY KEY (game_id, turn))'''
 
 
+RETENTION_DAYS = 7
+
+
+def now():
+    return datetime.now(timezone.utc).isoformat()
+
+
+def deadline():
+    return (datetime.now(timezone.utc) + timedelta(days=RETENTION_DAYS)).isoformat()
+
+
 class ConflictError(Exception):
     pass
 
@@ -87,6 +98,10 @@ def _transaction(statements, check_revision=False):
                         await connection.execute('SELECT pg_advisory_xact_lock(721503)')
                         await connection.execute(SCHEMA)
                         await connection.execute(JOURNAL_SCHEMA)
+                        await connection.execute('ALTER TABLE imperium_campaigns ADD COLUMN IF NOT EXISTS expires_at TEXT')
+                        # Existing campaigns receive a full export grace period.
+                        await connection.execute('UPDATE imperium_campaigns SET expires_at = $1 WHERE expires_at IS NULL', deadline())
+                        await connection.execute('CREATE INDEX IF NOT EXISTS imperium_campaign_expiry ON imperium_campaigns(expires_at)')
                     results = []
                     for sql, args, fetch in statements:
                         parts = sql.split('?')
@@ -113,6 +128,10 @@ def _transaction(statements, check_revision=False):
         with connection:
             connection.execute(SCHEMA)
             connection.execute(JOURNAL_SCHEMA)
+            if 'expires_at' not in {row[1] for row in connection.execute('PRAGMA table_info(imperium_campaigns)')}:
+                connection.execute('ALTER TABLE imperium_campaigns ADD COLUMN expires_at TEXT')
+                connection.execute('UPDATE imperium_campaigns SET expires_at = ?', (deadline(),))
+            connection.execute('CREATE INDEX IF NOT EXISTS imperium_campaign_expiry ON imperium_campaigns(expires_at)')
             results = []
             for sql, args, fetch in statements:
                 cursor = connection.executemany(sql, args) if fetch == 'many' else connection.execute(sql, args)
@@ -197,24 +216,30 @@ def create(engine):
     engine._replay_start = _index_replay(engine)
     engine._replay_indexed = True
     game_id = uuid.uuid4().hex
-    _transaction([('INSERT INTO imperium_campaigns (id, revision, payload, updated_at) VALUES (?, ?, ?, ?)',
-                  (game_id, engine.state.turn, _encode(engine, journal=True), datetime.now(timezone.utc).isoformat()), False)]
+    engine.expires_at = deadline()
+    _transaction([('INSERT INTO imperium_campaigns (id, revision, payload, updated_at, expires_at) VALUES (?, ?, ?, ?, ?)',
+                  (game_id, engine.state.turn, _encode(engine, journal=True), now(), engine.expires_at), False)]
                  + _journal_inserts(game_id, engine.history))
     engine._journal = True
     return game_id
 
 
 def get(game_id, include_history=True):
-    rows = _execute('SELECT payload FROM imperium_campaigns WHERE id = ?', (game_id,), fetch=True)
+    rows = _execute('SELECT payload, expires_at FROM imperium_campaigns WHERE id = ? AND (expires_at > ? OR expires_at IS NULL)', (game_id, now()), fetch=True)
     if not rows:
         return None
     engine = _decode(rows[0][0])
+    engine.expires_at = rows[0][1]
     if engine._journal and include_history:
         # A concurrent turn may commit between reads. Its entry belongs to a
         # newer snapshot and must not appear in this response's history.
         entries = _execute('SELECT payload FROM imperium_campaign_turns WHERE game_id = ? AND turn < ? ORDER BY turn',
                            (game_id, engine.state.turn), fetch=True)
         engine.history = [json.loads(row[0]) for row in entries]
+    # If cleanup crossed the deadline between the snapshot and journal reads,
+    # never export a campaign with a now-deleted, incomplete turn journal.
+    if engine.expires_at is not None and engine.expires_at <= now():
+        return None
     return engine
 
 
@@ -233,11 +258,28 @@ def save(game_id, engine, expected_turn):
         engine._replay_indexed = True
     entries = ([entry for entry in engine.history if entry['turn'] >= expected_turn]
                if getattr(engine, '_journal', False) else engine.history)
-    _transaction([('UPDATE imperium_campaigns SET revision = ?, payload = ?, updated_at = ? WHERE id = ? AND revision = ?',
-                   (engine.state.turn, _encode(engine, journal=True), datetime.now(timezone.utc).isoformat(), game_id, expected_turn), False)]
+    _transaction([('UPDATE imperium_campaigns SET revision = ?, payload = ?, updated_at = ? WHERE id = ? AND revision = ? AND (expires_at > ? OR expires_at IS NULL)',
+                   (engine.state.turn, _encode(engine, journal=True), now(), game_id, expected_turn, now()), False)]
                  + _journal_inserts(game_id, entries), check_revision=True)
     engine._journal = True
 
 
 def delete(game_id):
     _execute('DELETE FROM imperium_campaigns WHERE id = ?', (game_id,))
+
+
+def purge_expired(batch_size=100):
+    """Bound each transaction; journal rows cascade. Safe alongside active turns."""
+    if batch_size < 1:
+        raise ValueError('Cleanup batch size must be positive.')
+    total = 0
+    cutoff = now()
+    # Cover legacy writers during rolling deployment before enforcing expiry.
+    _execute('UPDATE imperium_campaigns SET expires_at = ? WHERE expires_at IS NULL', (deadline(),))
+    while True:
+        count = _execute('DELETE FROM imperium_campaigns WHERE id IN '
+                         '(SELECT id FROM imperium_campaigns WHERE expires_at <= ? ORDER BY expires_at LIMIT ?)',
+                         (cutoff, batch_size))
+        total += count
+        if count < batch_size:
+            return total

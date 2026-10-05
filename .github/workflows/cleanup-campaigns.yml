@@ -1,37 +1,27 @@
-name: Deploy API
+name: Clean up expired campaigns
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - ".github/workflows/deploy-api.yml"
-      - "api/**"
-      - "games/**"
-      - "Makefile"
+  schedule:
+    - cron: '23 * * * *'
   workflow_dispatch:
 
 concurrency:
-  group: deploy-api
+  group: campaign-cleanup
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  cleanup:
     runs-on: ubuntu-latest
-
+    timeout-minutes: 20
     permissions:
       contents: read
       id-token: write
-
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-
       - name: Authenticate to GCP
         uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2
         with:
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
-
-      - name: Deploy
-        run: |
-          make deploy-api
-          make -C api deploy-cleanup
+      - name: Delete expired campaigns and turn histories
+        run: gcloud run jobs execute wgf-campaign-cleanup --region europe-west4 --project sri-experiments-01 --wait

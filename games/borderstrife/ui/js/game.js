@@ -1448,6 +1448,7 @@ async function init() {
         state = gameData.state;
         standingOrders.load(true);
         campaigns.remember(gameId,state);
+        campaignFiles.initGame(gameId,state);
         campaignHistory=gameData.history||[];historyMore=!!gameData.history_more;
         document.getElementById('campaign-title').textContent=state.campaign_name||'Campaign';
         renderTimeline();
@@ -1464,10 +1465,14 @@ async function init() {
         loadScreen.hidden=true;
         document.getElementById('main').inert=false;
         document.getElementById('bottom-bar').inert=false;
+        if (sessionStorage.getItem('restoredReplay') === gameId) {
+            sessionStorage.removeItem('restoredReplay');
+            if (state.game_over) await campaignReplay.enter();
+        }
 
     } catch (e) {
         document.getElementById('load-title').textContent='Your campaign could not open';
-        document.getElementById('load-message').textContent=e.message+' Your saved campaign has not been changed.';
+        document.getElementById('load-message').textContent=e.message;
         document.getElementById('load-actions').hidden=false;
         document.getElementById('retry-game').focus();
     }

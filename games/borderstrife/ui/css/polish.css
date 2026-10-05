@@ -138,7 +138,7 @@ input[type=checkbox],input[type=radio] { accent-color:var(--gold); }
     .map-navigation { left:8px; right:8px; justify-content:flex-end; flex-wrap:wrap; }
     .map-navigation button { padding:4px 6px; min-height:32px; }
     #map-navigation-help:not([hidden]) { top:98px; left:8px; right:8px; max-width:none; }
-    .is-campaign-replay #bottom-bar { grid-template-columns:1fr auto; }
+    .is-campaign-replay #bottom-bar { grid-template-columns:1fr auto; grid-template-areas:"exit status"; }
     .is-campaign-replay #move-hint { display:none; }
     .gameover-card { padding:18px; }
 }

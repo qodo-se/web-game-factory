@@ -98,3 +98,19 @@
     .map-card { min-height:0; }
     .map-card img { height:52px; }
 }
+
+.restore-campaign { margin: 1rem 0; padding: 1rem; border: 1px solid var(--border); border-radius: .5rem; }
+.restore-campaign label { display: block; font-weight: 600; margin-bottom: .6rem; }
+.restore-campaign input { max-width: 100%; }
+.campaign-save-row { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: .5rem; margin-bottom: 1rem; }
+.campaign-save-row small, .campaign-save-row [role="status"] { grid-column: 1/-1; margin: 0; }
+.campaign-save-row [role="status"]:empty { display: none; }
+.campaign-save-row button:disabled { opacity: .55; }
+
+#retention-notice { font-size: 11px; line-height: 1.4; margin: 6px 0 0; color: var(--text-dim); }
+@media (max-width:760px) { #selected-map-preview { height:78px; } }
+
+.campaign-save-row > .btn-secondary { align-self: start; min-height:44px; padding:10px 12px; margin-top:8px; }
+.campaign-save-row > small { color:var(--text-dim); font-size:12px; line-height:1.5; }
+.restore-campaign input::file-selector-button { padding:9px 12px; margin-right:10px; border:1px solid var(--border); border-radius:5px; background:var(--surface-hi); color:var(--text); cursor:pointer; }
+#restore-status:empty { display:none; }

@@ -281,8 +281,10 @@ const atlas = {
                 ctx.stroke(this.geometry.relief[i]);ctx.restore();
             }
             if (r.owner !== 'rogue') {
-                ctx.fillStyle = r.owner === 'player_1' ? 'rgba(65,106,143,.36)' : 'rgba(160,83,68,.34)';
-                ctx.globalAlpha = this.terrainImage ? .28 : 1;
+                // A single alpha keeps ownership visible over terrain imagery.
+                ctx.fillStyle = r.owner === 'player_1'
+                    ? (dark?'rgba(47,139,224,.55)':'rgba(35,121,218,.55)')
+                    : (dark?'rgba(231,111,70,.55)':'rgba(217,86,48,.55)');
                 ctx.fill(path, 'evenodd');
                 ctx.globalAlpha = 1;
             }
@@ -311,6 +313,16 @@ const atlas = {
         if(this.data.presentation_version>=4)cartography.terrain(ctx,this,regions);
         ctx.save();ctx.clip(land,'evenodd');ctx.strokeStyle=dark?'rgba(115,174,184,.8)':'rgba(63,115,137,.85)';ctx.lineWidth=1.5;
         if (!this.terrainImage) ctx.stroke(this.geometry.rivers);ctx.restore();
+        // Inset borders give both factions their own edge on a shared frontier.
+        this.data.regions.forEach((feature,i)=>{
+            const owner=regions[feature.id].owner;
+            if(owner==='rogue')return;
+            ctx.save();ctx.clip(paths[i],'evenodd');
+            ctx.lineJoin='round';ctx.strokeStyle=dark?'#10202b':'#26323c';
+            ctx.lineWidth=6;ctx.stroke(paths[i]);
+            ctx.strokeStyle=owner==='player_1'?'#7bc7ff':'#ffb089';
+            ctx.lineWidth=3.5;ctx.stroke(paths[i]);ctx.restore();
+        });
         this.paintAnnotations(ctx);
         if(this.data.context_land?.length){
             ctx.save();ctx.strokeStyle=dark?'rgba(211,202,159,.6)':'rgba(66,66,46,.55)';ctx.lineWidth=1;ctx.setLineDash([3,5]);ctx.stroke(land);ctx.restore();

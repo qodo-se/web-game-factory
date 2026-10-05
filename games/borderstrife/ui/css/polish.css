@@ -149,3 +149,14 @@ input[type=checkbox],input[type=radio] { accent-color:var(--gold); }
 .replay-arrow { pointer-events:visiblePainted; cursor:help; }
 .replay-arrow:focus-visible { outline:none; }
 .replay-arrow:focus-visible .planned-arrow-shaft { stroke:#fff5ce; }
+
+/* Match the territory fills and counter rims in both map themes. */
+.legend-dot.legend-player { background:#2379da; border:1px solid #7bc7ff; }
+.legend-dot.legend-rival { background:#d95630; border:1px solid #ffb089; }
+.legend-dot.legend-neutral { background:#899b85; border:1px solid #c3c6ad; }
+
+.rules-help h3 { margin:16px 0 6px; color:var(--text); font-size:12px; }
+.rules-help h3:first-child { margin-top:0; }
+.rules-help ul { margin:0; padding-left:17px; font-size:12px; line-height:1.55; }
+.rules-help li + li { margin-top:6px; }
+.rules-help strong { color:var(--text); }

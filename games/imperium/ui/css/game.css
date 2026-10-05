@@ -26,7 +26,7 @@
 
 .welcome-logo h1 {
     font-size: 3.2rem;
-    letter-spacing: 0.3em;
+    letter-spacing: 0.04em;
     color: var(--gold);
     text-shadow: 0 0 30px rgba(212,168,64,0.4);
     font-weight: normal;
@@ -128,7 +128,7 @@
 
 #top-bar .game-title {
     font-size: 1.1rem;
-    letter-spacing: 0.25em;
+    letter-spacing: 0.04em;
     color: var(--gold);
     font-weight: normal;
     flex: 0 0 auto;
@@ -729,7 +729,7 @@
 @media (max-width: 360px) { .map-grid { grid-template-columns: 1fr; } }
 @media (max-width: 620px) {
     .welcome-card { padding: 28px 18px; }
-    .welcome-logo h1 { font-size: clamp(1.7rem, 7vw, 2.6rem); letter-spacing: .18em; }
+    .welcome-logo h1 { font-size: clamp(1.7rem, 7vw, 2.6rem); letter-spacing: .04em; }
     .map-card strong { font-size: .8rem; letter-spacing: .02em; overflow-wrap: anywhere; }
     .map-card span { font-size: .7rem; letter-spacing: .02em; }
 }

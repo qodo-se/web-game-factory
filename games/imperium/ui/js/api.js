@@ -30,5 +30,5 @@ const api = {
     getGame:       (id)        => _req('GET',  `/api/imperium/games/${id}`),
     getValidMoves: (id)        => _req('GET',  `/api/imperium/games/${id}/valid-moves`),
     forecast:      (id, moves, signal) => _req('POST', `/api/imperium/games/${id}/forecast`, { moves }, signal),
-    submitTurn:    (id, moves, expected_turn) => _req('POST', `/api/imperium/games/${id}/turn`, { moves, expected_turn }),
+    submitTurn:    (id, moves, expected_turn, standing_orders) => _req('POST', `/api/imperium/games/${id}/turn`, { moves, expected_turn, standing_orders }),
 };

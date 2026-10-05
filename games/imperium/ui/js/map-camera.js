@@ -18,8 +18,8 @@ const mapCamera = {
         const updateInputMode = () => {
             inputMode.value = this.inputMode;
             document.getElementById('map-navigation-help').textContent = this.inputMode === 'touchpad'
-                ? 'Two-finger scroll to pan · Pinch or +/− to zoom · Drag anywhere to pan · Click source, then destination to move · Esc to cancel'
-                : 'Scroll to zoom · Drag anywhere to pan · Click or tap source, then destination to move · Esc to cancel';
+                ? 'Two-finger scroll to pan · Pinch or +/− to zoom · Drag anywhere to pan · Click source, then destination to move · Right-click or hold for orders · Esc to cancel'
+                : 'Scroll to zoom · Drag anywhere to pan · Click or tap source, then destination to move · Right-click or hold for orders · Esc to cancel';
         };
         inputMode.addEventListener('change', () => {
             this.inputMode = inputMode.value;
@@ -167,6 +167,7 @@ const mapCamera = {
     },
     apply() {
         planning.hidePreview();
+        mapOrders.position();
         const w=this.viewport.clientWidth, h=this.viewport.clientHeight;
         this.x=Math.max(w*(1-this.zoom), Math.min(0,this.x));
         this.y=Math.max(h*(1-this.zoom), Math.min(0,this.y));

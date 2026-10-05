@@ -1,5 +1,12 @@
 // Small transient overlays; pointer movement never repaints the terrain.
 const planning = {
+    source() { return standingOrders.editor?.path[0] ?? selectedFrom; },
+    targets() {
+        const source=this.source();
+        if(source===null)return new Set();
+        if(standingOrders.editor)return new Set(standingOrders.destinations(source));
+        return new Set(validMoves[source]||[]);
+    },
     allowed() { return state && !resolving && !gameOver && !campaignReplay.active; },
     regionAt(event) {
         const viewport = document.getElementById('map-container').getBoundingClientRect();
@@ -52,6 +59,7 @@ const planning = {
         document.addEventListener('keydown',event=>{
             if(event.key!=='Escape' || event.target.closest('input,textarea,select,[contenteditable="true"]'))return;
             if(!this.allowed())return;
+            if(standingOrders.editor) {mapCamera.cancelGesture();standingOrders.stopEditing();return;}
             mapCamera.cancelGesture();
             this.clearEffects(); selectedFrom=null; clearRegionInfo(); lastHoverId=null;
             renderMap(); updateMoveHint();

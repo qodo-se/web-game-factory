@@ -151,6 +151,7 @@ class GameState:
     rules_version: int = 2
     battle: Optional[dict] = None
     map_asset_id: Optional[str] = None
+    standing_orders: List[dict] = field(default_factory=list)
 
     def get_player(self, player_id: str) -> Optional[Player]:
         for p in self.players:

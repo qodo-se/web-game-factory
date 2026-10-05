@@ -11,6 +11,7 @@ from games.imperium.engine.strategy import supplied_regions, growth, defense_fac
 from games.imperium.engine.turn_resolver import validate_actions, ValidationError
 from games.imperium.api import store
 from games.imperium.engine.replay import snapshot, campaign_states
+from games.imperium.engine import standing_orders
 
 router = APIRouter(prefix="/api/imperium", tags=["imperium"])
 
@@ -38,8 +39,16 @@ class MoveIn(BaseModel):
     to_region_id: int
 
 
+class StandingOrderIn(BaseModel):
+    id: str = Field(min_length=1, max_length=64, pattern=r"^[a-zA-Z0-9_-]+$")
+    kind: Literal["reinforce"]
+    path: List[int] = Field(min_length=2, max_length=2)
+    paused: bool = False
+
+
 class TurnRequest(BaseModel):
     moves: List[MoveIn] = Field(max_length=100)
+    standing_orders: Optional[List[StandingOrderIn]] = Field(default=None, max_length=100)
     expected_turn: Optional[int] = Field(default=None, ge=1)
 
 
@@ -75,6 +84,7 @@ def _serialize_state(engine: GameEngine) -> dict:
         "preset_id": s.preset_id,
         "map_asset_id": s.map_asset_id or s.preset_id,
         "routes": s.routes,
+        "standing_orders": standing_orders.normalize(s.standing_orders),
         "campaign_name": engine.campaign_name,
         "game_over": s.game_over,
         "winner": s.winner,
@@ -201,13 +211,16 @@ def submit_turn(game_id: str, req: TurnRequest):
             raise HTTPException(status_code=400, detail="Refresh the game page before submitting a turn.")
         if req.expected_turn != engine.state.turn:
             raise HTTPException(status_code=409, detail="This turn was already resolved. Reload to continue from the saved turn.")
-        actions = TurnActions('player_1', [Move(m.from_region_id, m.to_region_id) for m in req.moves])
         try:
-            engine.submit_actions('player_1', actions)
+            orders, moves, running, events = standing_orders.prepare(
+                engine.state, [Move(m.from_region_id, m.to_region_id) for m in req.moves],
+                None if req.standing_orders is None else [o.model_dump() for o in req.standing_orders])
+            engine.submit_actions('player_1', TurnActions('player_1', moves))
         except (ValueError, ValidationError) as error:
             raise HTTPException(status_code=400, detail=str(error))
         replay_before = snapshot(engine.state)
         summary = engine.resolve_turn()
+        standing_orders.finish(engine.state, orders, running, summary, events)
         result = _serialize_summary(summary, _serialize_state(engine))
         # Persist the state and journal together; only return success after commit.
         engine.history.append({**{key: value for key, value in result.items() if key != 'state'},

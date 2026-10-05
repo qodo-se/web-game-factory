@@ -392,7 +392,7 @@ function renderCanvas() {
 
     const terrainKey=JSON.stringify([cw,ch,interfaceView.darkMap,...Object.values(state.regions).map(r=>[r.id,r.x,r.y,r.owner,r.terrain,r.neighbors])]);
     if(randomTerrainCache?.key===terrainKey) {
-        renderTerrainEffects(randomTerrainCache.paths,selectedFrom,new Set(validMoves[selectedFrom]||[]),new Set(pendingMoves.map(m=>m.from_region_id)),`scale(${MAP_W/cw} ${MAP_H/ch})`,false);
+        renderTerrainEffects(randomTerrainCache.paths,planning.source(),planning.targets(),new Set(pendingMoves.map(m=>m.from_region_id)),`scale(${MAP_W/cw} ${MAP_H/ch})`,false);
         return randomTerrainCache.data;
     }
     const ctx = canvas.getContext('2d');
@@ -652,7 +652,7 @@ function renderCanvas() {
     const paths=regions.map((r,i)=>({id:r.id,d:spans[i].join('')}));
     const data={idxMap,cw:W,ch:H};
     randomTerrainCache={key:terrainKey,paths,data};
-    renderTerrainEffects(paths,selectedFrom,new Set(validMoves[selectedFrom]||[]),new Set(pendingMoves.map(m=>m.from_region_id)),`scale(${MAP_W/cw} ${MAP_H/ch})`,false);
+    renderTerrainEffects(paths,planning.source(),planning.targets(),new Set(pendingMoves.map(m=>m.from_region_id)),`scale(${MAP_W/cw} ${MAP_H/ch})`,false);
     return data;
 }
 
@@ -675,8 +675,8 @@ function counterMetrics(region) {
 
 // Construct planned arrows in screen pixels so gaps/head sizes remain stable
 // under camera zoom and non-uniform SVG scaling on random maps.
-function plannedMoveArrow(from, to, matrix, movement=null) {
-    const color=movement?({player_1:'#75baff',player_2:'#ff9085',rogue:'#d2cbb6'}[movement.owner]||'#ffe09a'):'#ffe09a';
+function plannedMoveArrow(from, to, matrix, movement=null, repeating=false) {
+    const color=movement?({player_1:'#75baff',player_2:'#ff9085',rogue:'#d2cbb6'}[movement.owner]||'#ffe09a'):repeating?'#75baff':'#ffe09a';
     const a = new DOMPoint(toSVGX(from.x), toSVGY(from.y)).matrixTransform(matrix);
     const b = new DOMPoint(toSVGX(to.x), toSVGY(to.y)).matrixTransform(matrix);
     const dx=b.x-a.x, dy=b.y-a.y, distance=Math.hypot(dx,dy);
@@ -704,19 +704,20 @@ function plannedMoveArrow(from, to, matrix, movement=null) {
     const [s,c,t,h,left,right]=[start,control,tip,base,
         {x:base.x-ty*halfWidth,y:base.y+tx*halfWidth},
         {x:base.x+ty*halfWidth,y:base.y-tx*halfWidth}].map(point);
-    const group=svgEl('g',{'data-from':from.id,'data-to':to.id,'class':movement?'replay-arrow':'planned-arrow'});
-    const title=svgEl('title');title.textContent=`${from.name} → ${to.name}`+(movement?` · ${movement.army} troops${movement.type==='retreat'?' (retreat)':''}`:'');group.append(title);
+    const group=svgEl('g',{'data-from':from.id,'data-to':to.id,'class':movement?'replay-arrow':repeating?'planned-arrow repeat-arrow':'planned-arrow'});
+    const title=svgEl('title');title.textContent=`${from.name} → ${to.name}`+(movement?` · ${movement.army} troops${movement.type==='retreat'?' (retreat)':''}`:repeating?' · Repeats every turn · Click arrow to pause · Right-click source to manage':' · One-time movement');group.append(title);
     if(movement) {group.setAttribute('tabindex','0');group.setAttribute('role','img');group.setAttribute('aria-label',title.textContent);}
     const path=`M ${s.x} ${s.y} Q ${c.x} ${c.y} ${h.x} ${h.y}`;
+    let cancelOrder;
     if(!movement) {
     const hit=svgEl('path',{d:`M ${s.x} ${s.y} Q ${c.x} ${c.y} ${t.x} ${t.y}`,
         fill:'none',stroke:'transparent','stroke-width':18,'stroke-linecap':'round',
         'vector-effect':'non-scaling-stroke',class:'order-hit',tabindex:0,role:'button',
-        'aria-label':`Cancel ${from.name} to ${to.name}`});
-    const cancel=event=>{
+        'aria-label':`${repeating?'Pause repeat reinforcement':'Cancel one-time movement'}: ${from.name} to ${to.name}`});
+    const cancel=cancelOrder=event=>{
         event.preventDefault();event.stopPropagation();
         // While choosing a destination, an existing arrow must not steal the order.
-        if (event.type === 'click' && selectedFrom !== null) handleRegionClick(planning.regionAt(event));
+        if (event.type === 'click' && (selectedFrom !== null || standingOrders.editor)) handleRegionClick(planning.regionAt(event));
         else removePendingMove(from.id);
     };
     hit.addEventListener('click',cancel);
@@ -731,6 +732,23 @@ function plannedMoveArrow(from, to, matrix, movement=null) {
     group.append(svgEl('polygon',{points:`${t.x},${t.y} ${left.x},${left.y} ${right.x},${right.y}`,
         fill:color,stroke:'#182730','stroke-width':1.5,'stroke-linejoin':'round',
         'vector-effect':'non-scaling-stroke','class':'planned-arrow-head'}));
+    if(repeating&&!movement) {
+        // The badge stays circular and the same size under zoom and stretched maps.
+        const center=point({x:start.x*.25+control.x*.5+base.x*.25,
+                            y:start.y*.25+control.y*.5+base.y*.25});
+        const badge=svgEl('g',{class:'repeat-arrow-badge',
+            transform:`matrix(${inverse.a} ${inverse.b} ${inverse.c} ${inverse.d} ${center.x} ${center.y})`,
+            'aria-hidden':'true'});
+        badge.append(svgEl('circle',{r:11,fill:'#182730',stroke:color,'stroke-width':1.5}));
+        // Draw the repeat symbol directly: font glyphs vary across browsers and
+        // can sit below the center even with SVG baseline alignment.
+        badge.append(svgEl('path',{
+            d:'M-6 0V-2Q-6-4-4-4H6M3-7L6-4 3-1 M6 0V2Q6 4 4 4H-6M-3 1L-6 4-3 7',
+            fill:'none',stroke:color,'stroke-width':1.6,
+            'stroke-linecap':'round','stroke-linejoin':'round'}));
+        badge.addEventListener('click',cancelOrder);
+        group.append(badge);
+    }
     return group;
 }
 
@@ -803,7 +821,8 @@ function renderOverlay(idxMap, cw, ch) {
     for (const [key, kind] of Object.entries(state.routes || {})) {
         const [a,b]=key.split(':').map(Number), from=regions[a], to=regions[b];
         if(!from||!to)continue;
-        const isSelected=a===selectedFrom||b===selectedFrom;
+        const source=planning.source();
+        const isSelected=(a===source||b===source)&&(!standingOrders.editor||planning.targets().has(a===source?b:a));
         const supply=showSupply && from.owner==='player_1' && to.owner==='player_1';
         if(!isSelected && !supply && kind!=='sea')continue;
         gConn.appendChild(svgEl('line',{x1:toSVGX(from.x),y1:toSVGY(from.y),x2:toSVGX(to.x),y2:toSVGY(to.y),
@@ -812,9 +831,7 @@ function renderOverlay(idxMap, cw, ch) {
             opacity:isSelected||supply?.85:.22,'vector-effect':'non-scaling-stroke'}));
     }
     const committedFrom = new Set(pendingMoves.map(m => m.from_region_id));
-    const validTargets  = selectedFrom !== null
-        ? new Set(validMoves[selectedFrom] || [])
-        : new Set();
+    const validTargets = planning.targets();
 
     const occupiedLabels = atlas.data ? Object.values(regions).map(r => ({
         x:toSVGX(r.x)-18, y:toSVGY(r.y)-(r.is_capital?31:16), w:36, h:r.is_capital?47:32,
@@ -841,7 +858,7 @@ function renderOverlay(idxMap, cw, ch) {
     const projections = planning.projections();
     for (const r of Object.values(regions)) {
         const x = toSVGX(r.x), y = toSVGY(r.y);
-        const isSelected  = r.id === selectedFrom;
+        const isSelected  = r.id === planning.source();
         const isTarget    = validTargets.has(r.id);
         const isCommitted = committedFrom.has(r.id);
 
@@ -951,7 +968,7 @@ function renderOverlay(idxMap, cw, ch) {
     if (matrix) for (const mv of pendingMoves) {
         const from=regions[mv.from_region_id], to=regions[mv.to_region_id];
         if (!from || !to) continue;
-        const arrow=plannedMoveArrow(from,to,matrix);
+        const arrow=plannedMoveArrow(from,to,matrix,null,Boolean(mv.standing_id));
         if (arrow) gArrows.append(arrow);
     }
     if(matrix&&campaignReplay.active)for(const movement of campaignReplay.movements()) {
@@ -967,11 +984,11 @@ function renderOverlay(idxMap, cw, ch) {
 
 function renderMap() {
     if (!state) return;
-    document.getElementById('map-world').classList.toggle('is-planning', selectedFrom !== null);
+    document.getElementById('map-world').classList.toggle('is-planning', planning.source() !== null);
     scaleCache = computeScale(state.regions);
     if (atlas.data) atlas.prepare(state.regions);
     const canvasData = atlas.data
-        ? atlas.render(state.regions, selectedFrom, new Set(validMoves[selectedFrom] || []),
+        ? atlas.render(state.regions, planning.source(), planning.targets(),
             new Set(pendingMoves.map(m => m.from_region_id)))
         : renderCanvas();
     strategicView.render();
@@ -1029,12 +1046,12 @@ function initCanvasEvents() {
         // Cursor hint
         const r = state.regions[rid];
         const committedFrom = new Set(pendingMoves.map(m => m.from_region_id));
-        const validTargets  = selectedFrom !== null
-            ? new Set(validMoves[selectedFrom] || [])
-            : new Set();
+        const validTargets = planning.targets();
 
         if (validTargets.has(rid)) {
             canvas.style.cursor = 'crosshair';
+        } else if (standingOrders.editor) {
+            canvas.style.cursor = 'not-allowed';
         } else if (r && r.owner === 'player_1' && validMoves[rid] && !committedFrom.has(rid)) {
             canvas.style.cursor = 'pointer';
         } else {
@@ -1050,6 +1067,7 @@ function handleRegionClick(id) {
     if (resolving || id < 0) return;
     if (gameOver) { updateRegionInfo(id); return; }
 
+    if(standingOrders.pick(id))return;
     const r = state.regions[id];
     const committedFrom = new Set(pendingMoves.map(m => m.from_region_id));
 
@@ -1062,14 +1080,14 @@ function handleRegionClick(id) {
 
         const targets = validMoves[selectedFrom] || [];
         if (targets.includes(id)) {
-            orderHistory.record([...pendingMoves,{ from_region_id: selectedFrom, to_region_id: id }]);
+            orderHistory.record([...pendingMoves.filter(m=>m.from_region_id!==selectedFrom),{ from_region_id: selectedFrom, to_region_id: id }]);
             selectedFrom = null;
             clearRegionInfo(); lastHoverId=null;
             renderMap(); planning.pulse(id); updateMovesList(); updateMoveHint(); return;
         }
 
         // Switch selection to another own region
-        if (r.owner === 'player_1' && validMoves[id] && !committedFrom.has(id)) {
+        if (r.owner === 'player_1' && validMoves[id] && (!committedFrom.has(id)||pendingMoves.some(m=>m.from_region_id===id&&m.standing_id))) {
             selectedFrom = id;
             renderMap(); updateRegionInfo(id); updateMoveHint(); return;
         }
@@ -1079,7 +1097,7 @@ function handleRegionClick(id) {
         renderMap(); updateMoveHint(); return;
     }
 
-    if (r.owner === 'player_1' && validMoves[id] && !committedFrom.has(id)) {
+    if (r.owner === 'player_1' && validMoves[id] && (!committedFrom.has(id)||pendingMoves.some(m=>m.from_region_id===id&&m.standing_id))) {
         selectedFrom = id;
         renderMap(); updateRegionInfo(id); updateMoveHint();
     } else {
@@ -1167,6 +1185,7 @@ function clearRegionInfo() {
 }
 
 function updateMovesList() {
+    standingOrders.render();
     orderHistory.updateButtons();
     threatView.refresh();
     const list = document.getElementById('moves-list');
@@ -1181,13 +1200,15 @@ function updateMovesList() {
         return `<div class="move-item">
             <span class="move-arrow">→</span>
             <span class="move-regions"><b>${escHtml(from.name)}</b> → ${escHtml(to.name)}</span>
-            <button class="move-remove" onclick="removePendingMove(${m.from_region_id})" title="Cancel">×</button>
+            ${m.standing_id?'<small>Auto</small>':''}
+            <button class="move-remove" onclick="removePendingMove(${m.from_region_id})" title="${m.standing_id?'Pause standing order':'Cancel'}">×</button>
         </div>`;
     }).join('');
 }
 
 function updateMoveHint() {
     const hint = document.getElementById('move-hint');
+    if(standingOrders.editor) {hint.textContent=`Repeat reinforcement: choose a highlighted friendly neighbor (${planning.targets().size} available). Escape cancels.`;return;}
     const committed = new Set(pendingMoves.map(m => m.from_region_id));
     const available = Object.keys(validMoves).filter(id => !committed.has(+id)).length;
 
@@ -1196,7 +1217,7 @@ function updateMoveHint() {
         const targets = validMoves[selectedFrom] || [];
         hint.textContent = `${r.name} selected — choose a destination (${targets.length} options).`;
     } else if (available > 0) {
-        hint.textContent = `${available} region${available !== 1 ? 's' : ''} can still move. Click Next Turn to pass remaining.`;
+        hint.textContent = `${available} region${available !== 1 ? 's' : ''} can still move. Right-click or hold a region for repeat reinforcements.`;
     } else {
         hint.textContent = `All moves planned. Click Next Turn when ready.`;
     }
@@ -1218,6 +1239,7 @@ function showCombatLog(summary) {
 
 function setResolving(on) {
     resolving = on;
+    if(on){mapOrders.clearHold();mapOrders.close();}
     document.getElementById('resolving-overlay').classList.toggle('hidden', !on);
     document.getElementById('end-turn-btn').disabled = on;
     document.getElementById('abandon-btn').disabled = on;
@@ -1236,7 +1258,9 @@ function abandon() {
 
 async function endTurn() {
     if (resolving || gameOver) return;
+    if(standingOrders.editor) {standingOrders.message('Choose a highlighted neighbor or cancel reinforcement selection before ending the turn.');return;}
     const submittedTurn=state.turn;
+    const submittedPlan=orderHistory.snapshot();
     setResolving(true);
     planning.clearEffects(); planning.hidePreview();
     selectedFrom = null;
@@ -1245,7 +1269,7 @@ async function endTurn() {
     const status=document.getElementById('save-status');
     status.textContent='Resolving…';
     try {
-        const result = await api.submitTurn(gameId, pendingMoves, state.turn);
+        const result = await api.submitTurn(gameId, standingOrders.manual(), state.turn, standingOrders.orders);
         pendingMoves = [];
         orderHistory.reset();
         status.textContent='Saved';
@@ -1253,7 +1277,7 @@ async function endTurn() {
         campaignHistory.push({...result,state:undefined});
         document.getElementById('resolving-overlay').classList.add('hidden');
         try { await presentation.replay(result); }
-        finally { state=result.state; clearRegionInfo(); lastHoverId=null; }
+        finally { state=result.state; standingOrders.load();standingOrders.saveDraft(true);clearRegionInfo(); lastHoverId=null; }
         const vm=await api.getValidMoves(gameId);
         validMoves=Object.fromEntries(Object.entries(vm).map(([k,v])=>[+k,v]));
         setResolving(false);
@@ -1266,13 +1290,16 @@ async function endTurn() {
         try {
             const latest=await api.getGame(gameId);
             state=latest.state;campaignHistory=latest.history||[];pendingMoves=[];
+            standingOrders.load();
+            if(state.turn===submittedTurn)orderHistory.apply(submittedPlan);
+            else standingOrders.saveDraft(true);
             orderHistory.reset();
             clearRegionInfo();lastHoverId=null;
             const vm=await api.getValidMoves(gameId);validMoves=vm;
             campaigns.remember(gameId,state);updateTopBar();renderMap();updateMovesList();renderTimeline();
             if(campaignHistory.length)showCombatLog(campaignHistory[campaignHistory.length-1]);
             if(state.turn>submittedTurn)sidebar.showTurnReport();
-            status.textContent=`Saved through turn ${state.turn-1}`;
+            if(!standingOrders.draftError)status.textContent=`Saved through turn ${state.turn-1}`;
             setResolving(false);updateMoveHint();
             if(state.game_over)handleGameOver(state.winner);
         } catch {
@@ -1336,6 +1363,7 @@ async function init() {
     if (!gameId) { window.location.href = 'index.html'; return; }
 
     document.getElementById('end-turn-btn').addEventListener('click', endTurn);
+    document.getElementById('retry-draft-save').addEventListener('click',()=>{if(!resolving)standingOrders.saveDraft();});
     document.getElementById('abandon-btn').addEventListener('click', abandon);
     sidebar.init();
     interfaceView.init();
@@ -1350,6 +1378,7 @@ async function init() {
     document.getElementById('show-atmosphere').addEventListener('change', () => world.render());
     document.addEventListener('visibilitychange', () => document.body.classList.toggle('world-paused', document.hidden));
     mapCamera.init(() => { if (state) renderMap(); });
+    mapOrders.init();
     initCanvasEvents();
     planning.init();
 
@@ -1367,6 +1396,7 @@ async function init() {
         ]);
         await atlas.load(gameData.state.map_asset_id ?? gameData.state.preset_id ?? (sessionStorage.getItem('presetId') || ''), gameData.state.regions);
         state = gameData.state;
+        standingOrders.load(true);
         campaigns.remember(gameId,state);
         campaignHistory=gameData.history||[];
         document.getElementById('campaign-title').textContent=state.campaign_name||'Campaign';
@@ -1376,6 +1406,7 @@ async function init() {
         for (const [k, v] of Object.entries(vm)) validMoves[+k] = v;
 
         updateTopBar();
+        updateMovesList();
         renderMap();
         updateMoveHint();
         if(state.game_over)handleGameOver(state.winner);

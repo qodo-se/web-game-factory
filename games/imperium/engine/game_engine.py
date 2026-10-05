@@ -99,11 +99,13 @@ class GameEngine:
         Return all valid move destinations for each region the player can move from.
         {region_id: [adjacent_region_id, ...]}
         """
+        from .strategy import growth, supplied_regions
         owner = Owner(player_id)
+        supplied = supplied_regions(self.state)
         return {
             r.id: r.neighbors
             for r in self.state.regions.values()
-            if r.owner == owner and r.army > 0
+            if r.owner == owner and r.army + growth(r, supplied) > 0
         }
 
     def submit_actions(self, player_id: str, actions: TurnActions) -> None:

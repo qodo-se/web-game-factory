@@ -15,8 +15,10 @@ const campaigns = {
     async render() {
         const section=document.getElementById('saved-campaigns');
         if (!section) return;
-        const list=this.list(); section.hidden=!list.length;
+        const list=this.list();
+        if(section.getAttribute('role')!=='tabpanel')section.hidden=!list.length;
         const container=document.getElementById('campaign-list');container.replaceChildren();
+        if(!list.length){const empty=document.createElement('p');empty.className='sidebar-empty';empty.textContent='No campaigns saved in this browser yet. Choose New game to begin.';container.append(empty);}
         for (const item of list) {
             const button=document.createElement('button');button.type='button';button.className='saved-campaign';
             const title=document.createElement('strong');title.textContent=item.name;

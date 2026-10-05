@@ -778,8 +778,12 @@
     .region-summary { max-height: 30dvh; padding: 8px 12px; }
     .map-navigation { top: 8px; right: 8px; }
     #map-navigation-help { display: none; }
-    #bottom-bar { flex: 0 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 5px 10px; padding: 7px 10px; }
+    #bottom-bar { flex: 0 0 auto; display: grid; grid-template-columns: 1fr 1fr; grid-template-areas: "status hint" "exit next"; gap: 5px 10px; padding: 7px 10px; }
     #bottom-bar .move-hint { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: .65rem; }
+    #abandon-btn { grid-area: exit; }
+    #end-turn-btn { grid-area: next; }
+    #save-status { grid-area: status; }
+    #move-hint { grid-area: hint; }
     #abandon-btn, #end-turn-btn { padding: 9px 10px; font-size: .75rem; }
 }
 #battle-terrain-notes { font: 12px/1.5 Arial, sans-serif; color: var(--text-dim); }

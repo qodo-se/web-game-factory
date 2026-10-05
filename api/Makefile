@@ -30,3 +30,17 @@ deploy: push
 		--update-secrets DATABASE_URL=$(DATABASE_URL_SECRET)
 
 all: deploy
+
+# The scheduled workflow runs this independently of service traffic/scaling.
+.PHONY: deploy-cleanup
+deploy-cleanup:
+	gcloud run jobs deploy wgf-campaign-cleanup \
+		--image $(IMAGE):$(GIT_SHA) \
+		--region $(REGION) \
+		--project $(PROJECT) \
+		--service-account $(RUNTIME_SERVICE_ACCOUNT) \
+		--set-cloudsql-instances $(CLOUD_SQL_INSTANCE) \
+		--set-secrets DATABASE_URL=$(DATABASE_URL_SECRET) \
+		--command python \
+		--args=-m,games.borderstrife.api.cleanup \
+		--tasks 1 --max-retries 1 --task-timeout 900s

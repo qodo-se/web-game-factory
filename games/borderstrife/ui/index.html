@@ -76,6 +76,7 @@
                         <input type="text" id="campaign-name" placeholder="Named automatically" maxlength="80">
                     </div>
                 </details>
+                <p id="retention-notice">Saves expire in 7 days. Download in-game to keep.</p>
             </section>
             <footer class="setup-actions">
                 <p id="error-msg" class="error-msg hidden" role="alert"></p>
@@ -87,13 +88,20 @@
         </form>
         <section id="saved-campaigns" role="tabpanel" aria-labelledby="resume-game-tab" hidden>
             <h2>Your campaigns</h2>
-            <p class="save-explainer">Turns save automatically. Resume links are kept in this browser.</p>
+            <p class="save-explainer">Games are kept on the server for 7 days after creation or restore. Download a save to keep playing or replay it later.</p>
+            <div class="restore-campaign">
+                <label for="restore-campaign">Restore a downloaded save</label>
+                <input type="file" id="restore-campaign" accept=".json,application/json" aria-describedby="restore-help">
+                <p id="restore-help" class="save-explainer">Choose a .borderstrife.json file (up to 16 MB). Ongoing games resume; completed games open in replay. Restoring starts a new 7-day window.</p>
+                <p id="restore-status" role="status"></p>
+            </div>
             <div id="campaign-list"></div>
         </section>
     </main>
 
     <script src="js/api.js"></script>
     <script src="js/campaigns.js"></script>
+    <script src="js/backups.js"></script>
     <script src="js/welcome.js"></script>
 </body>
 </html>

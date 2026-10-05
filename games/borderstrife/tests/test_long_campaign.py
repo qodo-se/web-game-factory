@@ -30,7 +30,7 @@ class LongCampaignTests(unittest.TestCase):
 
     def test_old_history_migrates_once_and_response_includes_moves(self):
         engine = self.engine()
-        store._execute('INSERT INTO imperium_campaigns VALUES (?, ?, ?, ?)',
+        store._execute('INSERT INTO imperium_campaigns (id, revision, payload, updated_at) VALUES (?, ?, ?, ?)',
                        ('legacy', engine.state.turn, store._encode(engine), 'now'))
         original = engine.history[:]
         response = Response()
@@ -64,7 +64,7 @@ class LongCampaignTests(unittest.TestCase):
 
     def test_stale_migration_cannot_duplicate_or_replace_history(self):
         engine = self.engine(1)
-        store._execute('INSERT INTO imperium_campaigns VALUES (?, ?, ?, ?)', ('old', 2, store._encode(engine), 'now'))
+        store._execute('INSERT INTO imperium_campaigns (id, revision, payload, updated_at) VALUES (?, ?, ?, ?)', ('old', 2, store._encode(engine), 'now'))
         a, b = store.get('old', False), store.get('old', False)
         a.state.turn = b.state.turn = 3
         a.history.append({'turn': 2, 'events': ['winner']})

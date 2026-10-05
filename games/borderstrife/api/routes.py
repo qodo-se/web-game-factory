@@ -6,8 +6,10 @@ from collections import OrderedDict
 from time import perf_counter
 from dataclasses import asdict
 from typing import Dict, List, Optional, Literal, Annotated
-from fastapi import APIRouter, HTTPException, Response, Query
+from fastapi import APIRouter, HTTPException, Response, Query, Request
 from pydantic import BaseModel, Field
+from starlette.concurrency import run_in_threadpool
+from games.borderstrife.api import backups
 
 from games.borderstrife.engine.game_engine import GameEngine
 from games.borderstrife.engine.models import Move, TurnActions
@@ -87,6 +89,7 @@ def _serialize_state(engine: GameEngine) -> dict:
     p2 = s.get_player("player_2")
     return {
         "turn": s.turn,
+        "expires_at": getattr(engine, "expires_at", None),
         "battle": s.battle,
         "preset_id": s.preset_id,
         "map_asset_id": s.map_asset_id or s.preset_id,
@@ -163,11 +166,46 @@ def new_game(req: NewGameRequest):
     return {"game_id": game_id, "state": _serialize_state(engine), "history": engine.history}
 
 
+@router.post("/games/restore")
+async def restore_game(request: Request):
+    # Bound streamed bodies too; Content-Length can be absent or untrusted.
+    payload = bytearray()
+    async for chunk in request.stream():
+        payload.extend(chunk)
+        if len(payload) > backups.MAX_BYTES:
+            raise HTTPException(status_code=413, detail="Save files must be 16 MB or smaller.")
+
+    def restore():
+        try:
+            engine = backups.decode(payload)
+        except (ValueError, TypeError, KeyError, AttributeError, RecursionError, OverflowError):
+            raise HTTPException(status_code=400, detail="This is not a valid supported BorderStrife save. Choose an unmodified downloaded .borderstrife.json file.")
+        game_id = store.create(engine)
+        return {"game_id": game_id, "state": _serialize_state(engine)}
+
+    return await run_in_threadpool(restore)
+
+
+@router.get("/games/{game_id}/download")
+def download_game(game_id: str):
+    engine = store.get(game_id)
+    if engine is None:
+        raise HTTPException(status_code=404, detail="Game not found or expired. Restore an earlier downloaded save from Resume game.")
+    try:
+        payload = backups.encode(engine)
+    except ValueError as error:
+        raise HTTPException(status_code=413, detail=str(error))
+    return Response(content=payload, media_type="application/json", headers={
+        "Content-Disposition": 'attachment; filename="campaign.borderstrife.json"',
+        "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff",
+    })
+
+
 @router.get("/games/{game_id}")
 def get_game(game_id: str, history_limit: Annotated[Optional[int], Query(ge=1, le=100)] = None):
     engine = store.get(game_id, include_history=history_limit is None)
     if not engine:
-        raise HTTPException(status_code=404, detail="Game not found.")
+        raise HTTPException(status_code=404, detail="Game not found or expired. Games are kept for 7 days. Restore a downloaded save from Resume game.")
     entries = engine.history if history_limit is None else store.history_page(game_id, engine, engine.state.turn, history_limit+1)
     more = history_limit is not None and len(entries) > history_limit
     if history_limit is not None:
@@ -186,7 +224,7 @@ def get_history(game_id: str, before_turn: Annotated[int, Query(ge=1)],
                 limit: Annotated[int, Query(ge=1, le=100)] = 50):
     engine = store.get(game_id, include_history=False)
     if not engine:
-        raise HTTPException(status_code=404, detail="Game not found.")
+        raise HTTPException(status_code=404, detail="Game not found or expired. Games are kept for 7 days. Restore a downloaded save from Resume game.")
     entries = store.history_page(game_id, engine, before_turn, limit+1)
     return {'history': [_public_report(entry) for entry in entries[-limit:]], 'more': len(entries)>limit}
 
@@ -198,7 +236,7 @@ def get_history(game_id: str, before_turn: Annotated[int, Query(ge=1)],
 def get_valid_moves(game_id: str):
     engine = store.get(game_id, include_history=False)
     if not engine:
-        raise HTTPException(status_code=404, detail="Game not found.")
+        raise HTTPException(status_code=404, detail="Game not found or expired. Games are kept for 7 days. Restore a downloaded save from Resume game.")
     return engine.get_valid_moves("player_1")
 
 
@@ -206,7 +244,7 @@ def get_valid_moves(game_id: str):
 def get_forecast(game_id: str, req: TurnRequest):
     engine = store.get(game_id, include_history=False)
     if not engine:
-        raise HTTPException(status_code=404, detail="Game not found.")
+        raise HTTPException(status_code=404, detail="Game not found or expired. Games are kept for 7 days. Restore a downloaded save from Resume game.")
     moves = [Move(m.from_region_id, m.to_region_id) for m in req.moves]
     try:
         validate_actions(engine.state, TurnActions('player_1', moves))
@@ -220,7 +258,7 @@ def get_threats(game_id: str, req: TurnRequest):
     from games.borderstrife.engine.strategy import threats
     engine = store.get(game_id, include_history=False)
     if not engine:
-        raise HTTPException(status_code=404, detail="Game not found.")
+        raise HTTPException(status_code=404, detail="Game not found or expired. Games are kept for 7 days. Restore a downloaded save from Resume game.")
     moves = [Move(m.from_region_id, m.to_region_id) for m in req.moves]
     try:
         validate_actions(engine.state, TurnActions('player_1', moves))
@@ -237,7 +275,7 @@ def submit_turn(game_id: str, req: TurnRequest, response: Response = None):
         engine = store.get(game_id, include_history=False)
         loaded = perf_counter()
         if not engine:
-            raise HTTPException(status_code=404, detail="Game not found.")
+            raise HTTPException(status_code=404, detail="Game not found or expired. Games are kept for 7 days. Restore a downloaded save from Resume game.")
         if engine.state.game_over:
             raise HTTPException(status_code=400, detail="Game is already over.")
         if req.expected_turn is None:
@@ -306,7 +344,7 @@ def _legacy_replay_page(game_id, engine, offset, limit):
         if engine._journal:
             engine = store.get(game_id)
             if engine is None:
-                raise HTTPException(status_code=404, detail="Game not found.")
+                raise HTTPException(status_code=404, detail="Game not found or expired. Games are kept for 7 days. Restore a downloaded save from Resume game.")
         reports = {entry['turn']: _public_report(entry) for entry in engine.history}
         positions = campaign_states(engine)
         entries = tuple(json.dumps({'frame': _replay_frame(position),
@@ -335,7 +373,7 @@ def get_campaign_replay(game_id: str, offset: Annotated[Optional[int], Query(ge=
                         limit: Annotated[int, Query(ge=1, le=100)] = 50):
     engine = store.get(game_id, include_history=offset is None)
     if not engine:
-        raise HTTPException(status_code=404, detail="Game not found.")
+        raise HTTPException(status_code=404, detail="Game not found or expired. Games are kept for 7 days. Restore a downloaded save from Resume game.")
     if not engine.state.game_over:
         raise HTTPException(status_code=400, detail="Campaign replay is available after the game ends.")
     start = getattr(engine, '_replay_start', None)

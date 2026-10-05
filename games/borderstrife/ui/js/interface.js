@@ -28,7 +28,21 @@ const interfaceView = {
         updateShapes();shapes.addEventListener('change',()=>{updateShapes();this.save('shapes',shapes.checked);if(state)renderMap();});
         const help=document.getElementById('map-help-toggle');
         help.addEventListener('click',()=>{const open=help.getAttribute('aria-expanded')!=='true';help.setAttribute('aria-expanded',String(open));document.getElementById('map-navigation-help').hidden=!open;});
-        this.initTheme();this.initFullscreen();this.initResize();
+        this.initTheme();this.initFullscreen();this.initResize();this.initTurnShortcut();
+    },
+    initTurnShortcut() {
+        const button=document.getElementById('end-turn-btn');
+        document.addEventListener('keydown',event=>{
+            if(event.key!=='Enter'||!event.shiftKey||event.ctrlKey||event.metaKey||event.altKey)return;
+            if(event.defaultPrevented)return;
+            const target=event.target;
+            if(target.isContentEditable||target.closest('input,textarea,select,[role="textbox"]'))return;
+            if(target.closest('button,a,summary,[role="button"]')&&target!==button)return;
+            if(event.repeat||event.isComposing) {if(target===button)event.preventDefault();return;}
+            if(!state||resolving||gameOver||campaignReplay.active||button.disabled||button.closest('[inert]'))return;
+            event.preventDefault();
+            button.click();
+        });
     },
     initTheme() {
         const select=document.getElementById('map-theme');

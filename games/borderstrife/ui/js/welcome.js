@@ -6,17 +6,48 @@
     const description = document.getElementById('preset-desc');
     const kingdom = document.getElementById('kingdom-select');
     const preview = document.getElementById('kingdom-preview');
+    const mobile = matchMedia('(max-width:760px)');
+    const nextStep = document.getElementById('continue-setup');
+    let catalog=[], visible=[];
     let historical = false;
     let retryAction=()=>location.reload();
     const retry=document.getElementById('retry-maps');
     retry.addEventListener('click',()=>retryAction());
     let selected = '', starts = [], sequence = 0, ready = false, submitting = false;
     campaigns.render();
+    const tabs=[document.getElementById('new-game-tab'),document.getElementById('resume-game-tab')];
+    function selectTab(tab) {
+        if(submitting)return;
+        for(const item of tabs){
+            const active=item===tab;item.setAttribute('aria-selected',String(active));item.tabIndex=active?0:-1;
+            document.getElementById(item.getAttribute('aria-controls')).hidden=!active;
+        }
+    }
+    for(const [index,tab] of tabs.entries()){
+        tab.addEventListener('click',()=>selectTab(tab));
+        tab.addEventListener('keydown',event=>{
+            if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)||submitting)return;
+            event.preventDefault();const target=tabs[event.key==='Home'?0:event.key==='End'?1:1-index];selectTab(target);target.focus();
+        });
+    }
+    function showStep(step) {
+        form.dataset.step=step;
+        if(mobile.matches){
+            (step==='setup'?document.getElementById('selected-map-title'):grid.querySelector('input:checked')||grid.querySelector('input')||grid).focus();
+            window.scrollTo({top:0,behavior:'instant'});
+        }
+    }
+    nextStep.addEventListener('click',()=>{if(ready&&!submitting)showStep('setup');});
+    document.getElementById('back-to-maps').addEventListener('click',()=>showStep('maps'));
+    mobile.addEventListener('change',()=>{document.querySelector('.map-scroll-hint').hidden=grid.scrollHeight<=grid.clientHeight;});
 
     function updateControls() {
         form.querySelectorAll('input, select, button').forEach(el => { el.disabled = submitting; });
         kingdom.disabled = submitting || !ready;
         startBtn.disabled = submitting || !ready;
+        nextStep.disabled = submitting || !ready;
+        for(const tab of tabs)tab.disabled=submitting;
+        form.querySelectorAll('[data-category]').forEach(button=>{button.disabled=submitting||!catalog.length;});
     }
     function showError(message) {
         errorMsg.textContent = message;
@@ -26,16 +57,30 @@
     function previewKingdom() {
         const choice = starts.find(c => String(c.id ?? '') === kingdom.value);
         preview.textContent = choice ? (historical
-            ? `${choice.army} army strength · ${choice.regions.length} sectors · No recruitment. ${choice.difficulty} — based on starting strength only.`
-            : `${choice.regions.join(' · ')}. ${choice.army} troops · +${choice.growth} recruits/turn. Rival seat: ${choice.rival}. ${choice.difficulty} — based on starting army strength, not a victory prediction.`) : '';
+            ? `${choice.army} troops · ${choice.regions.length} sectors · Fixed forces`
+            : `${choice.army} troops · +${choice.growth}/turn · ${choice.difficulty}`) : '';
+        document.getElementById('starting-details').textContent=choice ? (historical
+            ? `${choice.difficulty} — based on starting strength only.`
+            : `${choice.regions.join(' · ')}. Rival seat: ${choice.rival}. Difficulty reflects starting strength, not a victory prediction.`) : '';
     }
     kingdom.addEventListener('change', previewKingdom);
     async function chooseMap(preset) {
         if (submitting) return;
         selected = preset.id;
+        grid.querySelectorAll('input').forEach(input=>{input.checked=input.value===selected;});
+        document.getElementById('selected-map-title').textContent=preset.name;
+        document.getElementById('selected-map-summary').textContent=`${preset.region_count} ${preset.battle?'sectors · Historical battle':'regions · Open-ended conquest'}`;
+        document.getElementById('mobile-selection').textContent=`Selected: ${preset.name}`;
+        const thumbnail=document.getElementById('selected-map-preview');
+        thumbnail.hidden=false;thumbnail.src=`maps/thumbnails/${encodeURIComponent(preset.map_asset_id||preset.id)}.svg`;
+        document.getElementById('map-details').open=false;
+        const essentials=document.getElementById('battle-essentials');
+        essentials.hidden=!preset.battle;
+        essentials.textContent=preset.battle?'20 turns · Fixed forces · 3 objectives. Win by eliminating the rival or holding more objectives.':'';
         retry.hidden=true;
         retryAction=()=>chooseMap(preset);
         historical = !!preset.battle;
+        nextStep.textContent=historical?'Next: choose your side':'Next: choose your kingdom';
         document.getElementById('starting-label').textContent = historical ? 'Choose your side' : 'Starting kingdom';
         startBtn.textContent = historical ? 'Begin Battle' : 'Begin Campaign';
         const briefing = document.getElementById('battle-briefing');
@@ -76,7 +121,7 @@
         const request = ++sequence;
         ready = false;
         kingdom.replaceChildren(new Option(historical ? 'Loading sides…' : 'Loading kingdoms…', ''));
-        preview.textContent = '';
+        preview.textContent = '';document.getElementById('starting-details').textContent='';
         updateControls();
         try {
             const choices = await api.getStarts(selected);
@@ -98,6 +143,7 @@
     form.addEventListener('submit', async event => {
         event.preventDefault();
         if (submitting || !ready) return;
+        if(mobile.matches&&form.dataset.step==='maps'){showStep('setup');return;}
         const playerName = document.getElementById('player-name').value.trim() || 'Consul';
         const body = {
             player_name: playerName,
@@ -125,70 +171,52 @@
             startBtn.textContent = historical ? 'Begin Battle' : 'Begin Campaign';
         }
     });
+    function renderGallery() {
+        const cards=visible;
+        grid.replaceChildren(...cards.map(preset=>{
+            const card=document.createElement('label');card.className='map-card';
+            const radio=document.createElement('input');radio.type='radio';radio.name='preset';radio.value=preset.id;
+            radio.checked=preset.id===selected;
+            radio.addEventListener('change',()=>{if(radio.checked)chooseMap(preset);});
+            const image=document.createElement('img');
+            image.src=`maps/thumbnails/${encodeURIComponent(preset.map_asset_id||preset.id)}.svg`;
+            image.alt='';image.decoding='async';image.width=300;image.height=180;
+            const title=document.createElement('strong');title.textContent=preset.name;
+            const detail=document.createElement('span');detail.textContent=`${preset.region_count} ${preset.battle?'sectors':'regions'}`;
+            card.append(radio,image,title,detail);return card;
+        }));
+        if(!cards.length)grid.textContent='No maps available in this category. Choose another category.';
+        grid.setAttribute('aria-busy','false');
+        grid.scrollTop=0;
+        document.querySelector('.map-scroll-hint').hidden=grid.scrollHeight<=grid.clientHeight;
+        updateControls();
+    }
+    function showCategory(category) {
+        visible=catalog.filter(p=>(p.category||'world')===category);
+        document.querySelectorAll('[data-category]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.category===category)));
+        document.getElementById('category-description').textContent=`${visible.length} maps · ${{world:'Open-ended conquest',historical:'Focused battles with fixed forces',campaigns:'Campaigns through history',sieges:'Fortified cities and approaches',legends:'Worlds of epic and imagination'}[category]||'Choose your theater'}`;
+        renderGallery();
+        if(visible.length)return chooseMap(visible[0]);
+        ++sequence;selected='';starts=[];ready=false;
+        document.getElementById('selected-map-title').textContent='Choose another category';
+        document.getElementById('selected-map-preview').hidden=true;
+        document.getElementById('selected-map-summary').textContent='';
+        document.getElementById('battle-essentials').hidden=true;
+        document.getElementById('battle-briefing').replaceChildren();
+        document.getElementById('mobile-selection').textContent='Choose your map';
+        document.getElementById('starting-details').textContent='';
+        description.textContent='';preview.textContent='';retry.hidden=true;errorMsg.classList.add('hidden');
+        kingdom.replaceChildren(new Option('No starting options',''));updateControls();
+    }
+    document.querySelectorAll('[data-category]').forEach(button=>button.addEventListener('click',()=>{
+        if(!submitting&&button.getAttribute('aria-pressed')!=='true')showCategory(button.dataset.category);
+    }));
     try {
-        const presets = await api.getPresets();
-        if (!presets.length) throw new Error('No maps available. Please reload to try again.');
-        function showCategory(category, preferred) {
-        retry.hidden=true;
-        const visible = presets.filter(p => (p.category || 'world') === category);
-        const active = preferred || visible[0];
-        document.querySelectorAll('[data-category]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.category === category)));
-        document.getElementById('category-description').textContent = ({
-            world:`${visible.length} regional theaters for open-ended conquest.`,
-            historical:`${visible.length} focused battles. Choose either side and change the outcome.`,
-            campaigns:`${visible.length} historical war theaters. Period settings with open-ended conquest rules.`,
-            sieges:`${visible.length} fortified landscapes. Conquer districts and approaches using standard campaign rules.`,
-            legends:`${visible.length} worlds of epic and imagination. Literary interpretations and original fantasy, with standard campaign rules.`,
-        })[category] || '' ;
-        if (!active) {
-            ++sequence; // Ignore any start preview still loading from the previous category.
-            selected = ''; starts = []; ready = false;
-            historical = category === 'historical';
-            startBtn.textContent = historical ? 'Begin Battle' : 'Begin Campaign';
-            document.getElementById('starting-label').textContent = historical ? 'Choose your side' : 'Starting kingdom';
-            document.getElementById('battle-briefing').hidden = true;
-            document.getElementById('battle-briefing').replaceChildren();
-            description.textContent = ''; preview.textContent = '';
-            errorMsg.classList.add('hidden');
-            kingdom.replaceChildren(new Option('No maps available', ''));
-            grid.textContent = 'No maps available in this category yet. Choose another category or reload.';
-            grid.setAttribute('aria-busy', 'false');
-            updateControls();
-            return;
-        }
-        grid.replaceChildren(...visible.map(preset => {
-            const card = document.createElement('label');
-            card.className = 'map-card';
-            const radio = document.createElement('input');
-            radio.type = 'radio'; radio.name = 'preset'; radio.value = preset.id;
-            radio.checked = preset.id === active.id;
-            radio.addEventListener('change', () => { if (radio.checked) chooseMap(preset); });
-            const image = document.createElement('img');
-            image.src = `maps/thumbnails/${encodeURIComponent(preset.map_asset_id||preset.id)}.svg`;
-            image.alt = ''; image.loading='lazy'; image.decoding='async'; image.width = 300; image.height = 180;
-            const title = document.createElement('strong'); title.textContent = preset.name;
-            const detail = document.createElement('span'); detail.textContent = `${preset.battle?.date ? preset.battle.date+' · ' : ''}${preset.region_count} ${preset.battle ? 'sectors · Fixed forces' : 'regions · '+({world:'Regional campaign',campaigns:'Historical campaign',sieges:'City campaign',legends:'Epics'}[preset.category||'world']||'Campaign')}`;
-            card.append(radio, image, title, detail);
-            if(preset.battle) {
-                const location=document.createElement('span');location.className='battle-location';
-                location.textContent={waterloo:'Waterloo, Belgium',sekigahara:'Sekigahara, Japan',hastings:'East Sussex, England',hattin:'Horns of Hattin, Galilee',gettysburg:'Pennsylvania, United States'}[preset.id]||'';
-                const factions=document.createElement('span');factions.className='battle-factions';
-                factions.textContent=(preset.battle.sides||[]).join(' vs ');
-                card.append(location,factions);
-            }
-            return card;
-        }));
-        grid.setAttribute('aria-busy', 'false');
-        return chooseMap(active);
-        }
-        document.querySelectorAll('[data-category]').forEach(button => button.addEventListener('click', () => {
-            if (submitting || button.getAttribute('aria-pressed') === 'true') return;
-            showCategory(button.dataset.category);
-        }));
+        catalog=await api.getPresets();
+        if(!catalog.length)throw new Error('No maps available. Please reload to try again.');
         await showCategory('world');
-    } catch (error) {
-        grid.textContent = 'Maps unavailable. Please reload to try again.';
-        grid.setAttribute('aria-busy', 'false');
+    } catch(error) {
+        grid.textContent='Maps unavailable. Please try again.';grid.setAttribute('aria-busy','false');
         showError(error.message);
     }
 })();

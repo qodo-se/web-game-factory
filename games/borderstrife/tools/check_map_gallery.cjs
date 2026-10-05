@@ -35,8 +35,10 @@ const apiBase = process.env.IMPERIUM_TEST_API || 'http://localhost:8091';
         // Create each new campaign, check the real renderer and submit a turn.
         for (const id of ['americas','africa_middle_east','southeast_asia_oceania','balochistan_borderlands_expanded']) {
             await page.goto(base);
+            await page.waitForFunction(()=>!document.getElementById('start-btn').disabled);
             await page.locator(`input[value="${id}"]`).check();
             await page.waitForFunction(() => !document.getElementById('start-btn').disabled);
+            if(await page.locator('#continue-setup').isVisible())await page.locator('#continue-setup').click();
             await page.locator('#start-btn').click();
             await page.waitForURL('**/game.html');
             await page.waitForFunction(() => typeof atlas !== 'undefined' && atlas.geometry);

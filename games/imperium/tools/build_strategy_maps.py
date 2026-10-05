@@ -49,6 +49,7 @@ def build(archive, only=None):
     for path in sorted((ROOT/'ui/maps').glob('*.json')):
         data=json.loads(path.read_text());key=data['id']
         if only and key != only: continue
+        if key.endswith('_compact'): continue  # Built by build_compact_maps.py
         if data.get('category') == 'historical': continue  # Built by build_battle_maps.py
         preset=runpy.run_path(str(ROOT/'engine/presets'/f'{key}.py'))['PRESET']
         west,south,east,north=data['bounds']

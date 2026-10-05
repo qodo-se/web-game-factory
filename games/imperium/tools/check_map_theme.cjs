@@ -32,6 +32,14 @@ const base=process.env.IMPERIUM_TEST_URL||'http://localhost:3000';
    assert.equal(await page.locator('#map-theme').inputValue(),'dark');assert.equal(await page.evaluate(()=>interfaceView.darkMap),true);
    assert.equal(await page.evaluate(async()=>JSON.stringify(await api.getGame(gameId))),saved);
   }
+  await require('./legacy_random_fixture.cjs')(page);
+  await page.goto(base+'/game.html');await page.locator('#load-screen').waitFor({state:'hidden'});
+  await page.evaluate(()=>sidebar.open('settings'));
+  await page.selectOption('#map-theme','light');const legacyLight=await brightness();
+  await page.selectOption('#map-theme','dark');assert.ok(await brightness()<legacyLight*.8);
+  await page.selectOption('#map-theme','light');assert.equal(await brightness(),legacyLight);
+  await page.selectOption('#map-theme','system');await page.emulateMedia({colorScheme:'dark'});
+  await page.waitForFunction(()=>interfaceView.darkMap);assert.ok(await brightness()<legacyLight*.8);
   assert.deepEqual(errors,[]);
   console.log('Regional and historical dark terrain, live system preference, explicit overrides, persistence and unchanged saved campaigns passed.');
  }finally{await browser.close();}

@@ -5,11 +5,12 @@ from games.imperium.api.store import _encode, _decode
 from games.imperium.engine.game_engine import GameEngine
 from games.imperium.engine.presets.india import PRESET, LEGACY_REGION_NAMES
 from games.imperium.engine.replay import snapshot, campaign_states
+from games.imperium.engine.presets.loader import load_preset
 
 
 class IndiaRenameTests(unittest.TestCase):
     def test_legacy_save_names_upgrade_without_changing_gameplay(self):
-        engine = GameEngine.from_preset('india')
+        engine = GameEngine(load_preset(PRESET))
         expected = asdict(engine.state)
         for rid, old_name in LEGACY_REGION_NAMES.items():
             engine.state.regions[rid].name = old_name

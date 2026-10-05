@@ -88,6 +88,14 @@ print(json.dumps(dict(normal=normal,legacy=legacy,partial=partial,start=start,ta
   assert.equal(await page.locator('.replay-arrow').getAttribute('data-to'),String(fixture.target));
   assert.match(await page.locator('.replay-arrow title').textContent(),/troops/);
   assert.equal(await page.locator('.replay-arrow .order-hit').count(),0);
+  const arrowHit=await page.locator('.replay-arrow path').first().evaluate(path=>{
+   const p=path.getPointAtLength(path.getTotalLength()/2);
+   const screen=new DOMPoint(p.x,p.y).matrixTransform(path.getScreenCTM());
+   return !!document.elementFromPoint(screen.x,screen.y)?.closest('.replay-arrow');
+  });
+  assert.equal(arrowHit,true);
+  await page.locator('.replay-arrow').focus();
+  assert.match(await page.locator('.replay-arrow').getAttribute('aria-label'),/troops/);
   await page.keyboard.press('ArrowLeft');
   assert.equal(await page.locator('.replay-arrow').count(),0);
   await page.keyboard.press('ArrowRight');

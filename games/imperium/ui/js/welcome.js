@@ -103,6 +103,7 @@
             sessionStorage.setItem('gameId', result.game_id);
             sessionStorage.setItem('playerName', playerName);
             sessionStorage.setItem('presetId', body.preset_id);
+            sessionStorage.setItem('mapAssetId',result.state.map_asset_id||body.preset_id);
             window.location.href = 'game.html';
         } catch (error) {
             showError('Could not begin the campaign. '+error.message+' You can try Begin again.');
@@ -145,7 +146,7 @@
             radio.checked = preset.id === active.id;
             radio.addEventListener('change', () => { if (radio.checked) chooseMap(preset); });
             const image = document.createElement('img');
-            image.src = `maps/thumbnails/${encodeURIComponent(preset.id)}.svg`;
+            image.src = `maps/thumbnails/${encodeURIComponent(preset.map_asset_id||preset.id)}.svg`;
             image.alt = ''; image.loading='lazy'; image.decoding='async'; image.width = 300; image.height = 180;
             const title = document.createElement('strong'); title.textContent = preset.name;
             const detail = document.createElement('span'); detail.textContent = `${preset.battle?.date ? preset.battle.date+' · ' : ''}${preset.region_count} ${preset.category === 'historical' ? 'sectors' : 'regions · Regional campaign'}`;

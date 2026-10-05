@@ -20,7 +20,8 @@ def build():
     target = ROOT / 'ui/maps/thumbnails'
     target.mkdir(exist_ok=True)
     for key, preset in PRESETS.items():
-        data = json.loads((ROOT / f'ui/maps/{key}.json').read_text())
+        asset=preset.get('map_asset_id',key)
+        data = json.loads((ROOT / f'ui/maps/{asset}.json').read_text())
         width = min(280, 164 * data['aspect'])
         height = width / data['aspect']
         left, top = (300-width)/2, (180-height)/2
@@ -52,7 +53,7 @@ def build():
                 x,y=data['regions'][rid]['center'];x=left+x*width;y=top+y*height
                 parts.append(f'<path d="M{x:.2f},{y-4:.2f}l4,4 -4,4 -4,-4Z" fill="#ffe09a" stroke="#5b4622" stroke-width=".8"/>')
         parts.append('</svg>')
-        (target / f'{key}.svg').write_text('\n'.join(parts)+'\n')
+        (target / f'{asset}.svg').write_text('\n'.join(parts)+'\n')
 
 
 if __name__ == '__main__':

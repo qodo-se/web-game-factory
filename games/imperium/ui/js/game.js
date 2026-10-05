@@ -390,7 +390,7 @@ function renderCanvas() {
         canvas.height = ch;
     }
 
-    const terrainKey=JSON.stringify([cw,ch,...Object.values(state.regions).map(r=>[r.id,r.x,r.y,r.owner,r.terrain,r.neighbors])]);
+    const terrainKey=JSON.stringify([cw,ch,interfaceView.darkMap,...Object.values(state.regions).map(r=>[r.id,r.x,r.y,r.owner,r.terrain,r.neighbors])]);
     if(randomTerrainCache?.key===terrainKey) {
         renderTerrainEffects(randomTerrainCache.paths,selectedFrom,new Set(validMoves[selectedFrom]||[]),new Set(pendingMoves.map(m=>m.from_region_id)),`scale(${MAP_W/cw} ${MAP_H/ch})`,false);
         return randomTerrainCache.data;
@@ -632,6 +632,7 @@ function renderCanvas() {
     }
 
     ctx.putImageData(img, 0, 0);
+    if(interfaceView.darkMap) {ctx.fillStyle='rgba(8,18,24,.56)';ctx.fillRect(0,0,W,H);}
 
     // Vignette — subtle framing, keep bright AoE2 feel
     const vig = ctx.createRadialGradient(W/2, H/2, H*0.25, W/2, H/2, H*0.90);
@@ -663,6 +664,15 @@ function svgEl(tag, attrs) {
     return e;
 }
 
+// Shared bounds keep counters, selection rings and arrow clearance consistent.
+function counterMetrics(region) {
+    const text=String(strategicView.mode==='recruitment'?`+${region.pop_rate}`:region.army);
+    const radius=Math.max(14,Math.min(25,text.length*3.2+4));
+    const shape=interfaceView.factionShapes?region.owner:'player_1';
+    const outer=shape==='player_2'?radius*Math.SQRT2:shape==='rogue'?radius+3:radius;
+    return {text,radius,shape,outer};
+}
+
 // Construct planned arrows in screen pixels so gaps/head sizes remain stable
 // under camera zoom and non-uniform SVG scaling on random maps.
 function plannedMoveArrow(from, to, matrix, movement=null) {
@@ -674,11 +684,14 @@ function plannedMoveArrow(from, to, matrix, movement=null) {
     const ux=dx/distance, uy=dy/distance;
     // Nearby counters need a detour; trimming a short straight segment at both
     // ends would either reverse it or bury its head underneath the destination.
-    const bend=distance < 72 ? 36 : movement ? 20 : 0;
+    const screenScale=Math.max(Math.hypot(matrix.a,matrix.b),Math.hypot(matrix.c,matrix.d))/mapCamera.zoom;
+    const fromGap=counterMetrics(from).outer*screenScale+3;
+    const toGap=counterMetrics(to).outer*screenScale+5;
+    const bend=distance<2*(fromGap+toGap)?2*Math.max(fromGap,toGap)+24:movement?20:0;
     const control={x:(a.x+b.x)/2-uy*bend, y:(a.y+b.y)/2+ux*bend};
     const startLength=Math.hypot(control.x-a.x,control.y-a.y);
     const endLength=Math.hypot(b.x-control.x,b.y-control.y);
-    const startGap=Math.min(14,startLength*.4), endGap=Math.min(19,endLength*.4);
+    const startGap=Math.min(fromGap,startLength*.8), endGap=Math.min(toGap,endLength*.8);
     const start={x:a.x+(control.x-a.x)*startGap/startLength,
                  y:a.y+(control.y-a.y)*startGap/startLength};
     const tx=(b.x-control.x)/endLength, ty=(b.y-control.y)/endLength;
@@ -693,6 +706,7 @@ function plannedMoveArrow(from, to, matrix, movement=null) {
         {x:base.x+ty*halfWidth,y:base.y-tx*halfWidth}].map(point);
     const group=svgEl('g',{'data-from':from.id,'data-to':to.id,'class':movement?'replay-arrow':'planned-arrow'});
     const title=svgEl('title');title.textContent=`${from.name} → ${to.name}`+(movement?` · ${movement.army} troops${movement.type==='retreat'?' (retreat)':''}`:'');group.append(title);
+    if(movement) {group.setAttribute('tabindex','0');group.setAttribute('role','img');group.setAttribute('aria-label',title.textContent);}
     const path=`M ${s.x} ${s.y} Q ${c.x} ${c.y} ${h.x} ${h.y}`;
     if(!movement) {
     const hit=svgEl('path',{d:`M ${s.x} ${s.y} Q ${c.x} ${c.y} ${t.x} ${t.y}`,
@@ -847,10 +861,11 @@ function renderOverlay(idxMap, cw, ch) {
         if(r.supplied===false && r.owner==='player_1')g.appendChild(svgEl('circle',{cx:x,cy:y,r:18,
             fill:'none',stroke:'#e6a16a','stroke-dasharray':'3 3','stroke-width':1.5}));
 
-        // Selection ring — tight around the army circle
+        const metrics=counterMetrics(r);
+        // Selection rings clear every counter shape and size.
         if (isSelected) {
             g.appendChild(svgEl('circle', {
-                cx: x, cy: y, r: 20,
+                cx: x, cy: y, r: metrics.outer+6,
                 fill: 'rgba(228,196,124,.12)', stroke: '#f2d99b',
                 'stroke-width': 2.5,
             }));
@@ -859,15 +874,14 @@ function renderOverlay(idxMap, cw, ch) {
         // Valid-target ring — dashed gold, slightly larger
         if (isTarget) {
             g.appendChild(svgEl('circle', {
-                cx: x, cy: y, r: 23,
+                cx: x, cy: y, r: metrics.outer+9,
                 fill: 'none', stroke: '#d4a840',
                 'stroke-width': 2, opacity: 0.9,
                 'stroke-dasharray': '6 4',
             }));
         }
 
-        const countText=String(strategicView.mode==='recruitment'?`+${r.pop_rate}`:r.army);
-        const bgR=Math.max(14,Math.min(25,countText.length*3.2+4));
+        const countText=metrics.text, bgR=metrics.radius;
         // Capital crown, with space reserved in label placement.
         if (r.is_capital) {
             g.appendChild(svgEl('path', {
@@ -877,7 +891,7 @@ function renderOverlay(idxMap, cw, ch) {
         }
 
         // Army count — centered on the region point
-        const shape=interfaceView.factionShapes?r.owner:'player_1';
+        const shape=metrics.shape;
         const attrs={fill:'#172529',stroke:{player_1:'#8ebfe9',player_2:'#efa296',rogue:'#c3c6ad'}[r.owner],
             'stroke-width':1.5,class:'army-counter','data-owner':r.owner};
         const counter=shape==='player_2'?svgEl('rect',{...attrs,x:x-bgR,y:y-bgR,width:bgR*2,height:bgR*2,rx:3}):
@@ -1342,7 +1356,7 @@ async function init() {
     const loadScreen=document.getElementById('load-screen');
     document.getElementById('retry-game').addEventListener('click',()=>location.reload());
     const preview=document.getElementById('load-preview');
-    const preset=sessionStorage.getItem('presetId');
+    const preset=sessionStorage.getItem('mapAssetId')||sessionStorage.getItem('presetId');
     if(preset) { preview.src=`maps/thumbnails/${encodeURIComponent(preset)}.svg`;preview.hidden=false;preview.onerror=()=>{preview.hidden=true;}; }
     document.getElementById('main').inert=true;
     document.getElementById('bottom-bar').inert=true;
@@ -1351,7 +1365,7 @@ async function init() {
             api.getGame(gameId),
             api.getValidMoves(gameId),
         ]);
-        await atlas.load(gameData.state.preset_id ?? (sessionStorage.getItem('presetId') || ''), gameData.state.regions);
+        await atlas.load(gameData.state.map_asset_id ?? gameData.state.preset_id ?? (sessionStorage.getItem('presetId') || ''), gameData.state.regions);
         state = gameData.state;
         campaigns.remember(gameId,state);
         campaignHistory=gameData.history||[];

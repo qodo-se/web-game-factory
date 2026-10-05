@@ -29,7 +29,7 @@ class CollectionTests(unittest.TestCase):
             with self.subTest(map=key):
                 engine = GameEngine.from_preset(key)
                 state = engine.state
-                atlas = json.loads((ROOT / f'ui/maps/{key}.json').read_text())
+                atlas = json.loads((ROOT / f'ui/maps/{PRESETS[key].get("map_asset_id",key)}.json').read_text())
                 self.assertEqual([r['name'] for r in atlas['regions']], [r[0] for r in preset['regions']])
                 seen, todo = set(), [0]
                 while todo:
@@ -70,7 +70,7 @@ class CollectionTests(unittest.TestCase):
                     inside = not inside
             return inside
         for key, locations in samples.items():
-            data = json.loads((ROOT / f'ui/maps/{key}.json').read_text())
+            data = json.loads((ROOT / f'ui/maps/{PRESETS[key].get("map_asset_id",key)}.json').read_text())
             west, south, east, north = data['bounds']
             for lon, lat in locations:
                 x, y = (lon-west)/(east-west), (north-lat)/(north-south)
@@ -81,7 +81,7 @@ class CollectionTests(unittest.TestCase):
 
     def test_borderlands_scope_and_cross_border_routes(self):
         preset = PRESETS['balochistan_borderlands_expanded']
-        data = json.loads((ROOT / 'ui/maps/balochistan_borderlands_expanded.json').read_text())
+        data = json.loads((ROOT / f'ui/maps/{preset.get("map_asset_id",preset["id"])}.json').read_text())
         west, south, east, north = data['bounds']
 
         def contains(lon, lat):

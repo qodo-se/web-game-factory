@@ -145,3 +145,7 @@ input[type=checkbox],input[type=radio] { accent-color:var(--gold); }
 #map-theme { font:12px Arial,sans-serif; }
 #map-container[data-theme="dark"] { background:#0c1921; color-scheme:dark; }
 .campaign-tools label[for] { flex-basis:100%; }
+
+.replay-arrow { pointer-events:visiblePainted; cursor:help; }
+.replay-arrow:focus-visible { outline:none; }
+.replay-arrow:focus-visible .planned-arrow-shaft { stroke:#fff5ce; }

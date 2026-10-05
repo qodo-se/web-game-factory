@@ -32,9 +32,10 @@ class KingdomTests(unittest.TestCase):
                 self.assertEqual(sum(r.is_capital for r in state.regions.values()), 2)
 
     def test_kashyap_and_invalid_start(self):
-        state = GameEngine.from_preset('india', start_region_id=36).state
-        self.assertEqual(state.regions[36].name, 'Kashyap Meer')
-        self.assertEqual(state.regions[36].owner, Owner.PLAYER_1)
+        rid=next(i for i,r in enumerate(PRESETS['india']['regions']) if r[0]=='Kashyap Meer')
+        state = GameEngine.from_preset('india', start_region_id=rid).state
+        self.assertEqual(state.regions[rid].name, 'Kashyap Meer')
+        self.assertEqual(state.regions[rid].owner, Owner.PLAYER_1)
         with self.assertRaises(ValueError): GameEngine.from_preset('india', start_region_id=999)
 
 

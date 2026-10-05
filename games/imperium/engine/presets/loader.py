@@ -94,7 +94,7 @@ def load_preset(
         removed_edges=preset.get("removed_edges", []),
     )
 
-    geography_file = Path(__file__).with_name('geography') / f"{preset['id']}.json"
+    geography_file = Path(__file__).with_name('geography') / f"{preset.get('map_asset_id', preset['id'])}.json"
     geography = json.loads(geography_file.read_text()) if geography_file.exists() else {}
     if geography:
         adj = [set(geography['neighbors'][str(i)]) for i in range(len(raw))]
@@ -167,6 +167,7 @@ def load_preset(
         turn=1,
         map_size=_map_size(len(regions)),
         preset_id=preset['id'],
+        map_asset_id=preset.get('map_asset_id'),
         routes=geography.get('routes', {}),
         ports=geography.get('ports', []),
         battle={

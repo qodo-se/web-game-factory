@@ -55,12 +55,14 @@ With the existing map-build dependencies installed:
 .venv/bin/python -m games.borderstrife.tools.build_collections /path/to/provinces.zip /path/to/rivers.zip
 .venv/bin/python -m games.borderstrife.tools.fetch_troy_terrain  # explicit network step, once
 .venv/bin/python -m games.borderstrife.tools.build_reviewed_maps /path/to/provinces.zip
+.venv/bin/python -m games.borderstrife.tools.build_polished_maps /path/to/provinces.zip
 .venv/bin/python -m games.borderstrife.tools.build_thumbnails
 ```
 
 An optional final map ID rebuilds one map. `compact.json` and `expansion.json`
 retain the pre-review definitions. The active registry overlays `reviewed.json`,
-whose geometry, routes, terrain and thumbnails use `<id>_atlas_v3`. Older assets
+whose geometry, routes, terrain and thumbnails use `<id>_atlas_v3`. The final
+`polished.json` overlay selects `<id>_atlas_v4`; see [the map refinement record](MAP_POLISH.md). Older assets
 remain available to saved games. `source_region_ids` retain name/group provenance
 for original maps; they do not assert that revised boundaries equal those groups.
 Terrain images and annotations are bundled. Increasing a released map's region count or

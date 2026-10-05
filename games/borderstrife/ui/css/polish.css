@@ -56,7 +56,7 @@ input[type=checkbox],input[type=radio] { accent-color:var(--gold); }
 .report-totals strong { display:block; color:var(--text); font-size:21px; margin-bottom:4px; }
 .report-group { padding:10px 0; border-top:1px solid #3b494a88; }
 .report-group h3 { font-size:11px; text-transform:uppercase; letter-spacing:.07em; color:var(--text-dim); }
-#turn-recap p { font-size:12px; }
+#turn-recap p,#turn-movements p { font-size:12px; }
 .log-entry { border-bottom:0; border-left:2px solid var(--border); margin:12px 0; padding:4px 0 4px 10px !important; }
 .log-entry:has(.won) { border-left-color:var(--success); }
 .log-entry:has(.lost) { border-left-color:var(--danger); }

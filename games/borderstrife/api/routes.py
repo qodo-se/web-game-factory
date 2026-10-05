@@ -1,7 +1,12 @@
 import threading
+import logging
+import hashlib
+import json
+from collections import OrderedDict
+from time import perf_counter
 from dataclasses import asdict
-from typing import Dict, List, Optional, Literal
-from fastapi import APIRouter, HTTPException
+from typing import Dict, List, Optional, Literal, Annotated
+from fastapi import APIRouter, HTTPException, Response, Query
 from pydantic import BaseModel, Field
 
 from games.borderstrife.engine.game_engine import GameEngine
@@ -10,8 +15,10 @@ from games.borderstrife.engine.presets import list_presets
 from games.borderstrife.engine.strategy import supplied_regions, growth, defense_factor, forecast
 from games.borderstrife.engine.turn_resolver import validate_actions, ValidationError
 from games.borderstrife.api import store
-from games.borderstrife.engine.replay import snapshot, campaign_states
+from games.borderstrife.engine.replay import snapshot, campaign_states, _restore
 from games.borderstrife.engine import standing_orders
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/imperium", tags=["imperium"])
 
@@ -157,16 +164,39 @@ def new_game(req: NewGameRequest):
 
 
 @router.get("/games/{game_id}")
-def get_game(game_id: str):
-    engine = store.get(game_id)
+def get_game(game_id: str, history_limit: Annotated[Optional[int], Query(ge=1, le=100)] = None):
+    engine = store.get(game_id, include_history=history_limit is None)
     if not engine:
         raise HTTPException(status_code=404, detail="Game not found.")
-    return {"game_id": game_id, "state": _serialize_state(engine), "history": engine.history}
+    entries = engine.history if history_limit is None else store.history_page(game_id, engine, engine.state.turn, history_limit+1)
+    more = history_limit is not None and len(entries) > history_limit
+    if history_limit is not None:
+        entries = entries[-history_limit:]
+    return {"game_id": game_id, "state": _serialize_state(engine),
+            "valid_moves": engine.get_valid_moves('player_1'),
+            "history": [_public_report(entry) for entry in entries], "history_more": more}
+
+
+def _public_report(entry):
+    return {key: value for key, value in entry.items() if key != 'replay_before'}
+
+
+@router.get("/games/{game_id}/history")
+def get_history(game_id: str, before_turn: Annotated[int, Query(ge=1)],
+                limit: Annotated[int, Query(ge=1, le=100)] = 50):
+    engine = store.get(game_id, include_history=False)
+    if not engine:
+        raise HTTPException(status_code=404, detail="Game not found.")
+    entries = store.history_page(game_id, engine, before_turn, limit+1)
+    return {'history': [_public_report(entry) for entry in entries[-limit:]], 'more': len(entries)>limit}
+
+
+
 
 
 @router.get("/games/{game_id}/valid-moves")
 def get_valid_moves(game_id: str):
-    engine = store.get(game_id)
+    engine = store.get(game_id, include_history=False)
     if not engine:
         raise HTTPException(status_code=404, detail="Game not found.")
     return engine.get_valid_moves("player_1")
@@ -174,7 +204,7 @@ def get_valid_moves(game_id: str):
 
 @router.post("/games/{game_id}/forecast")
 def get_forecast(game_id: str, req: TurnRequest):
-    engine = store.get(game_id)
+    engine = store.get(game_id, include_history=False)
     if not engine:
         raise HTTPException(status_code=404, detail="Game not found.")
     moves = [Move(m.from_region_id, m.to_region_id) for m in req.moves]
@@ -188,7 +218,7 @@ def get_forecast(game_id: str, req: TurnRequest):
 @router.post("/games/{game_id}/threats")
 def get_threats(game_id: str, req: TurnRequest):
     from games.borderstrife.engine.strategy import threats
-    engine = store.get(game_id)
+    engine = store.get(game_id, include_history=False)
     if not engine:
         raise HTTPException(status_code=404, detail="Game not found.")
     moves = [Move(m.from_region_id, m.to_region_id) for m in req.moves]
@@ -200,9 +230,12 @@ def get_threats(game_id: str, req: TurnRequest):
 
 
 @router.post("/games/{game_id}/turn")
-def submit_turn(game_id: str, req: TurnRequest):
+def submit_turn(game_id: str, req: TurnRequest, response: Response = None):
+    started = perf_counter()
     with _get_game_lock(game_id):
-        engine = store.get(game_id)
+        locked = perf_counter()
+        engine = store.get(game_id, include_history=False)
+        loaded = perf_counter()
         if not engine:
             raise HTTPException(status_code=404, detail="Game not found.")
         if engine.state.game_over:
@@ -225,27 +258,109 @@ def submit_turn(game_id: str, req: TurnRequest):
         # Persist the state and journal together; only return success after commit.
         engine.history.append({**{key: value for key, value in result.items() if key != 'state'},
                                'replay_before': replay_before})
+        resolved = perf_counter()
         try:
             store.save(game_id, engine, req.expected_turn)
         except store.ConflictError as error:
             raise HTTPException(status_code=409, detail=str(error))
+        saved = perf_counter()
+        result['valid_moves'] = engine.get_valid_moves('player_1')
+        timings = {'lock': (locked-started)*1000, 'load': (loaded-locked)*1000,
+                   'resolve': (resolved-loaded)*1000, 'save': (saved-resolved)*1000,
+                   'total': (perf_counter()-started)*1000}
+        if response is not None:
+            response.headers['Server-Timing'] = ', '.join(f'{key};dur={value:.2f}' for key, value in timings.items())
+        logger.info('campaign_turn turn=%s timings_ms=%s', req.expected_turn,
+                    {key: round(value, 2) for key, value in timings.items()})
         return result
 
 
+def _replay_frame(position):
+    supplied = supplied_regions(position)
+    return {'turn': position.turn, 'game_over': position.game_over, 'winner': position.winner,
+            **{pid: {'name': position.get_player(pid).name, 'regions': position.region_count(pid),
+                      'total_army': position.total_army(pid), 'capital': position.get_player(pid).capital_region_id}
+               for pid in ('player_1', 'player_2')},
+            'rogue_regions': len(position.rogue_regions()),
+            'regions': {rid: {'owner': r.owner.value, 'army': r.army, 'pop_rate': growth(r, supplied),
+                              'supplied': rid in supplied, 'defense_bonus': defense_factor(r, supplied)}
+                        for rid, r in position.regions.items()}}
+
+
+# Completed legacy saves do not get another turn on which to build an index.
+# Cache serialized frame/report pairs so later pages decode only what they need.
+# The byte and entry limits bound resident data independently of campaign length.
+_legacy_replays = OrderedDict()
+_legacy_replay_lock = threading.Lock()
+_LEGACY_CACHE_BYTES = 16 * 1024 * 1024
+
+
+def _legacy_replay_page(game_id, engine, offset, limit):
+    signature = hashlib.sha256(store._encode(engine, journal=True).encode()).digest()
+    key = (game_id, signature)
+    with _legacy_replay_lock:
+        cached = _legacy_replays.get(key)
+        if cached is not None:
+            _legacy_replays.move_to_end(key)
+    if cached is None:
+        if engine._journal:
+            engine = store.get(game_id)
+            if engine is None:
+                raise HTTPException(status_code=404, detail="Game not found.")
+        reports = {entry['turn']: _public_report(entry) for entry in engine.history}
+        positions = campaign_states(engine)
+        entries = tuple(json.dumps({'frame': _replay_frame(position),
+                                    'report': reports.get(position.turn-1)},
+                                   separators=(',', ':')).encode() for position in positions)
+        cached = (positions[0].turn == 1, entries, sum(map(len, entries)))
+        if cached[2] <= _LEGACY_CACHE_BYTES:
+            with _legacy_replay_lock:
+                _legacy_replays[key] = cached
+                _legacy_replays.move_to_end(key)
+                while len(_legacy_replays) > 4 or sum(item[2] for item in _legacy_replays.values()) > _LEGACY_CACHE_BYTES:
+                    _legacy_replays.popitem(last=False)
+    complete, entries, _ = cached
+    if offset >= len(entries):
+        raise HTTPException(status_code=400, detail="Replay position out of range.")
+    page = [json.loads(entry) for entry in entries[offset:offset+limit]]
+    for entry in page:
+        entry['frame']['regions'] = {int(rid): region for rid, region in entry['frame']['regions'].items()}
+    return {'frames': [entry['frame'] for entry in page],
+            'history': [entry['report'] for entry in page if entry['report'] is not None],
+            'offset': offset, 'total': len(entries), 'complete': complete}
+
+
 @router.get("/games/{game_id}/replay")
-def get_campaign_replay(game_id: str):
-    engine = store.get(game_id)
+def get_campaign_replay(game_id: str, offset: Annotated[Optional[int], Query(ge=0)] = None,
+                        limit: Annotated[int, Query(ge=1, le=100)] = 50):
+    engine = store.get(game_id, include_history=offset is None)
     if not engine:
         raise HTTPException(status_code=404, detail="Game not found.")
     if not engine.state.game_over:
         raise HTTPException(status_code=400, detail="Campaign replay is available after the game ends.")
-    frames = []
-    for position in campaign_states(engine):
-        view = _serialize_state(GameEngine(position))
-        # Static geography, names, neighbors and terrain already exist in the client.
-        frames.append({key: view[key] for key in
-                       ('turn', 'game_over', 'winner', 'player_1', 'player_2', 'rogue_regions')})
-        frames[-1]['regions'] = {rid: {key: region[key] for key in
-                                      ('owner', 'army', 'pop_rate', 'supplied', 'defense_bonus')}
-                                  for rid, region in view['regions'].items()}
-    return {'frames': frames, 'complete': frames[0]['turn'] == 1}
+    start = getattr(engine, '_replay_start', None)
+    if offset is not None and start is None:
+        return _legacy_replay_page(game_id, engine, offset, limit)
+    if offset is not None and start is not None:
+        total = engine.state.turn-start+1
+        first = start+offset
+        stop = min(first+limit, engine.state.turn+1)
+        if offset >= total:
+            raise HTTPException(status_code=400, detail="Replay position out of range.")
+        entries = store.history_page(game_id, engine, min(stop, engine.state.turn), limit+1)
+        indexed = {entry['turn']: entry for entry in entries}
+        positions = [engine.state if turn == engine.state.turn else _restore(engine.state, indexed[turn]['replay_before'])
+                     for turn in range(first, stop)]
+        reports = [_public_report(entry) for entry in entries if first-1 <= entry['turn'] < stop-1]
+    else:
+        # Preserve the unpaged API for older clients.
+        positions = campaign_states(engine)
+        start, total = positions[0].turn, len(positions)
+        if offset is not None:
+            if offset >= total:
+                raise HTTPException(status_code=400, detail="Replay position out of range.")
+            positions = positions[offset:offset+limit]
+        first, stop = positions[0].turn, positions[-1].turn+1
+        reports = [_public_report(entry) for entry in engine.history if first-1 <= entry['turn'] < stop-1]
+    return {'frames': [_replay_frame(position) for position in positions], 'complete': start == 1,
+            'offset': offset or 0, 'total': total, 'history': reports}

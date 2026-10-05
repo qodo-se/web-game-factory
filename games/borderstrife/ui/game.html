@@ -144,8 +144,11 @@
 <div class="campaign-tools">
                 <strong id="campaign-title"></strong>
                 <details id="battle-terrain-notes" hidden><summary>Terrain & historical sources</summary><p id="battle-terrain-description"></p><a href="maps/battle-sources.html" target="_blank" rel="noopener">Read reconstruction notes & credits</a></details>
+                <p id="map-context-note" class="preset-desc" hidden>Muted land outside the outlined theater is not playable. Landmarks are illustrative.</p>
                 <button type="button" id="open-campaign-replay" hidden>Replay campaign</button>
                 <button type="button" id="sound-toggle" aria-pressed="false">Sound off</button>
+                <label for="turn-speed">Turn animations</label>
+                <select id="turn-speed"><option value="fast">Fast</option><option value="normal">Cinematic</option><option value="instant">Instant</option></select>
                 <label for="map-input-mode">Scroll controls</label>
                 <select id="map-input-mode">
                     <option value="mouse">Mouse — scroll to zoom</option>
@@ -190,12 +193,13 @@
                     <div id="turn-recap"><p class="sidebar-empty">Complete a turn to see your gains, losses and casualties.</p></div>
                     <div class="turn-battles-heading panel-label">Battle details</div>
                     <div id="combat-log"><p class="sidebar-empty">Battle reports appear after your first turn.</p></div>
+                    <div id="turn-movements"></div>
                 </div>
             </section>
             <section class="sidebar-section" id="campaign-timeline" data-sidebar-section="timeline">
                 <h2 class="sidebar-heading"><button type="button" class="sidebar-toggle" id="sidebar-timeline-toggle" aria-expanded="false" aria-controls="sidebar-timeline-body">Campaign timeline<span class="sidebar-chevron" aria-hidden="true">›</span></button></h2>
                 <div class="sidebar-body" id="sidebar-timeline-body" role="region" aria-labelledby="sidebar-timeline-toggle" hidden>
-<div id="timeline-list"></div>
+<div id="timeline-list"></div><button type="button" id="history-more" hidden>Load older turns</button><p id="history-error" role="status"></p>
                 </div>
             </section>
             <section class="sidebar-section" id="rules-section" data-sidebar-section="rules">
@@ -223,6 +227,7 @@
     </div>
 
     <script src="js/api.js"></script>
+    <script src="js/cartography.js"></script>
     <script src="js/atlas.js"></script>
     <script src="js/map-camera.js"></script>
     <script src="js/campaigns.js"></script>

@@ -27,7 +27,7 @@ def check():
     assert np.all(np.isfinite(dem)) and dem.min()>-300
     count=0
     for key,p in PRESETS.items():
-        assert p['map_asset_id'].endswith('_atlas_v3'),key
+        assert p['map_asset_id'].endswith('_atlas_v4'),key
         a=json.loads((ROOT/f'ui/maps/{p["map_asset_id"]}.json').read_text());s=load_preset(p)
         geoms=[];primary=[]
         for r in a['regions']:
@@ -37,6 +37,9 @@ def check():
             anchor=Point(r['center'])
             primary.append(next((c for c in cells if c.buffer(1e-6).covers(anchor)),max(cells,key=lambda c:c.area)))
             assert geoms[-1].buffer(1e-6).covers(anchor),(key,r['name'],'marker off territory')
+        if a.get('terrain') and a.get('context_land'):
+            context=unary_union([Polygon(q[0],q[1:]).buffer(0) for q in a['context_land']])
+            assert context.intersection(box(0,0,1,1)).symmetric_difference(unary_union(geoms)).area<1e-5,(key,'context covers measured water')
         for pair,kind in s.routes.items():
             i,j=map(int,pair.split(':'))
             if kind!='sea':
@@ -58,7 +61,7 @@ def check():
             assert a['terrain']['coastline_mask']
             assert any(g.covers(Point(.6,.27)) for g in geoms),'DEM void stripe erased inland Troy'
     # Every pre-review preset still loads its original map and replay geometry.
-    for source in ['compact.json','expansion.json']:
+    for source in ['compact.json','expansion.json','reviewed.json']:
         for key,p in json.loads((ROOT/'engine/presets'/source).read_text()).items():
             e=GameEngine(load_preset(p));before=snapshot(e.state);e.state.turn=2
             e.history=[dict(turn=1,replay_before=before)]

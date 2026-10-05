@@ -1,5 +1,5 @@
 """Read-only historical positions, with exact reversal of legacy v2 journals."""
-from copy import deepcopy
+from copy import deepcopy, copy
 from .models import Owner
 from .strategy import growth, supplied_regions
 
@@ -10,7 +10,8 @@ def snapshot(state):
 
 
 def _restore(template, saved):
-    state = deepcopy(template)
+    state = copy(template)
+    state.regions = {rid: copy(region) for rid, region in template.regions.items()}
     if set(map(int, saved['regions'])) != set(state.regions):
         raise ValueError('Replay region mismatch')
     for key, (owner, army) in saved['regions'].items():

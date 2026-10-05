@@ -1,6 +1,21 @@
 // Historical positions are isolated from the final save and never submit orders.
 const campaignReplay = {
     active:false, loading:false, frames:null, index:0, playing:false,
+    requests:new Map(), reports:new Map(), seekSequence:0, playbackGeneration:0,
+    storePage(data) {
+        if(!this.frames)this.frames=new Array(data.total??data.frames.length);
+        data.frames.forEach((frame,i)=>{this.frames[(data.offset??0)+i]=frame;});
+        for(const entry of data.history||[])this.reports.set(entry.turn,entry);
+        this.complete=data.complete;
+    },
+    async fetchPage(index) {
+        const offset=Math.floor(index/50)*50;
+        if(!this.requests.has(offset)){
+            const request=api.getReplay(gameId,offset).then(data=>this.storePage(data)).finally(()=>this.requests.delete(offset));
+            this.requests.set(offset,request);
+        }
+        await this.requests.get(offset);
+    },
     init() {
         for(const id of ['replay-campaign','open-campaign-replay'])document.getElementById(id).addEventListener('click',()=>this.enter());
         document.getElementById('campaign-replay-exit').addEventListener('click',()=>this.exit());
@@ -32,8 +47,7 @@ const campaignReplay = {
             document.getElementById(id).textContent='Loading replay…';
         }
         try {
-            const data=this.frames?{frames:this.frames,complete:this.complete}:await api.getReplay(gameId);
-            this.frames=data.frames;this.complete=data.complete;
+            if(!this.frames)await this.fetchPage(0);
             this.finalState=structuredClone(state);this.finalValidMoves=validMoves;
             this.savedThreats=document.getElementById('show-threats').checked;
             this.savedSidebar=sessionStorage.getItem('imperium-sidebar-section');
@@ -45,7 +59,7 @@ const campaignReplay = {
             document.getElementById('campaign-replay-slider').max=this.frames.length-1;
             document.getElementById('campaign-replay-slider').disabled=this.frames.length<2;
             document.getElementById('campaign-replay-note').textContent=this.complete?'Read-only replay · Your completed campaign stays saved.':`Older history is incomplete. Replay starts after turn ${this.frames[0].turn-1}; earlier positions are unavailable.`;
-            sidebar.open('battles');this.show(0);
+            sidebar.open('battles');await this.show(0);
         } catch(error) { alert(`Could not load campaign replay: ${error.message}`); }
         finally {
             this.loading=false;
@@ -57,7 +71,7 @@ const campaignReplay = {
     },
     movements() {
         if(!this.active)return [];
-        const report=campaignHistory.find(entry=>entry.turn===this.frames[this.index].turn-1);
+        const report=this.reports.get(this.frames[this.index].turn-1) || campaignHistory.find(entry=>entry.turn===this.frames[this.index].turn-1);
         if(!report)return [];
         const events=(report.events||[]).filter(event=>event.type==='movement'||event.type==='retreat');
         if(events.length)return events;
@@ -67,9 +81,17 @@ const campaignReplay = {
             return {from,to,army,owner:before?.regions[from]?.owner,type:'movement'};
         });
     },
-    show(index) {
+    async show(index) {
         if(!this.active)return;
-        this.index=Math.max(0,Math.min(this.frames.length-1,index));
+        index=Math.max(0,Math.min(this.frames.length-1,index));
+        const sequence=++this.seekSequence;
+        if(!this.frames[index]) {
+            document.getElementById('campaign-replay-caption').textContent='Loading turns…';
+            try {await this.fetchPage(index);}
+            catch(error){if(sequence===this.seekSequence){this.pause();document.getElementById('campaign-replay-caption').textContent=error.message;}return;}
+            if(!this.active||sequence!==this.seekSequence)return;
+        }
+        this.index=index;
         const frame=this.frames[this.index];
         state={...this.finalState,...frame,regions:Object.fromEntries(Object.entries(this.finalState.regions).map(([id,r])=>[id,{...r,...frame.regions[id]}]))};
         clearRegionInfo();lastHoverId=null;
@@ -82,29 +104,35 @@ const campaignReplay = {
         document.getElementById('campaign-replay-prev').disabled=this.index===0;
         document.getElementById('campaign-replay-next').disabled=this.index===this.frames.length-1;
         document.getElementById('campaign-replay-play').disabled=this.frames.length<2;
-        const report=campaignHistory.find(entry=>entry.turn===frame.turn-1);
+        const report=this.reports.get(frame.turn-1)||campaignHistory.find(entry=>entry.turn===frame.turn-1);
         if(report)showCombatLog(report);
         else {
             document.getElementById('log-turn').textContent=frame.turn===1?'Start':'—';
             document.getElementById('turn-recap').innerHTML='<p class="sidebar-empty">'+(frame.turn===1?'Starting position. No turns have resolved yet.':'No report is available for this position.')+'</p>';
             document.getElementById('combat-log').replaceChildren();
+            document.getElementById('turn-movements').replaceChildren();
         }
         document.getElementById('sidebar-battles-body').scrollTop=0;
     },
     pause() {
+        ++this.playbackGeneration;++this.seekSequence;
         this.playing=false;clearTimeout(this.timer);
         document.getElementById('campaign-replay-play').textContent='Play';
         document.getElementById('campaign-replay-play').setAttribute('aria-pressed','false');
     },
-    play() {
+    async play() {
         if(!this.active||this.frames.length<2)return;
-        if(this.index===this.frames.length-1)this.show(0);
+        const generation=++this.playbackGeneration;
+        clearTimeout(this.timer);
+        if(this.index===this.frames.length-1)await this.show(0);
+        if(!this.active||generation!==this.playbackGeneration)return;
         this.playing=true;
         document.getElementById('campaign-replay-play').textContent='Pause';
         document.getElementById('campaign-replay-play').setAttribute('aria-pressed','true');
-        const advance=()=>{
-            if(!this.active||!this.playing)return;
-            this.show(this.index+1);
+        const advance=async()=>{
+            if(!this.active||!this.playing||generation!==this.playbackGeneration)return;
+            await this.show(this.index+1);
+            if(!this.active||!this.playing||generation!==this.playbackGeneration)return;
             if(this.index===this.frames.length-1)this.pause();
             else this.timer=setTimeout(advance,1000);
         };
@@ -113,7 +141,7 @@ const campaignReplay = {
     exit() {
         if(!this.active)return;
         this.pause();cancelAnimationFrame(this.seekFrame);this.seekFrame=null;
-        this.active=false;document.body.classList.remove('is-campaign-replay');state=this.finalState;validMoves=this.finalValidMoves;
+        ++this.seekSequence;this.active=false;document.body.classList.remove('is-campaign-replay');state=this.finalState;validMoves=this.finalValidMoves;
         for(const id of ['replay-campaign','open-campaign-replay'])document.getElementById(id).disabled=false;
         document.getElementById('campaign-replay-controls').hidden=true;
         document.getElementById('show-threats').disabled=false;

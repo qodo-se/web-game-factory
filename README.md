@@ -1,6 +1,6 @@
 # Web Game Factory
 
-> A factory for building web games.
+> Home of BorderStrife — turn-based conquest across regional maps and historic battlefields.
 
 ## Getting Started
 
@@ -103,3 +103,34 @@ Override defaults as needed:
 ```bash
 make deploy-api PROJECT=my-project REGION=us-central1
 ```
+
+## BorderStrife branding and compatibility
+
+The public game name is **BorderStrife**, served at `/borderstrife/`.
+The website permanently redirects `/imperium` and `/imperium/...` to the new
+location, preserving campaign query strings. Keep these redirects for old links.
+
+The source directory `games/imperium`, `/api/imperium` endpoints, database/table
+names, browser storage keys, and `IMPERIUM_*` configuration variables deliberately
+retain their original identifiers. They are compatibility identifiers, not display
+branding. This keeps saved campaigns, pending orders, preferences, API clients,
+and deployment secrets working without a migration. Both URLs use the same origin;
+a future domain change would need a separate browser-storage migration plan.
+
+Deployment remains the existing Deploy Website GitHub Actions workflow. Its path
+filters still cover `games/imperium/ui/`; the Docker build copies those assets into
+`/usr/share/nginx/html/borderstrife/`. No backend deployment is required for the rebrand.
+
+The welcome page canonical and sharing URLs currently point to the Cloud Run
+website hostname; update them when introducing a custom domain. The editable
+sharing artwork is `games/imperium/ui/social-card.svg`, exported at 1200×630 to
+`social-card.png`.
+
+For a local nginx preview, run the rebrand integration check with Playwright:
+
+```bash
+BORDERSTRIFE_TEST_URL=http://127.0.0.1:3011 node games/imperium/tools/check_rebrand.cjs
+```
+
+The preview must serve the website nginx routes and proxy `/api/` to the local
+API using the same local database. The check creates a disposable test campaign.

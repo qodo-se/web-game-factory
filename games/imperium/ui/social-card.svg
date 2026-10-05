@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#10131c"/>
+  <g fill="none" stroke="#293641" stroke-width="2">
+    <path d="M0 70 180 130 250 0M0 390 160 330 180 130 390 220 460 0M160 330 310 490 220 630M390 220 420 410 310 490 590 630M1200 100 1030 190 940 0M1200 500 1020 430 1030 190 810 250 760 0M810 250 780 450 1020 430 1090 630M780 450 660 630"/>
+  </g>
+  <rect x="88" y="120" width="1024" height="390" rx="8" fill="#10131c" fill-opacity=".94" stroke="#655733"/>
+  <path d="M170 187h56l-20 42 20 42h-56z" fill="#31586b"/>
+  <path d="M282 187h-56l-20 42 20 42h56z" fill="#62423f"/>
+  <path d="m226 187-20 42 20 42" fill="none" stroke="#d4a840" stroke-width="5"/>
+  <text x="315" y="250" fill="#d4a840" font-family="Georgia,serif" font-size="76">BorderStrife</text>
+  <text x="170" y="355" fill="#e8e0d0" font-family="Arial,sans-serif" font-size="36">Every turn redraws the map.</text>
+  <text x="170" y="426" fill="#a4b1bf" font-family="Arial,sans-serif" font-size="23" letter-spacing="4">TURN-BASED CONQUEST</text>
+</svg>

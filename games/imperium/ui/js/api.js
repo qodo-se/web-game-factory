@@ -1,4 +1,4 @@
-// Imperium API client
+// BorderStrife API client. Legacy API routes and storage keys preserve compatibility.
 // In production, nginx proxies /api/* to the backend service.
 // For local dev, set API base in browser console:
 //   localStorage.setItem('IMPERIUM_API_BASE', 'http://localhost:8080')

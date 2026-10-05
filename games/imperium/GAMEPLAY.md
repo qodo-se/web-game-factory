@@ -1,4 +1,4 @@
-# Imperium: campaign upgrade
+# BorderStrife: campaign upgrade
 
 Whole-army orders, the existing AI strategy, and elimination victory remain.
 New campaigns use geographically derived adjacency; existing saved campaigns

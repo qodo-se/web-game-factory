@@ -39,7 +39,7 @@ const orderHistory = {
         planning.clearEffects();
         selectedFrom=null;clearRegionInfo();lastHoverId=null;
         renderMap();updateMovesList();updateMoveHint();
-        document.getElementById('order-status').textContent=message;
+        document.getElementById('order-status').textContent=standingOrders.draftError?'Orders are not saved. Keep this tab open and press Next Turn to save.':message;
     },
     reset() { this.undoStack=[];this.redoStack=[];this.updateButtons(); },
     updateButtons() {

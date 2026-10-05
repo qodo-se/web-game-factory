@@ -156,6 +156,45 @@ print(json.dumps({'id':store.create(engine),'path':path}))
  await page.keyboard.press('Escape');
  assert.equal(await page.locator('#map-order-menu').isVisible(),false);
  await touch.detach();
- assert.deepEqual(errors,[]);console.log('Map orders: right-click, mouse/touch long press, pan cancellation, repeat, manual override, undo/redo, edit/discard, reload, turn persistence, compact layout passed.');
+ // Quota failures stay visible, survive other UI updates, and preserve the
+ // in-memory plan when a failed turn request recovers the same server turn.
+ await page.evaluate(([,to,from])=>{standingOrders.start(null,from);standingOrders.pick(to);},fixture.path);
+ await page.locator('#end-turn-btn').click();await page.waitForFunction(()=>state.turn===4&&!resolving);
+ const blockDraftWrites=()=>page.evaluate(()=>{
+   window.originalStorageWrite=Storage.prototype.setItem;
+   Storage.prototype.setItem=function(key,value){
+     if(key.startsWith('imperium-plan:'))throw new DOMException('Storage full','QuotaExceededError');
+     return window.originalStorageWrite.call(this,key,value);
+   };
+ });
+ await blockDraftWrites();
+ await page.evaluate(()=>{standingOrders.toggle(standingOrders.orders[0].id);updateMovesList();});
+ assert.equal(await page.locator('#draft-save-warning').isVisible(),true);
+ assert.equal(await page.locator('#save-status').textContent(),'Orders not saved');
+ assert.match(await page.locator('#order-status').textContent(),/not saved/);
+ page.on('dialog',dialog=>dialog.dismiss());
+ await page.route('**/api/imperium/games/*/turn',route=>route.abort());
+ await page.locator('#end-turn-btn').click();
+ await page.waitForFunction(()=>!resolving);
+ assert.equal(await page.evaluate(()=>standingOrders.orders[0].paused),true,'Failed submit must not restore an older active plan');
+ assert.equal(await page.locator('#draft-save-warning').isVisible(),true);
+ await page.unroute('**/api/imperium/games/*/turn');
+ await page.evaluate(()=>{Storage.prototype.setItem=window.originalStorageWrite;});
+ await page.locator('#retry-draft-save').click();
+ assert.equal(await page.locator('#draft-save-warning').isVisible(),false);
+ assert.equal(await page.locator('#save-status').textContent(),'Draft saved in this browser');
+ await page.reload();await page.waitForFunction(()=>state&&document.getElementById('load-screen').hidden);
+ assert.equal(await page.evaluate(()=>standingOrders.orders[0].paused),true,'Retry persists the paused plan across reload');
+ // Successful server commit clears the warning even if local caching still fails.
+ await blockDraftWrites();
+ await page.evaluate(()=>standingOrders.cancel(standingOrders.orders[0].id));
+ assert.equal(await page.locator('#draft-save-warning').isVisible(),true);
+ await page.locator('#end-turn-btn').click();await page.waitForFunction(()=>state.turn===5&&!resolving);
+ assert.equal(await page.locator('#draft-save-warning').isVisible(),false);
+ assert.equal(await page.locator('#save-status').textContent(),'Saved');
+ await page.reload();await page.waitForFunction(()=>state&&document.getElementById('load-screen').hidden);
+ assert.equal(await page.evaluate(()=>standingOrders.orders.length),0,'Server retains cancellation despite storage failure');
+
+ assert.deepEqual(errors,[]);console.log('Map orders: right-click, mouse/touch long press, pan cancellation, repeat, manual override, undo/redo, edit/discard, reload, turn persistence, compact layout, storage failure/retry and failed-submit recovery passed.');
  } finally {await browser.close();}
 })().catch(error=>{console.error(error);process.exit(1);});

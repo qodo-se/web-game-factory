@@ -1260,6 +1260,7 @@ async function endTurn() {
     if (resolving || gameOver) return;
     if(standingOrders.editor) {standingOrders.message('Choose a highlighted neighbor or cancel reinforcement selection before ending the turn.');return;}
     const submittedTurn=state.turn;
+    const submittedPlan=orderHistory.snapshot();
     setResolving(true);
     planning.clearEffects(); planning.hidePreview();
     selectedFrom = null;
@@ -1276,7 +1277,7 @@ async function endTurn() {
         campaignHistory.push({...result,state:undefined});
         document.getElementById('resolving-overlay').classList.add('hidden');
         try { await presentation.replay(result); }
-        finally { state=result.state; standingOrders.load();standingOrders.saveDraft();clearRegionInfo(); lastHoverId=null; }
+        finally { state=result.state; standingOrders.load();standingOrders.saveDraft(true);clearRegionInfo(); lastHoverId=null; }
         const vm=await api.getValidMoves(gameId);
         validMoves=Object.fromEntries(Object.entries(vm).map(([k,v])=>[+k,v]));
         setResolving(false);
@@ -1289,14 +1290,16 @@ async function endTurn() {
         try {
             const latest=await api.getGame(gameId);
             state=latest.state;campaignHistory=latest.history||[];pendingMoves=[];
-            standingOrders.load(state.turn===submittedTurn);
+            standingOrders.load();
+            if(state.turn===submittedTurn)orderHistory.apply(submittedPlan);
+            else standingOrders.saveDraft(true);
             orderHistory.reset();
             clearRegionInfo();lastHoverId=null;
             const vm=await api.getValidMoves(gameId);validMoves=vm;
             campaigns.remember(gameId,state);updateTopBar();renderMap();updateMovesList();renderTimeline();
             if(campaignHistory.length)showCombatLog(campaignHistory[campaignHistory.length-1]);
             if(state.turn>submittedTurn)sidebar.showTurnReport();
-            status.textContent=`Saved through turn ${state.turn-1}`;
+            if(!standingOrders.draftError)status.textContent=`Saved through turn ${state.turn-1}`;
             setResolving(false);updateMoveHint();
             if(state.game_over)handleGameOver(state.winner);
         } catch {
@@ -1360,6 +1363,7 @@ async function init() {
     if (!gameId) { window.location.href = 'index.html'; return; }
 
     document.getElementById('end-turn-btn').addEventListener('click', endTurn);
+    document.getElementById('retry-draft-save').addEventListener('click',()=>{if(!resolving)standingOrders.saveDraft();});
     document.getElementById('abandon-btn').addEventListener('click', abandon);
     sidebar.init();
     interfaceView.init();

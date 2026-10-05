@@ -1,6 +1,6 @@
 // Drafts share the ordinary order history. The server commits them with a turn.
 const standingOrders = {
-    orders: [], editor: null,
+    orders: [], editor: null, draftError: false,
     clone: value => JSON.parse(JSON.stringify(value)),
     manual: () => pendingMoves.filter(m=>!m.standing_id),
     key: () => `imperium-plan:${gameId}`,
@@ -20,10 +20,15 @@ const standingOrders = {
         this.orders=[...bySource.values()];
         this.sync();
     },
-    saveDraft() {
-        if(!state||state.game_over)return;
+    saveDraft(committed=false) {
+        if(!state)return;
+        let failed=false;
         try {localStorage.setItem(this.key(),JSON.stringify({turn:state.turn,orders:this.orders,moves:this.manual()}));}
-        catch {document.getElementById('order-status').textContent='Draft storage unavailable. Keep this tab open until Next Turn.';}
+        catch {failed=true;}
+        // A failed cache write after a committed turn cannot lose server data.
+        this.draftError=failed&&!committed;
+        document.getElementById('draft-save-warning').hidden=!this.draftError;
+        document.getElementById('save-status').textContent=this.draftError?'Orders not saved':committed?'Saved':'Draft saved in this browser';
     },
     reason(order, used) {
         const [a,b]=order.path, from=state.regions[a], to=state.regions[b];

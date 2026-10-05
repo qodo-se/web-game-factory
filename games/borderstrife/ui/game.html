@@ -104,13 +104,13 @@
             <!-- Legend -->
             <div class="map-legend">
                 <div class="legend-item">
-                    <div class="legend-dot" style="background:#3464c3;"></div> You
+                    <div class="legend-dot legend-player"></div> You
                 </div>
                 <div class="legend-item">
-                    <div class="legend-dot" style="background:#c33434;"></div> AI
+                    <div class="legend-dot legend-rival"></div> Rival
                 </div>
                 <div class="legend-item">
-                    <div class="legend-dot" style="background:#4e7030;"></div> Neutral
+                    <div class="legend-dot legend-neutral"></div> Neutral
                 </div>
                 <div class="legend-item">
                     <div class="legend-dot" style="background:#3478c8;"></div> Sea
@@ -206,10 +206,25 @@
                 <h2 class="sidebar-heading"><button type="button" class="sidebar-toggle" id="sidebar-rules-toggle" aria-expanded="false" aria-controls="sidebar-rules-body">Supply & combat rules<span class="sidebar-chevron" aria-hidden="true">›</span></button></h2>
                 <div class="sidebar-body" id="sidebar-rules-body" role="region" aria-labelledby="sidebar-rules-toggle" hidden>
 <div class="rules-help">
-                    <p>Neighboring regions sharing a land border are connected on new maps. Select an army to see its destinations and available sea crossings.</p>
-                    <p id="supply-rules">Owned cities and your capital supply connected friendly regions, including ports linked by sea lanes. Isolated regions gain half their normal recruits, attack at 75% strength, and defend at 85%.</p>
-                    <p>River crossings add 20% defensive advantage; mountain passes 15%; sea landings 25%. Terrain bonuses also apply. Forecasts assume defenders stay put; both sides move simultaneously.</p>
-                    <p>Defeated survivors retreat after all battles, if a friendly route remains. Entire armies still move with each order.</p>
+                    <h3>Movement</h3>
+                    <ul>
+                        <li>Shared land borders connect neighboring regions on new maps.</li>
+                        <li>Select an army to see destinations and sea crossings.</li>
+                        <li>Each order moves the entire army. Both sides move simultaneously.</li>
+                    </ul>
+                    <h3>Supply</h3>
+                    <ul id="supply-rules">
+                        <li id="supply-source-rule">Your capital and owned cities supply connected friendly regions, including sea-linked ports.</li>
+                        <li id="recruitment-rule">Isolated regions receive half their normal recruits.</li>
+                        <li>Isolated armies attack at <strong>75%</strong> strength and defend at <strong>85%</strong>.</li>
+                    </ul>
+                    <h3>Combat</h3>
+                    <ul>
+                        <li>Crossing defense bonuses: rivers <strong>+20%</strong>, mountain passes <strong>+15%</strong>, sea landings <strong>+25%</strong>.</li>
+                        <li>Terrain bonuses also apply.</li>
+                        <li>Forecasts assume defenders stay put.</li>
+                        <li>Defeated survivors retreat after all battles if a friendly route remains.</li>
+                    </ul>
                 </div>
                 </div>
             </section>

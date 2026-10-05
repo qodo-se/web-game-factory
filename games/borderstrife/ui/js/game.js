@@ -925,7 +925,7 @@ function renderOverlay(idxMap, cw, ch) {
 
         // Army count — centered on the region point
         const shape=metrics.shape;
-        const attrs={fill:'#172529',stroke:{player_1:'#8ebfe9',player_2:'#efa296',rogue:'#c3c6ad'}[r.owner],
+        const attrs={fill:{player_1:'#193f64',player_2:'#613326',rogue:'#27332f'}[r.owner],stroke:{player_1:'#7bc7ff',player_2:'#ffb089',rogue:'#c3c6ad'}[r.owner],
             'stroke-width':1.5,class:'army-counter','data-owner':r.owner};
         const counter=shape==='player_2'?svgEl('rect',{...attrs,x:x-bgR,y:y-bgR,width:bgR*2,height:bgR*2,rx:3}):
             shape==='rogue'?svgEl('path',{...attrs,d:`M${x} ${y-bgR-3}L${x+bgR+3} ${y}L${x} ${y+bgR+3}L${x-bgR-3} ${y}Z`}):
@@ -1156,9 +1156,12 @@ function updateTopBar() {
         const credits=terrainNotes.querySelector('a');
         credits.href=atlas.data.setting ? 'maps/collection-sources.html' : 'maps/battle-sources.html';
     }
-    const supplyRules = document.getElementById('supply-rules');
-    if (!supplyRules.dataset.campaignText) supplyRules.dataset.campaignText = supplyRules.textContent;
-    supplyRules.textContent = battle ? 'Owned strongpoints and your headquarters supply connected friendly sectors. There is no recruitment. Isolated armies attack at 75% strength and defend at 85%.' : supplyRules.dataset.campaignText;
+    document.getElementById('supply-source-rule').textContent = battle
+        ? 'Your headquarters and owned strongpoints supply connected friendly sectors.'
+        : 'Your capital and owned cities supply connected friendly regions, including sea-linked ports.';
+    document.getElementById('recruitment-rule').textContent = battle
+        ? 'Fixed forces: no recruitment.'
+        : 'Isolated regions receive half their normal recruits.';
     if (battle) {
         const score = owner => battle.objectives.filter(id => state.regions[id].owner === owner).length;
         document.getElementById('battle-title').textContent = battle.name;

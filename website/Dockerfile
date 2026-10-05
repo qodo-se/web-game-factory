@@ -7,6 +7,6 @@ COPY website/nginx.conf /etc/nginx/templates/default.conf.template
 
 # Static assets
 COPY website/index.html /usr/share/nginx/html/index.html
-COPY games/imperium/ui/ /usr/share/nginx/html/borderstrife/
+COPY games/borderstrife/ui/ /usr/share/nginx/html/borderstrife/
 
 EXPOSE 80

@@ -1,0 +1,344 @@
+{
+  "india": {
+    "id": "india",
+    "name": "Indian Subcontinent",
+    "description": "From Gandhara to Vanga, the Himalayas to Lanka. Ancient kingdoms, epic traditions and regional heritage shape this campaign. 26 larger regions with a focused network of routes.",
+    "regions": [
+      [
+        "Takshashila",
+        "city",
+        0.301111,
+        0.115692
+      ],
+      [
+        "Madra",
+        "plains",
+        0.355556,
+        0.190769
+      ],
+      [
+        "Sindhu",
+        "plains",
+        0.177778,
+        0.353846
+      ],
+      [
+        "Maru",
+        "desert",
+        0.305556,
+        0.323077
+      ],
+      [
+        "Dwarka",
+        "coast",
+        0.294444,
+        0.446154
+      ],
+      [
+        "Pataliputra",
+        "city",
+        0.642778,
+        0.365846
+      ],
+      [
+        "Vanga",
+        "coast",
+        0.763889,
+        0.421538
+      ],
+      [
+        "Shurasena",
+        "plains",
+        0.435278,
+        0.308
+      ],
+      [
+        "Kirata",
+        "hills",
+        0.611111,
+        0.292308
+      ],
+      [
+        "Ahom",
+        "forest",
+        0.861111,
+        0.338462
+      ],
+      [
+        "Utkala",
+        "coast",
+        0.661111,
+        0.529231
+      ],
+      [
+        "Avanti",
+        "hills",
+        0.383333,
+        0.44
+      ],
+      [
+        "Chedi",
+        "forest",
+        0.472222,
+        0.415385
+      ],
+      [
+        "Vidarbha",
+        "forest",
+        0.475,
+        0.503077
+      ],
+      [
+        "Dakshina Kosala",
+        "forest",
+        0.555556,
+        0.507692
+      ],
+      [
+        "Pratishthana",
+        "hills",
+        0.369444,
+        0.541538
+      ],
+      [
+        "Kishkindha",
+        "city",
+        0.401667,
+        0.681846
+      ],
+      [
+        "Andhra",
+        "coast",
+        0.516667,
+        0.646154
+      ],
+      [
+        "Pandya",
+        "plains",
+        0.447778,
+        0.848308
+      ],
+      [
+        "Lanka",
+        "coast",
+        0.519444,
+        0.913846
+      ],
+      [
+        "Gandhara",
+        "hills",
+        0.2,
+        0.090769
+      ],
+      [
+        "Balochistan",
+        "desert",
+        0.125,
+        0.276923
+      ],
+      [
+        "Dhanyawadi",
+        "hills",
+        0.863889,
+        0.533846
+      ],
+      [
+        "Manipur",
+        "hills",
+        0.887222,
+        0.390154
+      ],
+      [
+        "Lauhitya",
+        "forest",
+        0.913889,
+        0.307692
+      ],
+      [
+        "Kashyap Meer",
+        "hills",
+        0.355556,
+        0.105231
+      ]
+    ],
+    "player1_capital": 5,
+    "player2_capital": 16,
+    "player1_extra_starts": [
+      6,
+      7
+    ],
+    "player2_extra_starts": [
+      10,
+      13
+    ],
+    "max_edge_distance": 0.2,
+    "extra_edges": [],
+    "removed_edges": [],
+    "map_asset_id": "india_compact"
+  },
+  "central_asia": {
+    "id": "central_asia",
+    "name": "Central Asia",
+    "description": "From the Caspian to the Gobi, the great steppe heartland. The Silk Road empires clash across the roof of the world. 24 larger regions with a focused network of routes.",
+    "regions": [
+      [
+        "Astrakhan",
+        "plains",
+        0.043913,
+        0.406944
+      ],
+      [
+        "Aral Shore",
+        "coast",
+        0.192391,
+        0.394444
+      ],
+      [
+        "Samarkand",
+        "city",
+        0.249565,
+        0.593056
+      ],
+      [
+        "Kashgar",
+        "city",
+        0.347717,
+        0.598056
+      ],
+      [
+        "Western Steppe",
+        "plains",
+        0.097826,
+        0.305556
+      ],
+      [
+        "Central Steppe",
+        "plains",
+        0.26087,
+        0.333333
+      ],
+      [
+        "Eastern Steppe",
+        "plains",
+        0.391304,
+        0.333333
+      ],
+      [
+        "Western Siberia",
+        "forest",
+        0.282609,
+        0.138889
+      ],
+      [
+        "Central Siberia",
+        "forest",
+        0.5,
+        0.138889
+      ],
+      [
+        "Lake Baikal",
+        "forest",
+        0.655435,
+        0.241667
+      ],
+      [
+        "Herat",
+        "hills",
+        0.197826,
+        0.740278
+      ],
+      [
+        "Kandahar",
+        "hills",
+        0.236087,
+        0.815833
+      ],
+      [
+        "Dzungaria",
+        "plains",
+        0.445652,
+        0.444444
+      ],
+      [
+        "Tarim Basin",
+        "desert",
+        0.423913,
+        0.583333
+      ],
+      [
+        "Western Mongolia",
+        "hills",
+        0.521739,
+        0.361111
+      ],
+      [
+        "Karakorum",
+        "city",
+        0.639348,
+        0.383333
+      ],
+      [
+        "Eastern Mongolia",
+        "plains",
+        0.75,
+        0.361111
+      ],
+      [
+        "Manchuria",
+        "forest",
+        0.897826,
+        0.423611
+      ],
+      [
+        "Amur",
+        "forest",
+        0.934783,
+        0.305556
+      ],
+      [
+        "Tibet",
+        "hills",
+        0.48913,
+        0.861111
+      ],
+      [
+        "Gansu",
+        "desert",
+        0.65,
+        0.691667
+      ],
+      [
+        "Ordos",
+        "plains",
+        0.715217,
+        0.594444
+      ],
+      [
+        "Hebei",
+        "plains",
+        0.771739,
+        0.625
+      ],
+      [
+        "Shaanxi",
+        "plains",
+        0.70587,
+        0.740556
+      ]
+    ],
+    "player1_capital": 2,
+    "player2_capital": 15,
+    "player1_extra_starts": [
+      0,
+      1
+    ],
+    "player2_extra_starts": [
+      8,
+      9
+    ],
+    "max_edge_distance": 0.22,
+    "extra_edges": [],
+    "removed_edges": [],
+    "map_asset_id": "central_asia_compact"
+  }
+}

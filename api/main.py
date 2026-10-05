@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from games.imperium.api.routes import router as imperium_router
+from games.borderstrife.api.routes import router as borderstrife_router
 
 app = FastAPI(title="Web Game Factory API")
 
@@ -12,7 +12,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(imperium_router)
+app.include_router(borderstrife_router)
 
 
 @app.get("/")

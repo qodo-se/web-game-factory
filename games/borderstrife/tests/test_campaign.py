@@ -151,25 +151,61 @@ class PersistenceTests(unittest.TestCase):
 
 
 class PostgresAdapterTests(unittest.TestCase):
-    def test_parameterized_update_and_connection_cleanup(self):
+    def adapter(self):
         connection=MagicMock()
         connection.execute=AsyncMock(return_value='UPDATE 1')
-        connection.close=AsyncMock()
+        pool=MagicMock()
+        pool.acquire.return_value.__aenter__=AsyncMock(return_value=connection)
+        return connection,pool
+
+    def test_parameterized_update_releases_pooled_connection(self):
+        connection,pool=self.adapter()
         url='postgresql://test.invalid/campaigns'
-        with patch.dict(os.environ,{'DATABASE_URL':url}), patch.object(store,'_postgres_ready',{url}), patch('asyncpg.connect',new=AsyncMock(return_value=connection)):
+        with patch.dict(os.environ,{'DATABASE_URL':url}), patch.object(store,'_postgres_ready',{url}), patch.object(store,'_get_pool',new=AsyncMock(return_value=pool)):
             self.assertEqual(store._execute('UPDATE imperium_campaigns SET revision = ? WHERE id = ? AND revision = ?', (2,'id',1)),1)
         connection.execute.assert_awaited_once_with('UPDATE imperium_campaigns SET revision = $1 WHERE id = $2 AND revision = $3',2,'id',1)
-        connection.close.assert_awaited_once()
+        pool.acquire.return_value.__aexit__.assert_awaited_once()
 
-    def test_connection_is_closed_on_database_error(self):
-        connection=MagicMock()
+    def test_database_error_releases_connection_and_rolls_back(self):
+        connection,pool=self.adapter()
         connection.fetch=AsyncMock(side_effect=RuntimeError('database unavailable'))
-        connection.close=AsyncMock()
         url='postgresql://test.invalid/campaigns'
-        with patch.dict(os.environ,{'DATABASE_URL':url}), patch.object(store,'_postgres_ready',{url}), patch('asyncpg.connect',new=AsyncMock(return_value=connection)):
+        with patch.dict(os.environ,{'DATABASE_URL':url}), patch.object(store,'_postgres_ready',{url}), patch.object(store,'_get_pool',new=AsyncMock(return_value=pool)):
             with self.assertRaisesRegex(RuntimeError,'database unavailable'):
                 store._execute('SELECT payload FROM imperium_campaigns WHERE id = ?',('id',),fetch=True)
-        connection.close.assert_awaited_once()
+        pool.acquire.return_value.__aexit__.assert_awaited_once()
+        self.assertIs(connection.transaction.return_value.__aexit__.call_args.args[0],RuntimeError)
+
+    def test_conflict_rolls_back_before_appending_journal(self):
+        connection,pool=self.adapter()
+        connection.execute=AsyncMock(return_value='UPDATE 0')
+        connection.executemany=AsyncMock()
+        url='postgresql://test.invalid/campaigns'
+        with patch.dict(os.environ,{'DATABASE_URL':url}), patch.object(store,'_postgres_ready',{url}), patch.object(store,'_get_pool',new=AsyncMock(return_value=pool)):
+            with self.assertRaises(store.ConflictError):
+                store._transaction([('UPDATE imperium_campaigns SET revision = ? WHERE id = ? AND revision = ?', (3,'id',2),False)]
+                                   + store._journal_inserts('id',[{'turn':2}]), check_revision=True)
+        connection.executemany.assert_not_awaited()
+        self.assertIs(connection.transaction.return_value.__aexit__.call_args.args[0],store.ConflictError)
+
+    def test_migration_batches_journal_inserts(self):
+        connection,pool=self.adapter()
+        connection.executemany=AsyncMock()
+        url='postgresql://test.invalid/campaigns'
+        with patch.dict(os.environ,{'DATABASE_URL':url}), patch.object(store,'_postgres_ready',{url}), patch.object(store,'_get_pool',new=AsyncMock(return_value=pool)):
+            store._transaction(store._journal_inserts('id',[{'turn':i} for i in range(1,351)]))
+        connection.executemany.assert_awaited_once()
+        self.assertEqual(len(connection.executemany.call_args.args[1]),350)
+
+    def test_pool_reused_for_concurrent_callers(self):
+        import asyncio
+        async def run():
+            return await asyncio.gather(*(store._get_pool('postgresql://test.invalid') for _ in range(10)))
+        pool=MagicMock()
+        with patch.object(store,'_pools',{}), patch.object(store,'_pool_lock',None), patch('asyncpg.create_pool',new=AsyncMock(return_value=pool)) as create:
+            result=asyncio.run_coroutine_threadsafe(run(),store._database_loop()).result(timeout=5)
+            self.assertTrue(all(item is pool for item in result))
+            create.assert_awaited_once()
 
 
 if __name__=='__main__':unittest.main()

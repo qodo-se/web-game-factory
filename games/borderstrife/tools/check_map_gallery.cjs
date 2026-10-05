@@ -40,7 +40,7 @@ const apiBase = process.env.IMPERIUM_TEST_API || 'http://localhost:8091';
             await page.locator('#start-btn').click();
             await page.waitForURL('**/game.html');
             await page.waitForFunction(() => typeof atlas !== 'undefined' && atlas.geometry);
-            assert.equal(await page.evaluate(() => atlas.data.id), id+'_atlas_v3');
+            assert.equal(await page.evaluate(() => atlas.data.id), id+'_atlas_v4');
             if (id === 'balochistan_borderlands_expanded') {
                 const names = await page.evaluate(() => Object.values(state.regions).map(r => r.name));
                 assert.equal(names.length,30);
@@ -53,7 +53,7 @@ const apiBase = process.env.IMPERIUM_TEST_API || 'http://localhost:8091';
             if (id === 'balochistan_borderlands_expanded') {
                 await page.reload();
                 await page.waitForFunction(() => typeof state !== 'undefined' && state?.turn === 2 && atlas.geometry);
-                assert.equal(await page.evaluate(() => atlas.data.id), id+'_atlas_v3');
+                assert.equal(await page.evaluate(() => atlas.data.id), id+'_atlas_v4');
             }
             await page.setViewportSize({width:1440,height:1000});
             await page.waitForFunction(() => atlas.layout.w === document.getElementById('map-canvas').clientWidth);

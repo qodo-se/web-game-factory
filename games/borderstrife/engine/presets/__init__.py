@@ -41,6 +41,10 @@ _reviewed = Path(__file__).with_name('reviewed.json')
 if _reviewed.exists():
     PRESETS.update(json.loads(_reviewed.read_text()))
 
+_polished = Path(__file__).with_name('polished.json')
+if _polished.exists():
+    PRESETS.update(json.loads(_polished.read_text()))
+
 
 def list_presets() -> list:
     """Return a list of available presets for display in the UI."""

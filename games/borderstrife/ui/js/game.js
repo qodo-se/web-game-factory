@@ -286,6 +286,7 @@ let gameOver     = false;
 let scaleCache   = null;
 let lastHoverId  = null;
 let campaignHistory = [];
+let historyMore=false, historyLoading=false;
 let forecastSequence = 0;
 let forecastTimer, forecastController;
 let randomTerrainCache;
@@ -825,10 +826,14 @@ function renderOverlay(idxMap, cw, ch) {
         const isSelected=(a===source||b===source)&&(!standingOrders.editor||planning.targets().has(a===source?b:a));
         const supply=showSupply && from.owner==='player_1' && to.owner==='player_1';
         if(!isSelected && !supply && kind!=='sea')continue;
-        gConn.appendChild(svgEl('line',{x1:toSVGX(from.x),y1:toSVGY(from.y),x2:toSVGX(to.x),y2:toSVGY(to.y),
+        const x1=toSVGX(from.x),y1=toSVGY(from.y),x2=toSVGX(to.x),y2=toSVGY(to.y);
+        const bend=kind==='sea'?Math.min(22,Math.hypot(x2-x1,y2-y1)*.12):0;
+        const length=Math.max(1,Math.hypot(x2-x1,y2-y1));
+        gConn.appendChild(svgEl('path',{d:`M${x1},${y1} Q${(x1+x2)/2-(y2-y1)/length*bend},${(y1+y2)/2+(x2-x1)/length*bend} ${x2},${y2}`,
+            fill:'none',
             stroke:supply?(from.supplied&&to.supplied?'#b0d4a5':'#df956c'):kind==='river'?'#8bbacb':kind==='pass'?'#d6c4a4':'#b1bdc1',
-            'stroke-width':isSelected||supply?1.6:1,'stroke-dasharray':kind==='sea'?'4 6':kind==='pass'?'2 4':'none',
-            opacity:isSelected||supply?.85:.48,'vector-effect':'non-scaling-stroke'}));
+            'stroke-width':isSelected||supply?2:1.4,'stroke-dasharray':kind==='sea'?'5 5':kind==='pass'?'2 4':'none',
+            opacity:isSelected||supply?.95:.68,'vector-effect':'non-scaling-stroke'}));
     }
     const committedFrom = new Set(pendingMoves.map(m => m.from_region_id));
     const validTargets = planning.targets();
@@ -836,12 +841,20 @@ function renderOverlay(idxMap, cw, ch) {
     const occupiedLabels = atlas.data ? Object.values(regions).map(r => ({
         x:toSVGX(r.x)-18, y:toSVGY(r.y)-(r.is_capital?31:16), w:36, h:r.is_capital?47:32,
     })) : [];
+    if(atlas.data?.presentation_version>=4)for(const item of atlas.data.annotations||[]){
+        if(!item.center)continue;
+        occupiedLabels.push({x:atlas.x(item.center[0])*cw-30,y:atlas.y(item.center[1])*ch-64,w:60,h:46});
+    }
     const labelMeasure=document.createElement('canvas').getContext('2d');
     labelMeasure.font=`600 ${interfaceView.labelSize}px Arial`;
-    function labelPosition(x, y, name) {
+    function labelPosition(x, y, name, id) {
         if (!atlas.data) return {x, y:y+24};
         const width=labelMeasure.measureText(name).width+6;
         const candidates=[[0,27],[0,-25],[width/2+24,4],[-width/2-24,4]];
+        if(atlas.data.label_columns && cw>=600){
+            const side=id%2?1:-1;
+            candidates.unshift([side*(85+width/2),0],[side*(85+width/2),-20],[side*(85+width/2),20]);
+        }
         for(const radius of [42,57,74,94])for(const [dx,dy] of [[0,1],[0,-1],[1,0],[-1,0],[.8,.7],[-.8,.7],[.8,-.7],[-.8,-.7]])candidates.push([dx*(radius+width/3),dy*radius]);
         let best, leastOverlap=Infinity;
         for (const [dx,dy] of candidates) {
@@ -948,7 +961,7 @@ function renderOverlay(idxMap, cw, ch) {
         // Region name — just below the army circle
         const showName=cw>=600||mapCamera.zoom>=1.6||isSelected||isTarget||r.is_capital;
         if(showName) {
-        const label = labelPosition(x, y, r.name);
+        const label = labelPosition(x, y, r.name, r.id);
         if(atlas.data && Math.hypot(label.x-x,label.y-y)>38)g.appendChild(svgEl('line',{
             x1:x,y1:y,x2:label.x,y2:label.y-5,stroke:'rgba(235,230,207,.5)',
             'stroke-width':.7,'vector-effect':'non-scaling-stroke','pointer-events':'none'}));
@@ -1135,6 +1148,7 @@ function updateTopBar() {
     const battle = state.battle;
     document.getElementById('battle-status').hidden = !battle;
     const terrainNotes=document.getElementById('battle-terrain-notes');
+    document.getElementById('map-context-note').hidden=!atlas.data?.context_land?.length;
     terrainNotes.hidden=!atlas.data?.terrain;
     if (atlas.data?.terrain) {
         const terrain=atlas.data.terrain;
@@ -1273,6 +1287,7 @@ function abandon() {
 async function endTurn() {
     if (resolving || gameOver) return;
     if(standingOrders.editor) {standingOrders.message('Choose a highlighted neighbor or cancel reinforcement selection before ending the turn.');return;}
+    const turnStarted=performance.now();
     const submittedTurn=state.turn;
     const submittedPlan=orderHistory.snapshot();
     setResolving(true);
@@ -1288,11 +1303,11 @@ async function endTurn() {
         orderHistory.reset();
         status.textContent='Saved';
         campaigns.remember(gameId,result.state);
-        campaignHistory.push({...result,state:undefined});
+        campaignHistory.push({...result,state:undefined,valid_moves:undefined});
         document.getElementById('resolving-overlay').classList.add('hidden');
         try { await presentation.replay(result); }
         finally { state=result.state; standingOrders.load();standingOrders.saveDraft(true);clearRegionInfo(); lastHoverId=null; }
-        const vm=await api.getValidMoves(gameId);
+        const vm=result.valid_moves ?? await api.getValidMoves(gameId);
         validMoves=Object.fromEntries(Object.entries(vm).map(([k,v])=>[+k,v]));
         setResolving(false);
         updateTopBar();renderMap();showCombatLog(result);renderTimeline();updateMovesList();updateMoveHint();
@@ -1303,13 +1318,13 @@ async function endTurn() {
         // another order, so retries never silently resolve the same turn twice.
         try {
             const latest=await api.getGame(gameId);
-            state=latest.state;campaignHistory=latest.history||[];pendingMoves=[];
+            state=latest.state;campaignHistory=latest.history||[];historyMore=!!latest.history_more;pendingMoves=[];
             standingOrders.load();
             if(state.turn===submittedTurn)orderHistory.apply(submittedPlan);
             else standingOrders.saveDraft(true);
             orderHistory.reset();
             clearRegionInfo();lastHoverId=null;
-            const vm=await api.getValidMoves(gameId);validMoves=vm;
+            const vm=latest.valid_moves ?? await api.getValidMoves(gameId);validMoves=vm;
             campaigns.remember(gameId,state);updateTopBar();renderMap();updateMovesList();renderTimeline();
             if(campaignHistory.length)showCombatLog(campaignHistory[campaignHistory.length-1]);
             if(state.turn>submittedTurn)sidebar.showTurnReport();
@@ -1323,10 +1338,29 @@ async function endTurn() {
             // Keep new turns blocked until the committed server state is known.
         }
         alert(error.message);
+    } finally {
+        performance.clearMeasures('borderstrife.turn');
+        performance.measure('borderstrife.turn', {start:turnStarted,end:performance.now()});
     }
 }
 
+async function loadOlderHistory() {
+    if(historyLoading||!historyMore)return;
+    historyLoading=true;renderTimeline();
+    try {
+        const before=Math.min(...campaignHistory.map(entry=>entry.turn),state.turn);
+        const data=await api.getHistory(gameId,before);
+        const entries=new Map(campaignHistory.map(entry=>[entry.turn,entry]));
+        for(const entry of data.history)entries.set(entry.turn,entry);
+        campaignHistory=[...entries.values()].sort((a,b)=>a.turn-b.turn);historyMore=data.more;
+    } catch(error) {document.getElementById('history-error').textContent=error.message;}
+    finally {historyLoading=false;renderTimeline();}
+}
+
 function renderTimeline() {
+    const more=document.getElementById('history-more');
+    more.hidden=!historyMore;more.disabled=historyLoading;
+    more.textContent=historyLoading?'Loading…':'Load older turns';
     document.getElementById('timeline-list').innerHTML=campaignHistory.slice().reverse().map(entry=>{
         const captured=(entry.events||[]).filter(e=>e.type==='battle'&&e.won);
         const text=captured.length?captured.map(e=>`${e.owner==='player_1'?'You':'AI'} captured ${state.regions[e.to]?.name||'territory'}`).join(' · '):'Frontiers held';
@@ -1376,6 +1410,7 @@ async function init() {
     gameId = sessionStorage.getItem('gameId');
     if (!gameId) { window.location.href = 'index.html'; return; }
 
+    document.getElementById('history-more').addEventListener('click',loadOlderHistory);
     document.getElementById('end-turn-btn').addEventListener('click', endTurn);
     document.getElementById('retry-draft-save').addEventListener('click',()=>{if(!resolving)standingOrders.saveDraft();});
     document.getElementById('abandon-btn').addEventListener('click', abandon);
@@ -1404,15 +1439,13 @@ async function init() {
     document.getElementById('main').inert=true;
     document.getElementById('bottom-bar').inert=true;
     try {
-        const [gameData, vm] = await Promise.all([
-            api.getGame(gameId),
-            api.getValidMoves(gameId),
-        ]);
+        const gameData=await api.getGame(gameId);
+        const vm=gameData.valid_moves ?? await api.getValidMoves(gameId);
         await atlas.load(gameData.state.map_asset_id ?? gameData.state.preset_id ?? (sessionStorage.getItem('presetId') || ''), gameData.state.regions);
         state = gameData.state;
         standingOrders.load(true);
         campaigns.remember(gameId,state);
-        campaignHistory=gameData.history||[];
+        campaignHistory=gameData.history||[];historyMore=!!gameData.history_more;
         document.getElementById('campaign-title').textContent=state.campaign_name||'Campaign';
         renderTimeline();
         if(campaignHistory.length)showCombatLog(campaignHistory[campaignHistory.length-1]);

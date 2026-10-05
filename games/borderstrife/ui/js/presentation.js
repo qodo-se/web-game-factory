@@ -1,7 +1,13 @@
 const presentation = {
     muted: localStorage.getItem('imperium-muted') !== 'false',
     skip: false,
+    speed: 'fast',
     init() {
+        const speed=document.getElementById('turn-speed');
+        const saved=interfaceView.read('turn-speed','fast');
+        this.speed=['fast','normal','instant'].includes(saved)?saved:'fast';
+        speed.value=this.speed;
+        speed.addEventListener('change',()=>{this.speed=speed.value;interfaceView.save('turn-speed',this.speed);});
         const sound=document.getElementById('sound-toggle');
         const update=()=>{sound.textContent=this.muted?'Sound off':'Sound on';sound.setAttribute('aria-pressed',String(!this.muted));};
         update();sound.addEventListener('click',()=>{this.muted=!this.muted;localStorage.setItem('imperium-muted',String(this.muted));update();this.tone('move');});
@@ -32,7 +38,8 @@ const presentation = {
         }
     },
     async replay(result) {
-        if(matchMedia('(prefers-reduced-motion: reduce)').matches || document.hidden)return;
+        if(this.speed==='instant' || matchMedia('(prefers-reduced-motion: reduce)').matches || document.hidden)return;
+        const fast=this.speed==='fast';
         this.skip=false;
         const controls=document.getElementById('replay-controls'), caption=document.getElementById('replay-caption');
         const layer=document.getElementById('g-replay');
@@ -45,7 +52,7 @@ const presentation = {
             for(const [label,orders] of [['Armies advancing',movements],['Armies retreating',retreats]]) {
                 if(label==='Armies retreating' || !orders.length)continue;
                 caption.textContent=label;this.tone('move');
-                await this.animate(850,t=>{
+                await this.animate(fast?180:850,t=>{
                     layer.replaceChildren();
                     for(const e of orders){
                         const a=state.regions[e.from],b=state.regions[e.to];if(!a||!b)continue;
@@ -56,7 +63,19 @@ const presentation = {
                 });
             }
             layer.replaceChildren();
-            for(const e of battles){
+            if(fast && battles.length && !this.skip) {
+                caption.textContent=`${battles.length} battle${battles.length===1?'':'s'} resolved`;
+                this.tone('battle');
+                for(const e of battles){const r=state.regions[e.to];if(e.won)r.owner=e.owner;r.army=e.army;}
+                renderMap();
+                await this.animate(320,t=>{
+                    layer.replaceChildren();
+                    for(const e of battles){const r=state.regions[e.to];layer.append(svgEl('circle',{
+                        cx:toSVGX(r.x),cy:toSVGY(r.y),r:18+t*18,fill:'none',
+                        stroke:e.won?'#eed18a':'#b7c5c8','stroke-width':2,opacity:1-t}));}
+                });
+            }
+            for(const e of fast?[]:battles){
                 if(this.skip)break;
                 const r=state.regions[e.to];
                 caption.textContent=`${r.name}: ${e.won?'captured':'held'} · losses ${e.attacker_losses} / ${e.defender_losses}`;
@@ -69,7 +88,7 @@ const presentation = {
             }
             if(retreats.length && !this.skip){
                 caption.textContent='Survivors returning to friendly territory';
-                await this.animate(600,t=>{
+                await this.animate(fast?140:600,t=>{
                     layer.replaceChildren();
                     for(const e of retreats){
                         const a=state.regions[e.from],b=state.regions[e.to];

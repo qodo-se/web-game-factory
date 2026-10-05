@@ -51,7 +51,7 @@ const apiBase=process.env.IMPERIUM_TEST_API||base;
     await page.waitForFunction(()=>typeof atlas!=='undefined'&&atlas.geometry&&typeof state!=='undefined'&&state?.battle);
     assert.equal(await page.locator('#p1-name').textContent(),faction);
     assert.equal(await page.locator('.battle-objective').count(),3);
-    assert.equal(await page.evaluate(()=>atlas.data.id),id+'_atlas_v3');
+    assert.equal(await page.evaluate(()=>atlas.data.id),id+'_atlas_v4');
     assert.ok(await page.evaluate(()=>atlas.terrainImage?.complete && atlas.terrainImage.naturalWidth>=1000));
     assert.ok(await page.evaluate(()=>atlas.data.contours.length>10 && atlas.data.rivers.length>0));
     assert.ok(await page.locator('#battle-terrain-notes').evaluate(el=>!el.hidden));

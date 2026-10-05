@@ -8,6 +8,7 @@ Strategy profile: challenging but beatable.
 - Applies a small imperfection factor so skilled humans can outmanoeuvre it
 """
 import random
+from collections import deque
 from .strategy import win_probability, supplied_regions, attack_factor, defense_factor, route_kind, CROSSING_BONUS
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Set
@@ -135,6 +136,21 @@ def _score_consolidate(
     return W_THREAT * threat + W_STRATEGIC * best_attack
 
 
+def _frontier_distances(state: GameState, owner: Owner) -> Dict[int, int]:
+    """Friendly-only distances route reserves toward reachable hostile borders."""
+    frontier = [r.id for r in state.regions.values() if r.owner == owner and
+                any(state.regions[n].owner != owner for n in r.neighbors)]
+    distance = {rid: 0 for rid in frontier}
+    queue = deque(frontier)
+    while queue:
+        current = queue.popleft()
+        for neighbor in state.regions[current].neighbors:
+            if neighbor not in distance and state.regions[neighbor].owner == owner:
+                distance[neighbor] = distance[current] + 1
+                queue.append(neighbor)
+    return distance
+
+
 def decide_actions(
     state: GameState,
     player_id: str,
@@ -166,6 +182,7 @@ def decide_actions(
     enemy_army = state.total_army(enemy_id)
     army_ratio = my_army / max(1, enemy_army)
     is_aggressive = army_ratio >= 0.9
+    frontier_distance = {} if state.battle else _frontier_distances(state, ai_owner)
 
     # Sort regions: highest army + most threatened first
     battle_distance = {}
@@ -200,6 +217,23 @@ def decide_actions(
             nb = state.regions[nb_id]
 
             if nb.owner == ai_owner:
+                if not state.battle:
+                    here = frontier_distance.get(region.id)
+                    there = frontier_distance.get(nb.id)
+                    if here is None or there is None:
+                        continue
+                    if there < here:
+                        # Even an army ahead in total strength must move reserves
+                        # through quiet friendly territory to reach the fighting.
+                        score = 60 + .65 * _score_consolidate(region, nb, state, ai_owner, enemy_owner)
+                        if score > best_score:
+                            best_score = score
+                            best = _Candidate(region.id, nb_id, score, is_attack=False)
+                        continue
+                    # Never retreat reserves away from the frontier or swap two
+                    # frontline stacks indefinitely. Gather into the larger one.
+                    if there > here or here > 0 or (nb.army, -nb.id) <= (region.army, -region.id):
+                        continue
                 # Consolidation — only when cautious or region is threatened
                 if state.battle or not is_aggressive or _threat_level(nb, state, enemy_owner) > 0:
                     score = _score_consolidate(region, nb, state, ai_owner, enemy_owner)

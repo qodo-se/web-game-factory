@@ -7,11 +7,11 @@ const world = {
         group.style.display = enabled ? '' : 'none';
         if (!atlas.data || !enabled || this.cache === atlas.geometry) return;
         this.cache = atlas.geometry;
-        if (atlas.data.category === 'historical') { group.replaceChildren(); return; }
+        if (atlas.data.category === 'historical'||atlas.data.inland_frame) { group.replaceChildren(); return; }
         const {w,h,idxMap} = atlas.geometry;
         // Place sparse waves wholly inside water using the existing hit grid.
         // No animated geographic masks or duplicated coastline geometry.
-        const ocean = (x,y) => x>=0 && y>=0 && x<w && y<h && idxMap[Math.floor(y)*w+Math.floor(x)]<0;
+        const ocean = (x,y) => x>=0 && y>=0 && x<w && y<h && idxMap[Math.floor(y)*w+Math.floor(x)]===-1;
         const waves=[];
         for(let y=28;y<h;y+=70) for(let x=18;x<w-58;x+=115) {
             let clear=true;
@@ -40,22 +40,31 @@ const world = {
 
 const threatView = {
     data: null, key: '', sequence: 0,
-    async refresh() {
-        const enabled = document.getElementById('show-threats').checked;
-        if (!enabled) { this.draw(); return; }
-        const key = JSON.stringify([state.turn, pendingMoves]);
-        if (key === this.key && this.data) { this.draw(); return; }
-        const sequence = ++this.sequence;
-        this.data = null; this.draw();
-        document.getElementById('threat-description').textContent = 'Checking exposed borders…';
-        try {
-            const data = await api.threats(gameId, pendingMoves);
-            if (sequence !== this.sequence || key !== JSON.stringify([state.turn,pendingMoves])) return;
-            if (data.turn !== state.turn) throw new Error('Campaign changed. Reload to refresh threats.');
-            this.data = data; this.key = key; this.draw();
-        } catch(error) {
-            if (sequence === this.sequence) document.getElementById('threat-description').textContent = error.message;
+    refresh() {
+        const enabled=document.getElementById('show-threats').checked;
+        if(!enabled) {
+            clearTimeout(this.timer);this.controller?.abort();++this.sequence;
+            this.pendingKey=null;this.draw();return;
         }
+        const key=JSON.stringify([state.turn,pendingMoves]);
+        if(key===this.key&&this.data){this.draw();return;}
+        if(key===this.pendingKey)return;
+        clearTimeout(this.timer);this.controller?.abort();
+        const sequence=++this.sequence;
+        this.pendingKey=key;this.data=null;this.draw();
+        const orders=pendingMoves.map(move=>({...move}));
+        document.getElementById('threat-description').textContent='Checking exposed borders…';
+        this.timer=setTimeout(async()=>{
+            this.controller=new AbortController();
+            try {
+                const data=await api.threats(gameId,orders,this.controller.signal);
+                if(sequence!==this.sequence||key!==JSON.stringify([state.turn,pendingMoves]))return;
+                if(data.turn!==state.turn)throw new Error('Campaign changed. Reload to refresh threats.');
+                this.data=data;this.key=key;this.draw();
+            } catch(error) {
+                if(error.name!=='AbortError'&&sequence===this.sequence)document.getElementById('threat-description').textContent=error.message;
+            } finally {if(sequence===this.sequence)this.pendingKey=null;}
+        },150);
     },
     draw() {
         const group = document.getElementById('g-threats');

@@ -171,7 +171,8 @@ const battleReports = {
             ${data.known&&!data.gained.length&&!data.lost.length?'<p>No territory changed hands for your side.</p>':''}</section>
             <section class="report-group"><h3>Battles</h3>
             ${fought.length?`<p>${fought.map(id=>this.link(id)).join(', ')}</p>`:'<p>No battles involving your armies.</p>'}</section>
-            <section class="report-group"><h3>Troop movements</h3>
+            `;
+        document.getElementById('turn-movements').innerHTML=`<section class="report-group"><h3>Troop movements</h3>
             ${movements.length?movements.map(e=>`<p><strong>${e.army}</strong> troops · ${this.link(e.from)} → ${this.link(e.to)}</p>`).join(''):'<p>No recorded advances by your armies.</p>'}
             <small>${state.battle?'Fixed forces: no recruitment.':'Troop counts include recruits added before movement.'}</small></section>
             ${(summary.events||[]).some(e=>e.type==='standing_order')?`<section class="report-group"><h3>Standing orders</h3>${summary.events.filter(e=>e.type==='standing_order').map(e=>`<p>${this.link(e.region_id)} · ${escHtml(e.status)}: ${escHtml(e.message)}</p>`).join('')}</section>`:''}

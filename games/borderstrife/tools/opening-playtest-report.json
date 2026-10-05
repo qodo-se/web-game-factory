@@ -1,0 +1,947 @@
+[
+  {
+    "id": "mediterranean",
+    "initial_armies": [
+      144,
+      144
+    ],
+    "initial_growth": [
+      18,
+      18
+    ],
+    "ai_runs": 8,
+    "results": {
+      "player_1": 2,
+      "player_2": 4,
+      "unfinished": 2
+    },
+    "turns": [
+      49,
+      61,
+      57,
+      47,
+      41,
+      55,
+      61,
+      35
+    ]
+  },
+  {
+    "id": "europe",
+    "initial_armies": [
+      168,
+      168
+    ],
+    "initial_growth": [
+      21,
+      21
+    ],
+    "ai_runs": 8,
+    "results": {
+      "player_1": 3,
+      "player_2": 5,
+      "unfinished": 0
+    },
+    "turns": [
+      34,
+      16,
+      55,
+      14,
+      16,
+      23,
+      16,
+      22
+    ]
+  },
+  {
+    "id": "americas",
+    "initial_armies": [
+      208,
+      208
+    ],
+    "initial_growth": [
+      26,
+      26
+    ],
+    "ai_runs": 8,
+    "results": {
+      "player_1": 1,
+      "player_2": 3,
+      "unfinished": 4
+    },
+    "turns": [
+      61,
+      22,
+      61,
+      61,
+      40,
+      61,
+      60,
+      30
+    ]
+  },
+  {
+    "id": "africa_middle_east",
+    "initial_armies": [
+      112,
+      112
+    ],
+    "initial_growth": [
+      14,
+      14
+    ],
+    "ai_runs": 8,
+    "results": {
+      "player_1": 2,
+      "player_2": 6,
+      "unfinished": 0
+    },
+    "turns": [
+      19,
+      31,
+      33,
+      35,
+      35,
+      26,
+      37,
+      47
+    ]
+  },
+  {
+    "id": "central_asia",
+    "initial_armies": [
+      144,
+      144
+    ],
+    "initial_growth": [
+      18,
+      18
+    ],
+    "ai_runs": 8,
+    "results": {
+      "player_1": 5,
+      "player_2": 3,
+      "unfinished": 0
+    },
+    "turns": [
+      22,
+      22,
+      29,
+      20,
+      39,
+      23,
+      20,
+      30
+    ]
+  },
+  {
+    "id": "balochistan_borderlands_expanded",
+    "initial_armies": [
+      120,
+      120
+    ],
+    "initial_growth": [
+      15,
+      15
+    ],
+    "ai_runs": 8,
+    "results": {
+      "player_1": 5,
+      "player_2": 3,
+      "unfinished": 0
+    },
+    "turns": [
+      11,
+      16,
+      25,
+      12,
+      18,
+      17,
+      15,
+      22
+    ]
+  },
+  {
+    "id": "india",
+    "initial_armies": [
+      152,
+      152
+    ],
+    "initial_growth": [
+      19,
+      19
+    ],
+    "ai_runs": 8,
+    "results": {
+      "player_1": 2,
+      "player_2": 6,
+      "unfinished": 0
+    },
+    "turns": [
+      14,
+      11,
+      27,
+      11,
+      18,
+      14,
+      15,
+      15
+    ]
+  },
+  {
+    "id": "southeast_asia_oceania",
+    "initial_armies": [
+      208,
+      208
+    ],
+    "initial_growth": [
+      26,
+      26
+    ],
+    "ai_runs": 8,
+    "results": {
+      "player_1": 0,
+      "player_2": 0,
+      "unfinished": 8
+    },
+    "turns": [
+      61,
+      61,
+      61,
+      61,
+      61,
+      61,
+      61,
+      61
+    ]
+  },
+  {
+    "id": "waterloo",
+    "initial_armies": [
+      420,
+      485
+    ],
+    "initial_growth": [
+      0,
+      0
+    ],
+    "ai_runs": 8,
+    "results": {
+      "player_1": 7,
+      "player_2": 1,
+      "unfinished": 0
+    },
+    "turns": [
+      21,
+      21,
+      21,
+      21,
+      13,
+      21,
+      21,
+      21
+    ]
+  },
+  {
+    "id": "sekigahara",
+    "initial_armies": [
+      455,
+      525
+    ],
+    "initial_growth": [
+      0,
+      0
+    ],
+    "ai_runs": 8,
+    "results": {
+      "player_1": 2,
+      "player_2": 6,
+      "unfinished": 0
+    },
+    "turns": [
+      21,
+      21,
+      21,
+      21,
+      21,
+      21,
+      21,
+      21
+    ]
+  },
+  {
+    "id": "hastings",
+    "initial_armies": [
+      465,
+      465
+    ],
+    "initial_growth": [
+      0,
+      0
+    ],
+    "ai_runs": 8,
+    "results": {
+      "player_1": 3,
+      "player_2": 5,
+      "unfinished": 0
+    },
+    "turns": [
+      21,
+      21,
+      21,
+      21,
+      21,
+      21,
+      20,
+      21
+    ]
+  },
+  {
+    "id": "hattin",
+    "initial_armies": [
+      305,
+      500
+    ],
+    "initial_growth": [
+      0,
+      0
+    ],
+    "ai_runs": 8,
+    "results": {
+      "player_1": 3,
+      "player_2": 5,
+      "unfinished": 0
+    },
+    "turns": [
+      21,
+      21,
+      14,
+      21,
+      8,
+      21,
+      14,
+      21
+    ]
+  },
+  {
+    "id": "gettysburg",
+    "initial_armies": [
+      630,
+      580
+    ],
+    "initial_growth": [
+      0,
+      0
+    ],
+    "ai_runs": 8,
+    "results": {
+      "player_1": 2,
+      "player_2": 6,
+      "unfinished": 0
+    },
+    "turns": [
+      21,
+      21,
+      21,
+      21,
+      21,
+      21,
+      21,
+      21
+    ]
+  },
+  {
+    "id": "japan_korea",
+    "initial_armies": [
+      136,
+      136
+    ],
+    "initial_growth": [
+      17,
+      17
+    ],
+    "ai_runs": 8,
+    "results": {
+      "player_1": 0,
+      "player_2": 0,
+      "unfinished": 8
+    },
+    "turns": [
+      61,
+      61,
+      61,
+      61,
+      61,
+      61,
+      61,
+      61
+    ]
+  },
+  {
+    "id": "british_irish_isles",
+    "initial_armies": [
+      144,
+      144
+    ],
+    "initial_growth": [
+      18,
+      18
+    ],
+    "ai_runs": 8,
+    "results": {
+      "player_1": 1,
+      "player_2": 7,
+      "unfinished": 0
+    },
+    "turns": [
+      33,
+      47,
+      59,
+      34,
+      26,
+      57,
+      37,
+      45
+    ]
+  },
+  {
+    "id": "anatolia_caucasus",
+    "initial_armies": [
+      168,
+      168
+    ],
+    "initial_growth": [
+      21,
+      21
+    ],
+    "ai_runs": 8,
+    "results": {
+      "player_1": 6,
+      "player_2": 2,
+      "unfinished": 0
+    },
+    "turns": [
+      43,
+      60,
+      37,
+      48,
+      34,
+      28,
+      41,
+      37
+    ]
+  },
+  {
+    "id": "nile_horn",
+    "initial_armies": [
+      224,
+      224
+    ],
+    "initial_growth": [
+      28,
+      28
+    ],
+    "ai_runs": 8,
+    "results": {
+      "player_1": 0,
+      "player_2": 5,
+      "unfinished": 3
+    },
+    "turns": [
+      61,
+      61,
+      23,
+      61,
+      26,
+      37,
+      35,
+      47
+    ]
+  },
+  {
+    "id": "andes_pacific",
+    "initial_armies": [
+      128,
+      128
+    ],
+    "initial_growth": [
+      16,
+      16
+    ],
+    "ai_runs": 8,
+    "results": {
+      "player_1": 0,
+      "player_2": 0,
+      "unfinished": 8
+    },
+    "turns": [
+      61,
+      61,
+      61,
+      61,
+      61,
+      61,
+      61,
+      61
+    ]
+  },
+  {
+    "id": "caribbean_central_america",
+    "initial_armies": [
+      128,
+      120
+    ],
+    "initial_growth": [
+      16,
+      15
+    ],
+    "ai_runs": 8,
+    "results": {
+      "player_1": 0,
+      "player_2": 0,
+      "unfinished": 8
+    },
+    "turns": [
+      61,
+      61,
+      61,
+      61,
+      61,
+      61,
+      61,
+      61
+    ]
+  },
+  {
+    "id": "crusader_states",
+    "initial_armies": [
+      128,
+      128
+    ],
+    "initial_growth": [
+      16,
+      16
+    ],
+    "ai_runs": 8,
+    "results": {
+      "player_1": 4,
+      "player_2": 4,
+      "unfinished": 0
+    },
+    "turns": [
+      7,
+      12,
+      7,
+      13,
+      13,
+      12,
+      18,
+      18
+    ]
+  },
+  {
+    "id": "civil_war_east",
+    "initial_armies": [
+      288,
+      288
+    ],
+    "initial_growth": [
+      36,
+      36
+    ],
+    "ai_runs": 8,
+    "results": {
+      "player_1": 6,
+      "player_2": 2,
+      "unfinished": 0
+    },
+    "turns": [
+      19,
+      23,
+      28,
+      17,
+      17,
+      16,
+      35,
+      33
+    ]
+  },
+  {
+    "id": "rome_carthage",
+    "initial_armies": [
+      152,
+      144
+    ],
+    "initial_growth": [
+      19,
+      18
+    ],
+    "ai_runs": 8,
+    "results": {
+      "player_1": 0,
+      "player_2": 0,
+      "unfinished": 8
+    },
+    "turns": [
+      61,
+      61,
+      61,
+      61,
+      61,
+      61,
+      61,
+      61
+    ]
+  },
+  {
+    "id": "sengoku_japan",
+    "initial_armies": [
+      144,
+      144
+    ],
+    "initial_growth": [
+      18,
+      18
+    ],
+    "ai_runs": 8,
+    "results": {
+      "player_1": 4,
+      "player_2": 4,
+      "unfinished": 0
+    },
+    "turns": [
+      16,
+      27,
+      15,
+      15,
+      16,
+      13,
+      25,
+      10
+    ]
+  },
+  {
+    "id": "epic_lanka",
+    "initial_armies": [
+      152,
+      152
+    ],
+    "initial_growth": [
+      19,
+      19
+    ],
+    "ai_runs": 8,
+    "results": {
+      "player_1": 2,
+      "player_2": 6,
+      "unfinished": 0
+    },
+    "turns": [
+      43,
+      23,
+      31,
+      28,
+      37,
+      16,
+      21,
+      46
+    ]
+  },
+  {
+    "id": "panipat_1526",
+    "initial_armies": [
+      585,
+      680
+    ],
+    "initial_growth": [
+      0,
+      0
+    ],
+    "ai_runs": 8,
+    "results": {
+      "player_1": 3,
+      "player_2": 5,
+      "unfinished": 0
+    },
+    "turns": [
+      21,
+      21,
+      21,
+      19,
+      21,
+      21,
+      21,
+      21
+    ]
+  },
+  {
+    "id": "austerlitz_1805",
+    "initial_armies": [
+      585,
+      635
+    ],
+    "initial_growth": [
+      0,
+      0
+    ],
+    "ai_runs": 8,
+    "results": {
+      "player_1": 5,
+      "player_2": 3,
+      "unfinished": 0
+    },
+    "turns": [
+      21,
+      21,
+      21,
+      21,
+      21,
+      21,
+      21,
+      21
+    ]
+  },
+  {
+    "id": "antietam_1862",
+    "initial_armies": [
+      655,
+      565
+    ],
+    "initial_growth": [
+      0,
+      0
+    ],
+    "ai_runs": 8,
+    "results": {
+      "player_1": 5,
+      "player_2": 3,
+      "unfinished": 0
+    },
+    "turns": [
+      21,
+      21,
+      18,
+      21,
+      21,
+      21,
+      21,
+      21
+    ]
+  },
+  {
+    "id": "cannae_216",
+    "initial_armies": [
+      560,
+      630
+    ],
+    "initial_growth": [
+      0,
+      0
+    ],
+    "ai_runs": 8,
+    "results": {
+      "player_1": 4,
+      "player_2": 4,
+      "unfinished": 0
+    },
+    "turns": [
+      21,
+      21,
+      21,
+      21,
+      21,
+      21,
+      21,
+      21
+    ]
+  },
+  {
+    "id": "naseby_1645",
+    "initial_armies": [
+      570,
+      615
+    ],
+    "initial_growth": [
+      0,
+      0
+    ],
+    "ai_runs": 8,
+    "results": {
+      "player_1": 3,
+      "player_2": 5,
+      "unfinished": 0
+    },
+    "turns": [
+      21,
+      21,
+      11,
+      21,
+      21,
+      21,
+      21,
+      21
+    ]
+  },
+  {
+    "id": "constantinople",
+    "initial_armies": [
+      208,
+      224
+    ],
+    "initial_growth": [
+      26,
+      28
+    ],
+    "ai_runs": 8,
+    "results": {
+      "player_1": 1,
+      "player_2": 6,
+      "unfinished": 1
+    },
+    "turns": [
+      21,
+      19,
+      29,
+      56,
+      47,
+      37,
+      13,
+      61
+    ]
+  },
+  {
+    "id": "chittorgarh",
+    "initial_armies": [
+      208,
+      208
+    ],
+    "initial_growth": [
+      26,
+      26
+    ],
+    "ai_runs": 8,
+    "results": {
+      "player_1": 4,
+      "player_2": 4,
+      "unfinished": 0
+    },
+    "turns": [
+      16,
+      19,
+      18,
+      13,
+      49,
+      32,
+      19,
+      26
+    ]
+  },
+  {
+    "id": "malta",
+    "initial_armies": [
+      224,
+      224
+    ],
+    "initial_growth": [
+      28,
+      28
+    ],
+    "ai_runs": 8,
+    "results": {
+      "player_1": 2,
+      "player_2": 6,
+      "unfinished": 0
+    },
+    "turns": [
+      32,
+      23,
+      11,
+      36,
+      18,
+      12,
+      21,
+      15
+    ]
+  },
+  {
+    "id": "kurukshetra",
+    "initial_armies": [
+      224,
+      224
+    ],
+    "initial_growth": [
+      28,
+      28
+    ],
+    "ai_runs": 8,
+    "results": {
+      "player_1": 2,
+      "player_2": 6,
+      "unfinished": 0
+    },
+    "turns": [
+      16,
+      17,
+      36,
+      18,
+      24,
+      46,
+      32,
+      28
+    ]
+  },
+  {
+    "id": "troy_troad",
+    "initial_armies": [
+      224,
+      224
+    ],
+    "initial_growth": [
+      28,
+      28
+    ],
+    "ai_runs": 8,
+    "results": {
+      "player_1": 2,
+      "player_2": 6,
+      "unfinished": 0
+    },
+    "turns": [
+      23,
+      16,
+      24,
+      16,
+      18,
+      15,
+      19,
+      13
+    ]
+  },
+  {
+    "id": "emberfall",
+    "initial_armies": [
+      144,
+      144
+    ],
+    "initial_growth": [
+      18,
+      18
+    ],
+    "ai_runs": 8,
+    "results": {
+      "player_1": 2,
+      "player_2": 6,
+      "unfinished": 0
+    },
+    "turns": [
+      35,
+      12,
+      18,
+      26,
+      8,
+      10,
+      19,
+      21
+    ]
+  }
+]

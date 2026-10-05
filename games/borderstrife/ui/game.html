@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BorderStrife — Campaign</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/game.css">
+    <link rel="stylesheet" href="css/polish.css">
+    <link rel="stylesheet" href="css/standing-orders.css">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <meta name="robots" content="noindex, nofollow">
+</head>
+<body class="game-page">
+
+    <div id="load-screen" role="status" aria-live="polite">
+        <img id="load-preview" alt="" hidden>
+        <h1 id="load-title">Opening your campaign</h1>
+        <p id="load-message">Loading the map and your saved position…</p>
+        <div id="load-actions" hidden><button type="button" class="btn-primary" id="retry-game">Try again</button><a href="index.html">Back to campaigns</a></div>
+    </div>
+    <!-- Top bar -->
+    <div id="top-bar">
+        <span class="game-title">BorderStrife</span>
+        <span class="turn-badge"><span id="turn-label">Turn</span> <span id="turn-num">—</span></span>
+        <div class="player-stats">
+            <div class="stat-block">
+                <div class="stat-name p1-text" id="p1-name">—</div>
+                <div class="stat-values">
+                    <span id="p1-regions">—</span> regions &nbsp;·&nbsp;
+                    <span id="p1-army">—</span> troops
+                </div>
+            </div>
+            <span class="vs-divider">VS</span>
+            <div class="stat-block right">
+                <div class="stat-name p2-text" id="p2-name">—</div>
+                <div class="stat-values">
+                    <span id="p2-regions">—</span> regions &nbsp;·&nbsp;
+                    <span id="p2-army">—</span> troops
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="battle-status" hidden>
+        <strong id="battle-title"></strong>
+        <span id="battle-progress"></span>
+        <span id="battle-rules">Capture the gold objectives · Fixed forces · Ties: army strength, then defender</span>
+    </div>
+    <!-- Main -->
+    <div id="main">
+
+        <!-- Map -->
+        <div id="map-container" tabindex="0" role="region" aria-label="Campaign map" aria-describedby="map-navigation-help">
+            <div id="map-world">
+            <!-- Voronoi territory map — painted by game.js -->
+            <canvas id="map-canvas"></canvas>
+
+            <!-- SVG overlay: labels, rings, arrows only. pointer-events:none so clicks reach canvas. -->
+            <svg id="map-svg" viewBox="0 0 1000 650" preserveAspectRatio="none"
+                 style="pointer-events:none;">
+                <g id="g-strategy" pointer-events="none"></g>
+                <g id="g-terrain-effects" pointer-events="none"></g>
+                <g id="g-atmosphere" pointer-events="none"></g>
+                <g id="g-threats" pointer-events="none"></g>
+                <g id="g-connections"></g>
+                <g id="g-arrows"></g>
+                <g id="g-labels"></g>
+                <g id="g-planning" pointer-events="none"></g>
+                <g id="g-replay" pointer-events="none"></g>
+            </svg>
+
+            </div>
+            <div class="map-navigation" role="group" aria-label="Map navigation">
+                <button type="button" id="map-zoom-out" aria-label="Zoom out" title="Zoom out (−)">−</button>
+                <output id="map-zoom-level" aria-label="Map zoom">100%</output>
+                <button type="button" id="map-zoom-in" aria-label="Zoom in" title="Zoom in (+)">+</button>
+                <button type="button" id="map-fit-regions" title="Frame all region counters">Fit regions</button>
+                <button type="button" id="map-reset" title="Reset map view (0)">Reset view</button>
+                <button type="button" id="map-help-toggle" aria-expanded="false" aria-controls="map-navigation-help">Controls</button>
+                <button type="button" id="map-fullscreen" aria-pressed="false">Fullscreen</button>
+            </div>
+            <p id="map-navigation-help" hidden>Click or tap source, then destination to move · Drag anywhere to pan · Scroll to zoom · Esc to cancel</p>
+            <div id="map-order-menu" hidden role="dialog" aria-label="Region orders"></div>
+            <div id="map-order-composer" hidden role="region" aria-label="Plan route on map"></div>
+            <div id="planning-preview" hidden role="status"></div>
+
+            <div id="replay-controls" hidden>
+                <span id="replay-caption" role="status"></span>
+                <button type="button" id="skip-replay">Skip replay</button>
+            </div>
+            <div id="campaign-replay-controls" hidden aria-label="Campaign replay">
+                <div class="campaign-replay-row">
+                    <button type="button" id="campaign-replay-prev" aria-label="Previous turn" aria-keyshortcuts="ArrowLeft" title="Previous turn (←)">←</button>
+                    <button type="button" id="campaign-replay-play" aria-pressed="false">Play</button>
+                    <button type="button" id="campaign-replay-next" aria-label="Next turn" aria-keyshortcuts="ArrowRight" title="Next turn (→)">→</button>
+                    <output id="campaign-replay-caption" aria-live="polite"></output>
+                    <button type="button" id="campaign-replay-exit">Exit replay</button>
+                </div>
+                <input type="range" id="campaign-replay-slider" min="0" max="0" value="0" aria-label="Replay turn">
+                <div class="replay-legend" aria-label="Movement legend"><span class="p1-text">→ Your troops</span><span class="p2-text">→ Rival troops</span><span>⇢ Dashed: retreat</span></div>
+                <small id="campaign-replay-note"></small>
+            </div>
+            <!-- Legend -->
+            <div class="map-legend">
+                <div class="legend-item">
+                    <div class="legend-dot" style="background:#3464c3;"></div> You
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background:#c33434;"></div> AI
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background:#4e7030;"></div> Neutral
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background:#3478c8;"></div> Sea
+                </div>
+            </div>
+
+            <!-- Resolving overlay -->
+            <div id="resolving-overlay" class="hidden">
+                <span class="resolving-msg">Resolving Turn…</span>
+            </div>
+
+            <!-- Game over overlay -->
+            <div id="gameover-overlay" class="hidden">
+                <div class="gameover-card"><p class="ending-kicker">Campaign complete</p><div class="gameover-title" id="gameover-title">—</div>
+                <div class="gameover-subtitle" id="gameover-subtitle">—</div>
+                    <button type="button" class="btn-secondary" id="replay-campaign">Replay campaign</button>
+                    <button type="button" class="btn-secondary" id="review-campaign">Review map & timeline</button>
+                    <a class="btn-secondary" href="index.html">Return to campaigns</a></div>
+            </div>
+        </div>
+
+        <!-- Side panel -->
+        <div id="sidebar-resize" role="separator" tabindex="0" aria-label="Sidebar width" aria-orientation="vertical" aria-valuemin="220" aria-valuemax="420" aria-valuenow="256" title="Drag to resize; arrow keys adjust width"></div>
+        <div id="side-panel">
+            <section id="region-info-section" class="region-summary" aria-label="Region">
+                <div id="region-info"><p class="no-selection">Hover a region to inspect it.</p></div>
+            </section>
+            <section class="sidebar-section" id="settings-section" data-sidebar-section="settings">
+                <h2 class="sidebar-heading"><button type="button" class="sidebar-toggle" id="sidebar-settings-toggle" aria-expanded="false" aria-controls="sidebar-settings-body">Campaign & map<span class="sidebar-chevron" aria-hidden="true">›</span></button></h2>
+                <div class="sidebar-body" id="sidebar-settings-body" role="region" aria-labelledby="sidebar-settings-toggle" hidden>
+<div class="campaign-tools">
+                <strong id="campaign-title"></strong>
+                <details id="battle-terrain-notes" hidden><summary>Terrain & historical sources</summary><p id="battle-terrain-description"></p><a href="maps/battle-sources.html" target="_blank" rel="noopener">Read reconstruction notes & credits</a></details>
+                <button type="button" id="open-campaign-replay" hidden>Replay campaign</button>
+                <button type="button" id="sound-toggle" aria-pressed="false">Sound off</button>
+                <label for="map-input-mode">Scroll controls</label>
+                <select id="map-input-mode">
+                    <option value="mouse">Mouse — scroll to zoom</option>
+                    <option value="touchpad">Touchpad — scroll to pan</option>
+                </select>
+                <label for="map-theme">Map theme</label>
+                <select id="map-theme"><option value="system">System preference</option><option value="light">Light terrain</option><option value="dark">Dark terrain</option></select>
+                <label for="label-size">Map label size</label>
+                <select id="label-size"><option value="small">Small</option><option value="medium" selected>Medium</option><option value="large">Large</option></select>
+                <label><input type="checkbox" id="faction-shapes"> Faction shapes & patterns</label>
+                <small id="faction-shape-key" hidden>○ Your troops / diagonal lines · □ Rival / horizontal lines · ◇ Neutral / dots</small>
+                <label for="map-mode">Map view</label>
+                <select id="map-mode"><option value="ownership">Ownership</option><option value="army">Army strength</option><option value="recruitment">Recruitment</option></select>
+                <small id="map-mode-legend" hidden></small>
+                <label><input type="checkbox" id="show-supply"> Show supply routes</label>
+                <label><input type="checkbox" id="show-threats"> Show border threats</label>
+                <small id="threat-description" role="status" hidden></small>
+                <label><input type="checkbox" id="show-atmosphere" checked> Map atmosphere</label>
+</div>
+                </div>
+            </section>
+            <section class="sidebar-section" id="orders-section" data-sidebar-section="orders">
+                <h2 class="sidebar-heading"><button type="button" class="sidebar-toggle" id="sidebar-orders-toggle" aria-expanded="false" aria-controls="sidebar-orders-body"><span id="panel-moves-label">Planned moves</span><span class="sidebar-chevron" aria-hidden="true">›</span></button></h2>
+                <div class="sidebar-body" id="sidebar-orders-body" role="region" aria-labelledby="sidebar-orders-toggle" hidden>
+                <div class="order-tools" role="group" aria-label="Order history">
+                    <button id="undo-order" type="button" disabled title="Undo order (Ctrl/Cmd+Z)">Undo</button>
+                    <button id="redo-order" type="button" disabled title="Redo order (Ctrl/Cmd+Shift+Z)">Redo</button>
+                    <button id="clear-orders" type="button" disabled>Clear orders</button>
+                </div>
+                <span id="order-status" class="sr-only" role="status"></span>
+            <div id="standing-orders"></div>
+            <div id="moves-list">
+                <p class="no-moves-msg">No moves planned. Click one of your regions to order an advance.</p>
+            </div>
+
+
+                </div>
+            </section>
+            <section class="sidebar-section" id="combat-log-section" data-sidebar-section="battles">
+                <h2 class="sidebar-heading"><button type="button" class="sidebar-toggle" id="sidebar-battles-toggle" aria-expanded="false" aria-controls="sidebar-battles-body">Turn report <span class="sidebar-turn">· <span id="log-turn">—</span></span><span class="sidebar-chevron" aria-hidden="true">›</span></button></h2>
+                <div class="sidebar-body" id="sidebar-battles-body" role="region" aria-labelledby="sidebar-battles-toggle" hidden>
+                    <div id="turn-recap"><p class="sidebar-empty">Complete a turn to see your gains, losses and casualties.</p></div>
+                    <div class="turn-battles-heading panel-label">Battle details</div>
+                    <div id="combat-log"><p class="sidebar-empty">Battle reports appear after your first turn.</p></div>
+                </div>
+            </section>
+            <section class="sidebar-section" id="campaign-timeline" data-sidebar-section="timeline">
+                <h2 class="sidebar-heading"><button type="button" class="sidebar-toggle" id="sidebar-timeline-toggle" aria-expanded="false" aria-controls="sidebar-timeline-body">Campaign timeline<span class="sidebar-chevron" aria-hidden="true">›</span></button></h2>
+                <div class="sidebar-body" id="sidebar-timeline-body" role="region" aria-labelledby="sidebar-timeline-toggle" hidden>
+<div id="timeline-list"></div>
+                </div>
+            </section>
+            <section class="sidebar-section" id="rules-section" data-sidebar-section="rules">
+                <h2 class="sidebar-heading"><button type="button" class="sidebar-toggle" id="sidebar-rules-toggle" aria-expanded="false" aria-controls="sidebar-rules-body">Supply & combat rules<span class="sidebar-chevron" aria-hidden="true">›</span></button></h2>
+                <div class="sidebar-body" id="sidebar-rules-body" role="region" aria-labelledby="sidebar-rules-toggle" hidden>
+<div class="rules-help">
+                    <p>Neighboring regions sharing a land border are connected on new maps. Select an army to see its destinations and available sea crossings.</p>
+                    <p id="supply-rules">Owned cities and your capital supply connected friendly regions, including ports linked by sea lanes. Isolated regions gain half their normal recruits, attack at 75% strength, and defend at 85%.</p>
+                    <p>River crossings add 20% defensive advantage; mountain passes 15%; sea landings 25%. Terrain bonuses also apply. Forecasts assume defenders stay put; both sides move simultaneously.</p>
+                    <p>Defeated survivors retreat after all battles, if a friendly route remains. Entire armies still move with each order.</p>
+                </div>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <!-- Bottom bar -->
+    <div id="draft-save-warning" role="alert" hidden>Orders are not saved. Keep this tab open and press Next Turn to save them to your campaign. <button id="retry-draft-save" type="button">Retry draft save</button></div>
+    <div id="bottom-bar">
+        <span id="save-status" role="status">Saved</span>
+        <span class="move-hint" id="move-hint">Select one of your regions to begin.</span>
+        <button id="abandon-btn">Save & exit</button>
+        <button id="end-turn-btn">Next Turn</button>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/atlas.js"></script>
+    <script src="js/map-camera.js"></script>
+    <script src="js/campaigns.js"></script>
+    <script src="js/presentation.js"></script>
+    <script src="js/world.js"></script>
+    <script src="js/tactics.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/campaign-replay.js"></script>
+    <script src="js/planning.js"></script>
+    <script src="js/interface.js"></script>
+    <script src="js/map-orders.js"></script>
+    <script src="js/standing-orders.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>

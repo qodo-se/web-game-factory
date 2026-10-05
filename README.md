@@ -13,7 +13,7 @@ make dev-api
 Serve the game in a second terminal:
 
 ```bash
-python3 -m http.server 3000 --directory games/imperium/ui
+python3 -m http.server 3000 --directory games/borderstrife/ui
 ```
 
 Open `http://localhost:3000` and set the API address once in the browser console:
@@ -36,7 +36,7 @@ stale or duplicate turn submissions return HTTP 409. Cloud Run refuses to use
 an ephemeral SQLite fallback. Local SQLite saves are not automatically migrated
 to PostgreSQL.
 
-See [gameplay rules and validation](games/imperium/GAMEPLAY.md) for the new
+See [gameplay rules and validation](games/borderstrife/GAMEPLAY.md) for the new
 combat, supply, replay, and campaign features.
 
 ## Deployment
@@ -110,26 +110,29 @@ The public game name is **BorderStrife**, served at `/borderstrife/`.
 The website permanently redirects `/imperium` and `/imperium/...` to the new
 location, preserving campaign query strings. Keep these redirects for old links.
 
-The source directory `games/imperium`, `/api/imperium` endpoints, database/table
-names, browser storage keys, and `IMPERIUM_*` configuration variables deliberately
-retain their original identifiers. They are compatibility identifiers, not display
+The source directory and Python package are now `games/borderstrife` and
+`games.borderstrife`. Build commands, Docker paths and deployment filters use the
+new source name. The `/api/imperium` endpoints, database/table names, browser storage
+keys, and `IMPERIUM_*` configuration variables deliberately retain their original
+identifiers. They are compatibility identifiers, not display
 branding. This keeps saved campaigns, pending orders, preferences, API clients,
 and deployment secrets working without a migration. Both URLs use the same origin;
 a future domain change would need a separate browser-storage migration plan.
 
 Deployment remains the existing Deploy Website GitHub Actions workflow. Its path
-filters still cover `games/imperium/ui/`; the Docker build copies those assets into
-`/usr/share/nginx/html/borderstrife/`. No backend deployment is required for the rebrand.
+filters still cover `games/borderstrife/ui/`; the Docker build copies those assets into
+`/usr/share/nginx/html/borderstrife/`. The source-package rename requires both
+website and API deployment.
 
 The welcome page canonical and sharing URLs currently point to the Cloud Run
 website hostname; update them when introducing a custom domain. The editable
-sharing artwork is `games/imperium/ui/social-card.svg`, exported at 1200×630 to
+sharing artwork is `games/borderstrife/ui/social-card.svg`, exported at 1200×630 to
 `social-card.png`.
 
 For a local nginx preview, run the rebrand integration check with Playwright:
 
 ```bash
-BORDERSTRIFE_TEST_URL=http://127.0.0.1:3011 node games/imperium/tools/check_rebrand.cjs
+BORDERSTRIFE_TEST_URL=http://127.0.0.1:3011 node games/borderstrife/tools/check_rebrand.cjs
 ```
 
 The preview must serve the website nginx routes and proxy `/api/` to the local

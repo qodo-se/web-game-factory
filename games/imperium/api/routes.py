@@ -73,6 +73,7 @@ def _serialize_state(engine: GameEngine) -> dict:
         "turn": s.turn,
         "battle": s.battle,
         "preset_id": s.preset_id,
+        "map_asset_id": s.map_asset_id or s.preset_id,
         "routes": s.routes,
         "campaign_name": engine.campaign_name,
         "game_over": s.game_over,

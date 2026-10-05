@@ -150,6 +150,7 @@ class GameState:
     ports: List[int] = field(default_factory=list)
     rules_version: int = 2
     battle: Optional[dict] = None
+    map_asset_id: Optional[str] = None
 
     def get_player(self, player_id: str) -> Optional[Player]:
         for p in self.players:

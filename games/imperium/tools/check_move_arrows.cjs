@@ -18,6 +18,8 @@ const base=process.env.IMPERIUM_TEST_API||'http://127.0.0.1:8080';
    await page.waitForFunction(()=>atlas.layout.w===document.getElementById('map-canvas').clientWidth);
    for(const zoom of [1,2,5]){
     const results=await page.evaluate(zoom=>{
+     interfaceView.factionShapes=true;
+     for(const r of Object.values(state.regions))r.army=100000;
      mapCamera.zoomAt(zoom,300,300);renderMap();
      pendingMoves=Object.values(state.regions).flatMap(r=>r.neighbors.map(to=>({from_region_id:r.id,to_region_id:to})));
      renderMap();
@@ -33,6 +35,9 @@ const base=process.env.IMPERIUM_TEST_API||'http://127.0.0.1:8080';
       if((tip.x-base.x)*(b.x-a.x)+(tip.y-base.y)*(b.y-a.y)<=0)failures.push([from.name,to.name,'reversed']);
       if(Math.hypot(tip.x-b.x,tip.y-b.y)>Math.hypot(base.x-b.x,base.y-b.y))failures.push([from.name,to.name,'head points away']);
       if(![tip.x,tip.y,base.x,base.y].every(Number.isFinite))failures.push(['invalid geometry']);
+      const counter=document.querySelector(`#g-labels [data-id="${to.id}"] .army-counter`);
+      const local=new DOMPoint(tip.x,tip.y).matrixTransform(counter.getScreenCTM().inverse());
+      if(counter.isPointInFill(local))failures.push([from.name,to.name,'head covered by counter']);
      }
      return {failures,count:document.querySelectorAll('.planned-arrow').length,expected:pendingMoves.length};
     },zoom);

@@ -40,10 +40,11 @@ const apiBase = process.env.IMPERIUM_TEST_API || 'http://localhost:8091';
             await page.locator('#start-btn').click();
             await page.waitForURL('**/game.html');
             await page.waitForFunction(() => typeof atlas !== 'undefined' && atlas.geometry);
-            assert.equal(await page.evaluate(() => atlas.data.id), id);
+            assert.equal(await page.evaluate(() => atlas.data.id), id+'_compact');
             if (id === 'balochistan_borderlands_expanded') {
                 const names = await page.evaluate(() => Object.values(state.regions).map(r => r.name));
-                for (const name of ['Zahedan', 'Saravan', 'Chabahar', 'Quetta', 'Kandahar', 'Karachi', 'Hyderabad', 'Lahore', 'Multan', 'Balkh', 'Kunduz', 'Badakhshan', 'Wakhan']) assert.ok(names.includes(name));
+                assert.equal(names.length,30);
+                assert.equal(await page.evaluate(()=>atlas.data.regions.flatMap(r=>r.source_region_ids).length),69);
                 for (const name of ['Gilgit', 'Baltistan']) assert.ok(!names.includes(name));
             }
             const gameId = await page.evaluate(() => sessionStorage.getItem('gameId'));
@@ -52,7 +53,7 @@ const apiBase = process.env.IMPERIUM_TEST_API || 'http://localhost:8091';
             if (id === 'balochistan_borderlands_expanded') {
                 await page.reload();
                 await page.waitForFunction(() => typeof state !== 'undefined' && state?.turn === 2 && atlas.geometry);
-                assert.equal(await page.evaluate(() => atlas.data.id), id);
+                assert.equal(await page.evaluate(() => atlas.data.id), id+'_compact');
             }
             await page.setViewportSize({width:1440,height:1000});
             await page.waitForFunction(() => atlas.layout.w === document.getElementById('map-canvas').clientWidth);

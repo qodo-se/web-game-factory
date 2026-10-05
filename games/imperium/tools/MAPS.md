@@ -61,3 +61,34 @@ Sindh adds Karachi, Hyderabad, Thatta, Sukkur and Thar. Pakistani Punjab adds
 Lahore, Multan, Bahawalpur, Faisalabad, Sargodha, Rawalpindi and Dera Ghazi Khan.
 The frame includes the southern Sindh coast, Punjab’s eastern boundary and
 all of Afghanistan, including the northern provinces and the Wakhan corridor.
+
+
+## Compact campaign collection
+
+New regional campaigns use 24–30 merged regions. Historical battle deployments
+stay at 16–22 sectors. All shared land borders allow movement, without an artificial neighbor cap.
+Point-only contacts do not count as borders. Essential original crossings join
+separate land masses; redundant sea links are removed. Each map and both
+historical deployments remain connected.
+
+`build_compact_maps.py` merges neighboring land polygons without changing the
+coastline or geographic coverage. Kashyap Meer remains an unmerged territory.
+Dwarka, Ahom, Balochistan, Lanka and recommended capitals retain their names.
+Borderland regions never merge across their source country assignments.
+
+Rebuild from the pinned original bundled assets:
+
+```sh
+.venv/bin/python -m games.imperium.tools.build_compact_maps
+.venv/bin/python -m games.imperium.tools.build_thumbnails
+```
+
+The generated `engine/presets/compact.json` supplies the active catalog;
+`compact-map-report.json` records every grouping and before/after route count.
+Shapely is a build dependency only. No runtime GIS work is added.
+
+Public preset IDs stay unchanged. New saves record `map_asset_id`, referring to
+separate `_compact` geography and thumbnails. Saves without this field load the
+original atlas, keeping their region IDs, routes, orders and replays intact.
+Do not delete original assets or overwrite released geometry with incompatible
+boundaries; a future incompatible revision needs its own asset ID.

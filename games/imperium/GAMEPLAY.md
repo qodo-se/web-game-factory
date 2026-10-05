@@ -211,3 +211,11 @@ rules apply.
 
 These are topographic reconstructions using measured modern elevation,
 interpreted historical landscape detail and terrain-aware gameplay sectors. See [battlefield sources and assumptions](tools/BATTLES.md).
+
+
+### Compact maps
+New regional campaigns contain 24–30 regions. Historical battles retain their
+16–22 sectors. All regions sharing a land border are connected; select an army to see its
+available destinations. Point-only contacts do not count as shared borders.
+Sea crossings connect separate land masses without redundant routes.
+Older campaigns retain the original geography and connections.

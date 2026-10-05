@@ -28,6 +28,7 @@ const campaigns = {
                     const data=await api.getGame(item.id);
                     sessionStorage.setItem('gameId',item.id);
                     sessionStorage.setItem('presetId',data.state.preset_id||'');
+                    sessionStorage.setItem('mapAssetId',data.state.map_asset_id||data.state.preset_id||'');
                     location.href='game.html';
                 } catch(error) { detail.textContent=error.message;button.disabled=false; }
             });

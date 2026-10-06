@@ -197,8 +197,8 @@ def _validate_state(state):
 
 
 def encode(engine):
-    data = {'format': FORMAT, 'version': 1, 'campaign': json.loads(store._encode(engine))}
-    payload = json.dumps(data, separators=(',', ':'), ensure_ascii=False).encode('utf-8')
+    data = {'format': FORMAT, 'version': 1, 'campaign': store._payload(engine)}
+    payload = json.dumps(data, separators=(',', ':'), ensure_ascii=False, default=lambda value: value.value).encode('utf-8')
     if len(payload) > MAX_BYTES:
         raise ValueError('This campaign exceeds the 16 MB portable-save limit.')
     return payload
@@ -220,10 +220,13 @@ def decode(payload):
         raise ValueError('Invalid campaign name.')
     if raw.get('seed') is not None and type(raw['seed']) is not int:
         raise ValueError('Invalid random seed.')
-    reports = TypeAdapter(list[Report]).validate_json(json.dumps(raw['history']), strict=True)
+    if not isinstance(raw['history'], list):
+        raise ValueError('Invalid campaign history.')
+    report_adapter = TypeAdapter(Report)
     ids = set(state.regions)
     previous = 0
-    for report, entry in zip(reports, raw['history']):
+    for entry in raw['history']:
+        report = report_adapter.validate_json(json.dumps(entry), strict=True)
         if not previous < report.turn < state.turn:
             raise ValueError('Invalid turn sequence.')
         previous = report.turn
@@ -255,7 +258,11 @@ def decode(payload):
             if restored.turn != report.turn:
                 raise ValueError('Replay turn mismatch.')
     # Never trust uploaded persistence/index metadata. create() recomputes it.
-    raw.update(journal=False, replay_start=None, replay_indexed=False)
-    engine = store._decode(json.dumps(raw))
-    engine.state = state
+    from games.borderstrife.engine.game_engine import GameEngine
+    engine = GameEngine(state, seed=raw.get('seed'))
+    engine.campaign_name = raw['name']
+    engine.history = raw['history']
+    engine._journal = False
+    engine._replay_start = None
+    engine._replay_indexed = False
     return engine

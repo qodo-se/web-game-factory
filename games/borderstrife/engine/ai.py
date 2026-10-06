@@ -83,9 +83,11 @@ def _score_attack(
     target: Region,
     state: GameState,
     ai_owner: Owner,
+    supplied=None,
 ) -> float:
     """Score for attacking target from attacker. Returns -inf if not worth it."""
-    supplied = supplied_regions(state)
+    if supplied is None:
+        supplied = supplied_regions(state)
     prob = _win_prob(attacker.army * attack_factor(attacker, supplied)
                      / CROSSING_BONUS[route_kind(state, attacker.id, target.id)],
                      target.army, defense_factor(target, supplied))
@@ -204,6 +206,7 @@ def decide_actions(
         reverse=True,
     )
 
+    supplied = supplied_regions(state)
     candidates: List[_Candidate] = []
 
     for region in owned_sorted:
@@ -248,7 +251,7 @@ def decide_actions(
                         best_score = score
                         best = _Candidate(region.id, nb_id, score, is_attack=False)
             else:
-                score = _score_attack(region, nb, state, ai_owner)
+                score = _score_attack(region, nb, state, ai_owner, supplied)
                 if score > best_score:
                     best_score = score
                     best = _Candidate(region.id, nb_id, score, is_attack=True)

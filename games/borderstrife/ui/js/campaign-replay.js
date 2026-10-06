@@ -1,20 +1,53 @@
 // Historical positions are isolated from the final save and never submit orders.
 const campaignReplay = {
     active:false, loading:false, frames:null, index:0, playing:false,
-    requests:new Map(), reports:new Map(), seekSequence:0, playbackGeneration:0,
+    requests:new Map(), queuedPage:null, maxRequests:2, reports:new Map(), pages:new Map(), maxPages:3, seekSequence:0, playbackGeneration:0,
     storePage(data) {
         if(!this.frames)this.frames=new Array(data.total??data.frames.length);
-        data.frames.forEach((frame,i)=>{this.frames[(data.offset??0)+i]=frame;});
-        for(const entry of data.history||[])this.reports.set(entry.turn,entry);
+        const offset=data.offset??0;
+        this.pages.delete(offset);this.pages.set(offset,data);
+        data.frames.forEach((frame,i)=>{this.frames[offset+i]=frame;});
+        while(this.pages.size>this.maxPages) {
+            const wanted=this.seekTarget??this.index;
+            const pinned=new Set([Math.floor(this.index/50)*50,Math.floor(wanted/50)*50,Math.floor(Math.max(0,wanted-1)/50)*50]);
+            const oldest=[...this.pages.keys()].find(key=>!pinned.has(key));
+            const removed=this.pages.get(oldest);this.pages.delete(oldest);
+            removed.frames.forEach((_,i)=>{delete this.frames[oldest+i];});
+        }
+        this.reports.clear();
+        for(const page of this.pages.values())for(const entry of page.history||[])this.reports.set(entry.turn,entry);
         this.complete=data.complete;
+    },
+    cancelQueuedPage() {
+        if(!this.queuedPage)return;
+        const error=new Error('Replay seek superseded');error.name='AbortError';
+        this.queuedPage.reject(error);this.queuedPage=null;
+    },
+    startPage(entry) {
+        this.requests.set(entry.offset,entry.promise);
+        Promise.resolve().then(()=>api.getReplay(gameId,entry.offset))
+            .then(data=>{this.storePage(data);entry.resolve();})
+            .catch(error=>entry.reject(error))
+            .finally(()=>{
+                this.requests.delete(entry.offset);
+                if(this.queuedPage){
+                    const next=this.queuedPage;this.queuedPage=null;
+                    this.startPage(next);
+                }
+            });
     },
     async fetchPage(index) {
         const offset=Math.floor(index/50)*50;
-        if(!this.requests.has(offset)){
-            const request=api.getReplay(gameId,offset).then(data=>this.storePage(data)).finally(()=>this.requests.delete(offset));
-            this.requests.set(offset,request);
+        if(this.frames?.[index]) {
+            const page=this.pages.get(offset);this.pages.delete(offset);this.pages.set(offset,page);return;
         }
-        await this.requests.get(offset);
+        if(this.requests.has(offset))return this.requests.get(offset);
+        if(this.queuedPage?.offset===offset)return this.queuedPage.promise;
+        const entry={offset};
+        entry.promise=new Promise((resolve,reject)=>{entry.resolve=resolve;entry.reject=reject;});
+        if(this.requests.size<this.maxRequests)this.startPage(entry);
+        else {this.cancelQueuedPage();this.queuedPage=entry;}
+        return entry.promise;
     },
     init() {
         for(const id of ['replay-campaign','open-campaign-replay'])document.getElementById(id).addEventListener('click',()=>this.enter());
@@ -47,7 +80,7 @@ const campaignReplay = {
             document.getElementById(id).textContent='Loading replay…';
         }
         try {
-            if(!this.frames)await this.fetchPage(0);
+            this.seekTarget=0;await this.fetchPage(0);
             this.finalState=structuredClone(state);this.finalValidMoves=validMoves;
             this.savedThreats=document.getElementById('show-threats').checked;
             this.savedSidebar=sessionStorage.getItem('imperium-sidebar-section');
@@ -84,10 +117,18 @@ const campaignReplay = {
     async show(index) {
         if(!this.active)return;
         index=Math.max(0,Math.min(this.frames.length-1,index));
+        this.cancelQueuedPage();
+        this.seekTarget=index;
         const sequence=++this.seekSequence;
         if(!this.frames[index]) {
             document.getElementById('campaign-replay-caption').textContent='Loading turns…';
             try {await this.fetchPage(index);}
+            catch(error){if(sequence===this.seekSequence){this.pause();document.getElementById('campaign-replay-caption').textContent=error.message;}return;}
+            if(!this.active||sequence!==this.seekSequence)return;
+        }
+        const reportForFrame=this.reports.get(this.frames[index].turn-1);
+        if(index>0 && reportForFrame && !(reportForFrame.events||[]).some(e=>e.type==='movement'||e.type==='retreat') && reportForFrame.movements?.length && !this.frames[index-1]) {
+            try {await this.fetchPage(index-1);}
             catch(error){if(sequence===this.seekSequence){this.pause();document.getElementById('campaign-replay-caption').textContent=error.message;}return;}
             if(!this.active||sequence!==this.seekSequence)return;
         }
@@ -116,6 +157,7 @@ const campaignReplay = {
     },
     pause() {
         ++this.playbackGeneration;++this.seekSequence;
+        if(this.active)this.cancelQueuedPage();
         this.playing=false;clearTimeout(this.timer);
         document.getElementById('campaign-replay-play').textContent='Play';
         document.getElementById('campaign-replay-play').setAttribute('aria-pressed','false');

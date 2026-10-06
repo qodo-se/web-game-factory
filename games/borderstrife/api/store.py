@@ -146,12 +146,16 @@ def _execute(sql, args=(), fetch=False):
     return _transaction([(sql, args, fetch)])[0]
 
 
-def _encode(engine, journal=False):
-    return json.dumps({'schema': 2 if journal else 1, 'state': asdict(engine.state),
+def _payload(engine, journal=False):
+    return {'schema': 2 if journal else 1, 'state': asdict(engine.state),
                        'name': engine.campaign_name, 'history': [] if journal else engine.history,
                        'journal': journal, 'replay_start': getattr(engine, '_replay_start', None),
                        'replay_indexed': getattr(engine, '_replay_indexed', False),
-                       'seed': engine._base_seed}, separators=(',', ':'), default=lambda value: value.value)
+                       'seed': engine._base_seed}
+
+
+def _encode(engine, journal=False):
+    return json.dumps(_payload(engine, journal), separators=(',', ':'), default=lambda value: value.value)
 
 
 def _decode(payload):

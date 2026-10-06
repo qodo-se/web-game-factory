@@ -3,6 +3,12 @@
     const startBtn = document.getElementById('start-btn');
     const errorMsg = document.getElementById('error-msg');
     const grid = document.getElementById('map-grid');
+    const loadThumbnail=image=>{
+        if(image?.dataset.src){image.src=image.dataset.src;delete image.dataset.src;}
+    };
+    const thumbnails=typeof IntersectionObserver==='undefined'?null:new IntersectionObserver(entries=>{
+        for(const entry of entries)if(entry.isIntersecting){loadThumbnail(entry.target);thumbnails.unobserve(entry.target);}
+    },{root:grid,rootMargin:'150px'});
     const description = document.getElementById('preset-desc');
     const kingdom = document.getElementById('kingdom-select');
     const preview = document.getElementById('kingdom-preview');
@@ -64,6 +70,7 @@
         if (submitting) return;
         selected = preset.id;
         grid.querySelectorAll('input').forEach(input=>{input.checked=input.value===selected;});
+        loadThumbnail(grid.querySelector('input:checked')?.closest('label').querySelector('img'));
         document.getElementById('selected-map-title').textContent=preset.name;
         document.getElementById('selected-map-summary').textContent=`${preset.region_count} regions · ${preset.category==='historical'?'Historical theater':'Open-ended conquest'}`;
         document.getElementById('mobile-selection').textContent=`Selected: ${preset.name}`;
@@ -95,7 +102,7 @@
         preview.textContent = '';document.getElementById('starting-details').textContent='';
         updateControls();
         try {
-            const choices = await api.getStarts(selected);
+            const choices = await api.getStarts(selected,preset.map_asset_id||'');
             if (request !== sequence) return;
             if (!choices.length) throw new Error('No starting kingdoms available. Choose another map.');
             starts = choices;
@@ -144,19 +151,22 @@
     });
     function renderGallery() {
         const cards=catalog;
+        thumbnails?.disconnect();
         grid.replaceChildren(...cards.map(preset=>{
             const card=document.createElement('label');card.className='map-card';
             const radio=document.createElement('input');radio.type='radio';radio.name='preset';radio.value=preset.id;
             radio.checked=preset.id===selected;
             radio.addEventListener('change',()=>{if(radio.checked)chooseMap(preset);});
             const image=document.createElement('img');
-            image.src=`maps/thumbnails/${encodeURIComponent(preset.map_asset_id||preset.id)}.svg`;
+            image.dataset.src=`maps/thumbnails/${encodeURIComponent(preset.map_asset_id||preset.id)}.svg`;
             image.alt='';image.decoding='async';image.width=300;image.height=180;
             const title=document.createElement('strong');title.textContent=preset.name;
             const detail=document.createElement('span');detail.className='map-region-count';detail.textContent=preset.region_count;
             detail.title=`${preset.region_count} regions`;detail.setAttribute('aria-label',detail.title);
             const caption=document.createElement('div');caption.className='map-card-caption';caption.append(title,detail);
-            card.append(radio,image,caption);return card;
+            card.append(radio,image,caption);
+            if(thumbnails)thumbnails.observe(image);else loadThumbnail(image);
+            return card;
         }));
         if(!cards.length)grid.textContent='No maps available. Please try again later.';
         grid.setAttribute('aria-busy','false');

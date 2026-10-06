@@ -67,18 +67,24 @@ def _rewind(after, entry):
     return before
 
 
-def campaign_states(engine):
-    """Return the contiguous recoverable suffix, earliest position first."""
-    frames = [deepcopy(engine.state)]
+def reverse_campaign_states(engine):
+    """Yield recoverable positions newest first without retaining past states."""
+    current = deepcopy(engine.state)
+    yield current
     for entry in reversed(engine.history):
-        if entry.get('turn') != frames[-1].turn - 1:
+        if entry.get('turn') != current.turn - 1:
             break
         try:
-            before = (_restore(frames[-1], entry['replay_before']) if 'replay_before' in entry
-                      else _rewind(frames[-1], entry))
+            before = (_restore(current, entry['replay_before']) if 'replay_before' in entry
+                      else _rewind(current, entry))
             if before.turn != entry['turn']:
                 break
         except (KeyError, ValueError, TypeError):
             break
-        frames.append(before)
-    return list(reversed(frames))
+        current = before
+        yield current
+
+
+def campaign_states(engine):
+    """Return the contiguous recoverable suffix, earliest position first."""
+    return list(reversed(list(reverse_campaign_states(engine))))

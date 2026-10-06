@@ -191,6 +191,27 @@ class BackupTests(unittest.TestCase):
         self.assertEqual(store.get('legacy').expires_at, first.expires_at)
         self.assertEqual(store.purge_expired(), 0)
 
+    def test_incremental_history_validation_rejects_without_writes(self):
+        import copy
+        from games.borderstrife.engine.replay import snapshot
+        engine=GameEngine.from_preset('india')
+        engine.state.turn=4
+        engine.history=[dict(turn=i,events=[],movements=[],combat_results=[],game_over=False,winner=None,
+                             replay_before=dict(snapshot(engine.state),turn=i)) for i in range(1,4)]
+        valid=json.loads(backups.encode(engine))
+        invalid=[]
+        for value in ('', {}, None, False, 1):
+            data=copy.deepcopy(valid);data['campaign']['history']=value;invalid.append(data)
+        for index in range(3):
+            for field,value in [('turn',False),('movements',[[0,999,10]]),('events',[{'type':'unknown'}]),('extra','unexpected')]:
+                data=copy.deepcopy(valid);data['campaign']['history'][index][field]=value;invalid.append(data)
+        for data in invalid:
+            with self.subTest(history=data['campaign']['history']), patch.object(store,'create') as create:
+                response=self.client.post('/api/imperium/games/restore',content=json.dumps(data),headers={'Content-Type':'application/json'})
+                self.assertEqual(response.status_code,400)
+                create.assert_not_called()
+        self.assertEqual(backups.decode(json.dumps(valid).encode()).history,engine.history)
+
 
 if __name__ == '__main__':
     unittest.main()

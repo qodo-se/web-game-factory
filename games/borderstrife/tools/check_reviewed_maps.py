@@ -23,7 +23,7 @@ def check():
     assert fixed[0].boundary.intersection(fixed[1].boundary).length==0
     count=0
     for key,p in PRESETS.items():
-        assert p['map_asset_id'].endswith('_atlas_v5' if key in {'japan_korea','viking_conquests','greco_persian'} else '_atlas_v4'),key
+        assert p['map_asset_id'].endswith('_atlas_v6' if key in {'japan_korea','viking_conquests','greco_persian'} else '_atlas_v4'),key
         a=json.loads((ROOT/f'ui/maps/{p["map_asset_id"]}.json').read_text());s=load_preset(p)
         geoms=[];primary=[]
         for r in a['regions']:

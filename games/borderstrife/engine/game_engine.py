@@ -16,7 +16,6 @@ import random
 from typing import Dict, List, Optional
 
 from .ai import decide_actions
-from .map_generator import generate_map
 from .models import (
     GameState,
     MapSize,
@@ -77,6 +76,8 @@ class GameEngine:
         seed: Optional[int] = None,
     ) -> "GameEngine":
         """Create a new Imperium game with a freshly generated map."""
+        from .map_generator import generate_map
+
         state = generate_map(
             map_size=map_size,
             seed=seed,

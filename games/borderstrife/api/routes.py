@@ -19,7 +19,7 @@ from games.borderstrife.engine.presets import list_presets
 from games.borderstrife.engine.strategy import supplied_regions, growth, defense_factor, forecast
 from games.borderstrife.engine.turn_resolver import validate_actions, ValidationError
 from games.borderstrife.api import store
-from games.borderstrife.engine.replay import snapshot, campaign_states, _restore
+from games.borderstrife.engine.replay import snapshot, campaign_states, reverse_campaign_states, _restore
 from games.borderstrife.engine import standing_orders
 
 logger = logging.getLogger(__name__)
@@ -359,10 +359,19 @@ def _replay_frame(position):
 # The byte and entry limits bound resident data independently of campaign length.
 _legacy_replays = OrderedDict()
 _legacy_replay_lock = threading.Lock()
+_legacy_rebuild_locks = [threading.Lock() for _ in range(64)]
 _LEGACY_CACHE_BYTES = 16 * 1024 * 1024
 
 
 def _legacy_replay_page(game_id, engine, offset, limit):
+    # Replay cache fills must never contend with live turn/draw/resign locks.
+    with _legacy_rebuild_locks[hash(game_id) % len(_legacy_rebuild_locks)]:
+        return _legacy_replay_page_locked(game_id, engine, offset, limit)
+
+
+def _legacy_replay_page_locked(game_id, engine, offset, limit):
+    if getattr(engine, 'expires_at', None) is not None and engine.expires_at <= store.now():
+        raise HTTPException(status_code=404, detail="Game not found or expired.")
     signature = hashlib.sha256(store._encode(engine, journal=True).encode()).digest()
     key = (game_id, signature)
     with _legacy_replay_lock:
@@ -374,27 +383,58 @@ def _legacy_replay_page(game_id, engine, offset, limit):
             engine = _load_game(game_id)
             if engine is None:
                 raise HTTPException(status_code=404, detail="Game not found or expired. Games are kept for 7 days. Restore a downloaded save from Resume game.")
-        reports = {entry['turn']: _public_report(entry) for entry in engine.history}
-        positions = campaign_states(engine)
-        entries = tuple(json.dumps({'frame': _replay_frame(position),
-                                    'report': reports.get(position.turn-1)},
-                                   separators=(',', ':')).encode() for position in positions)
-        cached = (positions[0].turn == 1, entries, sum(map(len, entries)))
-        if cached[2] <= _LEGACY_CACHE_BYTES:
-            with _legacy_replay_lock:
-                _legacy_replays[key] = cached
-                _legacy_replays.move_to_end(key)
-                while len(_legacy_replays) > 4 or sum(item[2] for item in _legacy_replays.values()) > _LEGACY_CACHE_BYTES:
-                    _legacy_replays.popitem(last=False)
+        reports = {entry['turn']: entry for entry in engine.history}
+        def encode_position(position):
+            report = reports.get(position.turn-1)
+            return json.dumps({'frame': _replay_frame(position),
+                               'report': _public_report(report) if report is not None else None},
+                              separators=(',', ':')).encode()
+        entries, size, oversized, total = [], 0, False, 0
+        for position in reverse_campaign_states(engine):
+            total += 1
+            if not oversized:
+                encoded = encode_position(position)
+                size += len(encoded)
+                if size > _LEGACY_CACHE_BYTES:
+                    oversized = True
+                    entries.clear()
+                else:
+                    entries.append(encoded)
+        complete = position.turn == 1
+        if offset >= total:
+            raise HTTPException(status_code=400, detail="Replay position out of range.")
+        if oversized:
+            # Count the recoverable suffix first, then retain only the requested
+            # page. Very large old saves trade another traversal for bounded RAM.
+            page = []
+            for reverse_index, position in enumerate(reverse_campaign_states(engine)):
+                index = total - reverse_index - 1
+                if index < offset:
+                    break
+                if index < offset + limit:
+                    page.append(json.loads(encode_position(position)))
+            page.reverse()
+            return _legacy_page_response(page, offset, total, complete)
+        entries.reverse()
+        cached = (complete, tuple(entries), size)
+        with _legacy_replay_lock:
+            _legacy_replays[key] = cached
+            _legacy_replays.move_to_end(key)
+            while len(_legacy_replays) > 4 or sum(item[2] for item in _legacy_replays.values()) > _LEGACY_CACHE_BYTES:
+                _legacy_replays.popitem(last=False)
     complete, entries, _ = cached
     if offset >= len(entries):
         raise HTTPException(status_code=400, detail="Replay position out of range.")
     page = [json.loads(entry) for entry in entries[offset:offset+limit]]
+    return _legacy_page_response(page, offset, len(entries), complete)
+
+
+def _legacy_page_response(page, offset, total, complete):
     for entry in page:
         entry['frame']['regions'] = {int(rid): region for rid, region in entry['frame']['regions'].items()}
     return {'frames': [entry['frame'] for entry in page],
             'history': [entry['report'] for entry in page if entry['report'] is not None],
-            'offset': offset, 'total': len(entries), 'complete': complete}
+            'offset': offset, 'total': total, 'complete': complete}
 
 
 @router.get("/games/{game_id}/replay")

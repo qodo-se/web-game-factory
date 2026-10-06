@@ -39,26 +39,34 @@ const world = {
 };
 
 const threatView = {
-    data: null, key: '', sequence: 0,
+    data: null, key: '', sequence: 0, position:null, game:null,
+    planKey(){return JSON.stringify([state.turn,pendingMoves.map(m=>({from_region_id:m.from_region_id,to_region_id:m.to_region_id}))]);},
+    current(){return this.position===state&&this.game===gameId&&this.key===this.planKey();},
+    invalidate(){
+        clearTimeout(this.timer);this.controller?.abort();++this.sequence;
+        this.data=null;this.key='';this.pendingKey=null;this.position=null;this.game=null;
+    },
     refresh() {
-        const enabled=document.getElementById('show-threats').checked;
+        if(this.position!==state||this.game!==gameId){this.invalidate();this.position=state;this.game=gameId;}
+        const enabled=document.getElementById('show-threats').checked&&!resolving&&!campaignReplay.active;
         if(!enabled) {
             clearTimeout(this.timer);this.controller?.abort();++this.sequence;
             this.pendingKey=null;this.draw();return;
         }
-        const key=JSON.stringify([state.turn,pendingMoves]);
+        const key=this.planKey();
         if(key===this.key&&this.data){this.draw();return;}
         if(key===this.pendingKey)return;
         clearTimeout(this.timer);this.controller?.abort();
         const sequence=++this.sequence;
         this.pendingKey=key;this.data=null;this.draw();
         const orders=pendingMoves.map(move=>({...move}));
+        const position=state;
         document.getElementById('threat-description').textContent='Checking exposed borders…';
         this.timer=setTimeout(async()=>{
             this.controller=new AbortController();
             try {
-                const data=await api.threats(gameId,orders,this.controller.signal);
-                if(sequence!==this.sequence||key!==JSON.stringify([state.turn,pendingMoves]))return;
+                const data=await api.threats(gameId,orders,this.controller.signal,position);
+                if(sequence!==this.sequence||position!==state||key!==this.planKey())return;
                 if(data.turn!==state.turn)throw new Error('Campaign changed. Reload to refresh threats.');
                 this.data=data;this.key=key;this.draw();
             } catch(error) {
@@ -72,7 +80,7 @@ const threatView = {
         const enabled = document.getElementById('show-threats').checked;
         const description = document.getElementById('threat-description');
         description.hidden = !enabled;
-        if (!enabled || !this.data || this.key !== JSON.stringify([state.turn,pendingMoves])) return;
+        if (!enabled || !this.data || !this.current()) return;
         description.textContent = this.data.entries.length ? 'Border risk: red high · amber medium · pale low. Assumes all adjacent enemy armies attack this region; includes your orders and recruits. These attacks cannot all happen at once.' : 'No regions border an enemy kingdom.';
         for (const entry of this.data.entries) {
             const r = state.regions[entry.region_id];

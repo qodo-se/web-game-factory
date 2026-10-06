@@ -138,7 +138,9 @@ const mapCamera = {
                 if (width && height) { this.x *= nextWidth / width; this.y *= nextHeight / height; }
                 width = nextWidth; height = nextHeight; pixelRatio = window.devicePixelRatio;
                 this.apply();
-                this.onSettle();
+                // CSS scales the existing canvas/SVG together during resizing.
+                clearTimeout(this.resizeSettleTimer);
+                this.resizeSettleTimer=setTimeout(()=>this.onSettle(),150);
             });
         };
         this.resizeObserver = new ResizeObserver(resize);

@@ -286,6 +286,9 @@ let gameOver     = false;
 let scaleCache   = null;
 let lastHoverId  = null;
 let campaignHistory = [];
+const HISTORY_WINDOW = 100;
+let historyBrowsingOlder = false;
+let historyVersion = 0;
 let historyMore=false, historyLoading=false;
 let forecastSequence = 0;
 let forecastTimer, forecastController;
@@ -755,16 +758,16 @@ function plannedMoveArrow(from, to, matrix, movement=null, repeating=false) {
 
 function renderTerrainEffects(paths,selected,targets,committed,transform='',outlined=true) {
     const group=document.getElementById('g-terrain-effects');
-    const fragment=document.createDocumentFragment();
+    const entries=[];
     for(const feature of paths) {
         const active=feature.id===selected, target=targets.has(feature.id), moving=committed.has(feature.id);
         if(selected===null && !moving)continue;
-        fragment.appendChild(svgEl('path',{d:feature.d,transform,'fill-rule':'evenodd',
+        entries.push({key:feature.id,attrs:{d:feature.d,transform,'fill-rule':'evenodd',
             fill:!active && !target && selected!==null?'rgba(5,12,20,.32)':moving?'rgba(30,37,37,.2)':outlined?target?'rgba(230,190,70,.14)':'none':active?'rgba(255,230,130,.25)':'rgba(230,190,70,.2)',
             stroke:outlined && (active||target)?active?'#f6eacb':'#d4b772':'none',
-            'stroke-width':active?2:1.5}));
+            'stroke-width':active?2:1.5}});
     }
-    group.replaceChildren(fragment);
+    svgLayers.paths(group,entries);
 }
 
 function renderOverlay(idxMap, cw, ch) {
@@ -829,7 +832,7 @@ function renderOverlay(idxMap, cw, ch) {
         const x1=toSVGX(from.x),y1=toSVGY(from.y),x2=toSVGX(to.x),y2=toSVGY(to.y);
         const bend=kind==='sea'?Math.min(22,Math.hypot(x2-x1,y2-y1)*.12):0;
         const length=Math.max(1,Math.hypot(x2-x1,y2-y1));
-        gConn.appendChild(svgEl('path',{d:`M${x1},${y1} Q${(x1+x2)/2-(y2-y1)/length*bend},${(y1+y2)/2+(x2-x1)/length*bend} ${x2},${y2}`,
+        gConn.appendChild(svgEl('path',{'data-key':key,d:`M${x1},${y1} Q${(x1+x2)/2-(y2-y1)/length*bend},${(y1+y2)/2+(x2-x1)/length*bend} ${x2},${y2}`,
             fill:'none',
             stroke:supply?(from.supplied&&to.supplied?'#b0d4a5':'#df956c'):kind==='river'?'#8bbacb':kind==='pass'?'#d6c4a4':'#b1bdc1',
             'stroke-width':isSelected||supply?2:1.4,'stroke-dasharray':kind==='sea'?'5 5':kind==='pass'?'2 4':'none',
@@ -999,9 +1002,9 @@ function renderOverlay(idxMap, cw, ch) {
         const arrow=plannedMoveArrow(from,to,matrix,movement);
         if(arrow)gArrows.append(arrow);
     }
-    document.getElementById('g-labels').replaceChildren(gLabels);
+    svgLayers.sync(document.getElementById('g-labels'),[...gLabels.childNodes]);
     document.getElementById('g-arrows').replaceChildren(gArrows);
-    document.getElementById('g-connections').replaceChildren(gConn);
+    svgLayers.sync(document.getElementById('g-connections'),[...gConn.childNodes]);
 }
 
 function renderMap() {
@@ -1179,7 +1182,7 @@ function updateRegionInfo(id) {
     const sequence = ++forecastSequence;
     const r = state.regions[id];
     if (!r) return;
-    const borderThreat = document.getElementById('show-threats').checked && threatView.key === JSON.stringify([state.turn,pendingMoves]) ? threatView.data?.entries.find(e => e.region_id === id) : null;
+    const borderThreat = document.getElementById('show-threats').checked && threatView.current() ? threatView.data?.entries.find(e => e.region_id === id) : null;
     const ownerNames  = { player_1: state.battle?.factions.player_1 || state.player_1.name, player_2: state.battle?.factions.player_2 || state.player_2.name, rogue: 'Neutral' };
     const ownerClass  = { player_1: 'p1-text', player_2: 'p2-text', rogue: 'rogue-text' };
     document.getElementById('region-info').innerHTML = `
@@ -1195,7 +1198,7 @@ function updateRegionInfo(id) {
         planning.preview(id, `${r.name} · Calculating forecast…`);
         forecastTimer=setTimeout(()=>{
             forecastController=new AbortController();
-            api.forecast(gameId,orders,forecastController.signal).then(result=>{
+            api.forecast(gameId,orders,forecastController.signal,state).then(result=>{
                 if(sequence!==forecastSequence || result.turn!==state.turn)return;
                 const f=result.forecasts.find(item=>item.target===id);if(!f)return;
                 planning.preview(id, f.friendly?`${r.name} · +${f.army} reinforcements${state.battle ? '' : ' (includes recruits)'}`:`${r.name} · ${f.army} attackers · ${f.effective_defense} defense · ${Math.round(f.win_probability*100)}% victory chance. Includes ${state.battle ? '' : 'recruits and '}queued attacks; enemy orders may change this.`);
@@ -1273,6 +1276,7 @@ function showCombatLog(summary) {
 
 function setResolving(on) {
     resolving = on;
+    if (on) {forecastCache.clear();threatCache.clear();threatView.invalidate();}
     drawOffers.update();
     campaignFiles.updateGameButtons();
     if(on){mapOrders.clearHold();mapOrders.close();}
@@ -1280,6 +1284,7 @@ function setResolving(on) {
     document.getElementById('end-turn-btn').disabled = on;
     document.getElementById('abandon-btn').disabled = on;
     orderHistory.updateButtons();
+    if(state)threatView.refresh();
 }
 
 function abandon() {
@@ -1311,7 +1316,7 @@ async function endTurn() {
         orderHistory.reset();
         status.textContent='Saved';
         campaigns.remember(gameId,result.state);
-        campaignHistory.push({...result,state:undefined,valid_moves:undefined});
+        appendCampaignReport(result);
         document.getElementById('resolving-overlay').classList.add('hidden');
         try { await presentation.replay(result); }
         finally { state=result.state; standingOrders.load();standingOrders.saveDraft(true);clearRegionInfo(); lastHoverId=null; }
@@ -1326,7 +1331,7 @@ async function endTurn() {
         // another order, so retries never silently resolve the same turn twice.
         try {
             const latest=await api.getGame(gameId);
-            state=latest.state;campaignHistory=latest.history||[];historyMore=!!latest.history_more;pendingMoves=[];
+            state=latest.state;++historyVersion;historyBrowsingOlder=false;campaignHistory=latest.history||[];historyMore=!!latest.history_more;pendingMoves=[];
             standingOrders.load();
             if(state.turn===submittedTurn)orderHistory.apply(submittedPlan);
             else standingOrders.saveDraft(true);
@@ -1352,35 +1357,70 @@ async function endTurn() {
     }
 }
 
-async function loadOlderHistory() {
-    if(historyLoading||!historyMore)return;
+function appendCampaignReport(result) {
+    ++historyVersion;
+    if(historyBrowsingOlder){campaignHistory=[];historyMore=true;historyBrowsingOlder=false;}
+    campaignHistory.push({...result,state:undefined,valid_moves:undefined});
+    if(campaignHistory.length>HISTORY_WINDOW){campaignHistory=campaignHistory.slice(-HISTORY_WINDOW);historyMore=true;}
+}
+
+async function loadOlderHistory(latest=false) {
+    if(historyLoading||resolving||(!latest&&!historyMore))return;
+    const version=historyVersion;
     historyLoading=true;renderTimeline();
     try {
         const savedState=campaignReplay.active?campaignReplay.finalState:state;
-        const before=Math.min(...campaignHistory.map(entry=>entry.turn),savedState.turn);
+        const requestedTurn=savedState.turn;
+        const before=latest?savedState.turn:Math.min(...campaignHistory.map(entry=>entry.turn),savedState.turn);
         const data=await api.getHistory(gameId,before);
-        const entries=new Map(campaignHistory.map(entry=>[entry.turn,entry]));
+        if(version!==historyVersion||resolving||(campaignReplay.active?campaignReplay.finalState:state).turn!==requestedTurn)return;
+        const entries=new Map((latest?[]:campaignHistory).map(entry=>[entry.turn,entry]));
         for(const entry of data.history)entries.set(entry.turn,entry);
-        campaignHistory=[...entries.values()].sort((a,b)=>a.turn-b.turn);historyMore=data.more;
+        campaignHistory=[...entries.values()].sort((a,b)=>a.turn-b.turn);
+        if(latest)historyBrowsingOlder=false;
+        if(campaignHistory.length>HISTORY_WINDOW){campaignHistory=campaignHistory.slice(0,HISTORY_WINDOW);historyBrowsingOlder=true;}
+        historyMore=data.more;
+        document.getElementById('history-error').textContent='';
     } catch(error) {document.getElementById('history-error').textContent=error.message;}
     finally {historyLoading=false;renderTimeline();}
 }
 
 function renderTimeline() {
     const more=document.getElementById('history-more');
-    more.hidden=!historyMore;more.disabled=historyLoading;
+    more.hidden=!historyMore;more.disabled=historyLoading||resolving;
+    const latest=document.getElementById('history-latest');
+    latest.hidden=!historyBrowsingOlder;latest.disabled=historyLoading||resolving;
     more.textContent=historyLoading?'Loading…':'Load older turns';
     const savedState = campaignReplay.active ? campaignReplay.finalState : state;
     const offers = (savedState.draw_offers || []).map(offer => ({...offer, drawOffer:true}));
     if (savedState.resigned) offers.push({turn:savedState.turn, resignation:true});
-    const entries = [...campaignHistory, ...offers].sort((a,b) => b.turn-a.turn || Number(!!a.drawOffer)-Number(!!b.drawOffer));
-    document.getElementById('timeline-list').innerHTML=entries.map(entry=>{
-        if(entry.resignation) return `<p><b>Turn ${entry.turn} · Resigned</b><br>You resigned. Your opponent wins.</p>`;
-        if(entry.drawOffer) return `<p><b>Turn ${entry.turn} · Draw ${entry.accepted?'accepted':'declined'}</b><br>${escHtml(entry.message)}</p>`;
-        const captured=(entry.events||[]).filter(e=>e.type==='battle'&&e.won);
-        const text=captured.length?captured.map(e=>`${e.owner==='player_1'?'You':'AI'} captured ${state.regions[e.to]?.name||'territory'}`).join(' · '):'Frontiers held';
-        return `<p><b>Turn ${entry.turn}</b><br>${escHtml(text)}</p>`;
-    }).join('')||'<p>Your campaign begins here.</p>';
+    const first=campaignHistory[0]?.turn??savedState.turn;
+    const last=historyBrowsingOlder?campaignHistory.at(-1)?.turn:savedState.turn;
+    const entries = [...campaignHistory, ...offers.filter(offer=>offer.turn>=first&&offer.turn<=last)].sort((a,b) => b.turn-a.turn || Number(!!a.drawOffer)-Number(!!b.drawOffer));
+    const rows=entries.map(entry=>{
+        const key=`${entry.turn}:${entry.resignation?'resignation':entry.drawOffer?'draw':'turn'}`;
+        let html;
+        if(entry.resignation) html=`<p><b>Turn ${entry.turn} · Resigned</b><br>You resigned. Your opponent wins.</p>`;
+        else if(entry.drawOffer) html=`<p><b>Turn ${entry.turn} · Draw ${entry.accepted?'accepted':'declined'}</b><br>${escHtml(entry.message)}</p>`;
+        else {
+            const captured=(entry.events||[]).filter(e=>e.type==='battle'&&e.won);
+            const text=captured.length?captured.map(e=>`${e.owner==='player_1'?'You':'AI'} captured ${state.regions[e.to]?.name||'territory'}`).join(' · '):'Frontiers held';
+            html=`<p><b>Turn ${entry.turn}</b><br>${escHtml(text)}</p>`;
+        }
+        return {key,html};
+    });
+    if(!rows.length)rows.push({key:'empty',html:'<p>Your campaign begins here.</p>'});
+    const list=document.getElementById('timeline-list');
+    const existing=new Map([...list.children].map(node=>[node.dataset.key,node]));
+    let cursor=list.firstChild;
+    for(const {key,html} of rows){
+        let node=existing.get(key);existing.delete(key);
+        if(!node){node=document.createElement('div');node.dataset.key=key;}
+        if(node._html!==html){node.innerHTML=html;node._html=html;}
+        if(node!==cursor)list.insertBefore(node,cursor);
+        cursor=node.nextSibling;
+    }
+    for(const node of existing.values())node.remove();
 }
 
 function handleGameOver(winner) {
@@ -1427,7 +1467,8 @@ async function init() {
     gameId = sessionStorage.getItem('gameId');
     if (!gameId) { window.location.href = 'index.html'; return; }
 
-    document.getElementById('history-more').addEventListener('click',loadOlderHistory);
+    document.getElementById('history-more').addEventListener('click',()=>loadOlderHistory());
+    document.getElementById('history-latest').addEventListener('click',()=>loadOlderHistory(true));
     document.getElementById('end-turn-btn').addEventListener('click', endTurn);
     document.getElementById('retry-draft-save').addEventListener('click',()=>{if(!resolving)standingOrders.saveDraft();});
     document.getElementById('abandon-btn').addEventListener('click', abandon);

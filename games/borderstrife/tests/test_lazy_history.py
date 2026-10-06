@@ -57,7 +57,7 @@ class LazyHistoryTests(unittest.TestCase):
         store._execute('INSERT INTO imperium_campaigns (id, revision, payload, updated_at) VALUES (?, ?, ?, ?)',
                        ('completed-legacy',121,store._encode(engine),'now'))
         before=store._encode(store.get('completed-legacy'))
-        with patch.object(routes,'_legacy_replays',routes.OrderedDict()), patch.object(routes,'campaign_states',wraps=campaign_states) as rebuild:
+        with patch.object(routes,'_legacy_replays',routes.OrderedDict()), patch.object(routes,'reverse_campaign_states',wraps=routes.reverse_campaign_states) as rebuild:
             first=get_campaign_replay('completed-legacy',0,50)
             second=get_campaign_replay('completed-legacy',50,50)
             last=get_campaign_replay('completed-legacy',100,50)
@@ -73,7 +73,7 @@ class LazyHistoryTests(unittest.TestCase):
         with patch.object(routes,'_legacy_replays',routes.OrderedDict()) as cache, patch.object(routes,'_LEGACY_CACHE_BYTES',1):
             get_campaign_replay('cached',0,1)
             self.assertFalse(cache)
-        with patch.object(routes,'_legacy_replays',routes.OrderedDict()), patch.object(routes,'campaign_states',wraps=campaign_states) as rebuild:
+        with patch.object(routes,'_legacy_replays',routes.OrderedDict()), patch.object(routes,'reverse_campaign_states',wraps=routes.reverse_campaign_states) as rebuild:
             get_campaign_replay('cached',0,1)
             engine.campaign_name='Changed title'
             store._execute('UPDATE imperium_campaigns SET payload = ? WHERE id = ?', (store._encode(engine),'cached'))

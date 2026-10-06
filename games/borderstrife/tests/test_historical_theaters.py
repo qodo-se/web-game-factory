@@ -55,7 +55,7 @@ class HistoricalTheaterTests(unittest.TestCase):
     def test_expanded_viking_scope_and_previous_save(self):
         from games.borderstrife.engine.presets.loader import load_preset
         preset=PRESETS['viking_conquests']
-        self.assertEqual(preset['map_asset_id'],'viking_conquests_atlas_v5')
+        self.assertEqual(preset['map_asset_id'],'viking_conquests_atlas_v6')
         self.assertEqual(len(preset['regions']),30)
         names={r[0] for r in preset['regions']}
         self.assertTrue({'Iceland','Faroe Islands','Halogaland','Viken','Zealand','Birka','Gotland','Finland','Ladoga','Novgorod','Normandy','Paris','Frisia','Rhineland','Dublin','Wessex'} <= names)
@@ -69,7 +69,7 @@ class HistoricalTheaterTests(unittest.TestCase):
     def test_expanded_greek_persian_scope_and_previous_save(self):
         from games.borderstrife.engine.presets.loader import load_preset
         preset=PRESETS['greco_persian']
-        self.assertEqual(preset['map_asset_id'],'greco_persian_atlas_v5')
+        self.assertEqual(preset['map_asset_id'],'greco_persian_atlas_v6')
         self.assertEqual(len(preset['regions']),30)
         names={r[0] for r in preset['regions']}
         self.assertTrue({'Athens','Sparta','Cyprus','Phoenicia','Nile Delta','Memphis','Thebes','Sinai','Upper Mesopotamia','Assyria','Babylon','Susa','Media','Persepolis','Parthia','Hyrcania','Carmania','Drangiana'} <= names)

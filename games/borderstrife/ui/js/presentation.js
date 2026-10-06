@@ -29,6 +29,15 @@ const presentation = {
             oscillator.onended=()=>{oscillator.disconnect();gain.disconnect();};
         }catch{/* Audio availability never blocks a turn. */}
     },
+    circles(entries) {
+        const layer=document.getElementById('g-replay');
+        entries.forEach((attrs,index)=>{
+            let node=layer.children[index];
+            if(!node){node=svgEl('circle',{});layer.append(node);}
+            svgLayers.attributes(node,attrs);
+        });
+        while(layer.children.length>entries.length)layer.lastChild.remove();
+    },
     async animate(duration, draw) {
         const start=performance.now();
         while(!this.skip && !document.hidden) {
@@ -53,13 +62,14 @@ const presentation = {
                 if(label==='Armies retreating' || !orders.length)continue;
                 caption.textContent=label;this.tone('move');
                 await this.animate(fast?180:850,t=>{
-                    layer.replaceChildren();
+                    const circles=[];
                     for(const e of orders){
                         const a=state.regions[e.from],b=state.regions[e.to];if(!a||!b)continue;
                         const x=toSVGX(a.x)+(toSVGX(b.x)-toSVGX(a.x))*t;
                         const y=toSVGY(a.y)+(toSVGY(b.y)-toSVGY(a.y))*t;
-                        layer.append(svgEl('circle',{cx:x,cy:y,r:5,fill:e.owner==='player_1'?'#87b7e4':'#e6a18e',stroke:'#f3e4bd','stroke-width':1}));
+                        circles.push({cx:x,cy:y,r:5,fill:e.owner==='player_1'?'#87b7e4':'#e6a18e',stroke:'#f3e4bd','stroke-width':1});
                     }
+                    this.circles(circles);
                 });
             }
             layer.replaceChildren();
@@ -69,10 +79,9 @@ const presentation = {
                 for(const e of battles){const r=state.regions[e.to];if(e.won)r.owner=e.owner;r.army=e.army;}
                 renderMap();
                 await this.animate(320,t=>{
-                    layer.replaceChildren();
-                    for(const e of battles){const r=state.regions[e.to];layer.append(svgEl('circle',{
+                    this.circles(battles.map(e=>{const r=state.regions[e.to];return {
                         cx:toSVGX(r.x),cy:toSVGY(r.y),r:18+t*18,fill:'none',
-                        stroke:e.won?'#eed18a':'#b7c5c8','stroke-width':2,opacity:1-t}));}
+                        stroke:e.won?'#eed18a':'#b7c5c8','stroke-width':2,opacity:1-t};}));
                 });
             }
             for(const e of fast?[]:battles){
@@ -82,19 +91,18 @@ const presentation = {
                 this.tone('battle');
                 if(e.won)r.owner=e.owner;r.army=e.army;renderMap();
                 await this.animate(Math.max(140,Math.min(500,4000/Math.max(1,battles.length))),t=>{
-                    layer.replaceChildren();layer.append(svgEl('circle',{cx:toSVGX(r.x),cy:toSVGY(r.y),r:18+t*18,
-                        fill:'none',stroke:e.won?'#eed18a':'#b7c5c8','stroke-width':2,opacity:1-t}));
+                    this.circles([{cx:toSVGX(r.x),cy:toSVGY(r.y),r:18+t*18,
+                        fill:'none',stroke:e.won?'#eed18a':'#b7c5c8','stroke-width':2,opacity:1-t}]);
                 });
             }
             if(retreats.length && !this.skip){
                 caption.textContent='Survivors returning to friendly territory';
                 await this.animate(fast?140:600,t=>{
-                    layer.replaceChildren();
-                    for(const e of retreats){
+                    this.circles(retreats.map(e=>{
                         const a=state.regions[e.from],b=state.regions[e.to];
-                        layer.append(svgEl('circle',{cx:toSVGX(a.x)+(toSVGX(b.x)-toSVGX(a.x))*t,
-                            cy:toSVGY(a.y)+(toSVGY(b.y)-toSVGY(a.y))*t,r:4,fill:'#d7c398'}));
-                    }
+                        return {cx:toSVGX(a.x)+(toSVGX(b.x)-toSVGX(a.x))*t,
+                            cy:toSVGY(a.y)+(toSVGY(b.y)-toSVGY(a.y))*t,r:4,fill:'#d7c398'};
+                    }));
                 });
             }
         } finally {layer.replaceChildren();controls.hidden=true;}

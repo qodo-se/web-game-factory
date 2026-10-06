@@ -17,12 +17,11 @@ Preset format:
     }
 """
 import json
+from functools import lru_cache
 from pathlib import Path
 
 from typing import Dict, List, Optional, Set, Tuple
 
-import numpy as np
-from scipy.spatial import Delaunay
 
 from ..models import (
     BASE_STARTING_POP,
@@ -37,12 +36,21 @@ from ..models import (
 )
 
 
+@lru_cache(maxsize=128)
+def _geography(asset):
+    path = Path(__file__).with_name('geography') / f'{asset}.json'
+    return json.loads(path.read_text()) if path.exists() else {}
+
+
 def _build_adjacency(
     coords: List[Tuple[float, float]],
     max_dist: float,
     extra_edges: List[Tuple[int, int]],
     removed_edges: List[Tuple[int, int]],
 ) -> List[Set[int]]:
+    import numpy as np
+    from scipy.spatial import Delaunay
+
     n = len(coords)
     adj: List[Set[int]] = [set() for _ in range(n)]
     pts = np.array(coords)
@@ -87,17 +95,13 @@ def load_preset(
     raw = preset["regions"]          # [(name, terrain, x, y), ...]
     coords = [(r[2], r[3]) for r in raw]
 
-    adj = _build_adjacency(
-        coords,
-        max_dist=preset.get("max_edge_distance", 0.22),
-        extra_edges=preset.get("extra_edges", []),
-        removed_edges=preset.get("removed_edges", []),
-    )
-
-    geography_file = Path(__file__).with_name('geography') / f"{preset.get('map_asset_id', preset['id'])}.json"
-    geography = json.loads(geography_file.read_text()) if geography_file.exists() else {}
+    geography = _geography(preset.get('map_asset_id', preset['id']))
     if geography:
         adj = [set(geography['neighbors'][str(i)]) for i in range(len(raw))]
+    else:
+        adj = _build_adjacency(
+            coords, max_dist=preset.get("max_edge_distance", 0.22),
+            extra_edges=preset.get("extra_edges", []), removed_edges=preset.get("removed_edges", []))
 
     p1_start: Set[int] = {preset["player1_capital"]} | set(preset["player1_extra_starts"])
     p2_start: Set[int] = {preset["player2_capital"]} | set(preset["player2_extra_starts"])
@@ -168,8 +172,8 @@ def load_preset(
         map_size=_map_size(len(regions)),
         preset_id=preset['id'],
         map_asset_id=preset.get('map_asset_id'),
-        routes=geography.get('routes', {}),
-        ports=geography.get('ports', []),
+        routes=dict(geography.get('routes', {})),
+        ports=list(geography.get('ports', [])),
         battle={
             'name': preset['name'], 'date': battle['date'],
             'factions': {'player_1': battle['sides'][side], 'player_2': battle['sides'][1-side]},

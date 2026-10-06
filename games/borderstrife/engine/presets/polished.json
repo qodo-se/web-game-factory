@@ -1634,7 +1634,7 @@
     "name": "Northeast Asia",
     "category": "world",
     "description": "Japan, Korea, Manchuria and the Russian Pacific frontier, from the Amur basin to Sakhalin, the Kurils and Kamchatka. 30 regions.",
-    "map_asset_id": "japan_korea_atlas_v5",
+    "map_asset_id": "japan_korea_atlas_v6",
     "regions": [
       [
         "Hokkaido",
@@ -2624,7 +2624,7 @@
     "name": "Greece, Persia & Egypt",
     "category": "historical",
     "description": "An ancient-war composite from Greece across Anatolia and Mesopotamia to the Persian heartland, with Phoenician ports, Cyprus and the Nile. Historical places anchor 30 gameplay sectors; control does not represent one date or a single empire. 30 regions.",
-    "map_asset_id": "greco_persian_atlas_v5",
+    "map_asset_id": "greco_persian_atlas_v6",
     "regions": [
       [
         "Macedonia",
@@ -2870,7 +2870,7 @@
     "name": "Viking World \u00b7 Northern Europe",
     "category": "historical",
     "description": "A 30-region composite linking the Nordic homelands with Iceland, Britain, Ireland, Frankish river approaches and the Baltic routes to Ladoga and Novgorod. Raiding, settlement and trading contacts across 793\u20131066; not a single Viking empire. 30 regions.",
-    "map_asset_id": "viking_conquests_atlas_v5",
+    "map_asset_id": "viking_conquests_atlas_v6",
     "regions": [
       [
         "Iceland",

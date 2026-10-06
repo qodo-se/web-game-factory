@@ -122,7 +122,7 @@ class CollectionTests(unittest.TestCase):
         current = PRESETS['japan_korea']
         self.assertEqual(current['name'], 'Northeast Asia')
         self.assertEqual(len(current['regions']), 30)
-        self.assertEqual(current['map_asset_id'], 'japan_korea_atlas_v5')
+        self.assertEqual(current['map_asset_id'], 'japan_korea_atlas_v6')
         self.assertEqual(set(current['anchor_countries']), {'JPN','KOR','PRK','CHN','RUS'})
         previous=json.loads((Path(__file__).parent/'fixtures/previous_japan_korea.json').read_text())
         engine=GameEngine(load_preset(previous))

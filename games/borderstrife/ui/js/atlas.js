@@ -102,7 +102,7 @@ const atlas = {
             return result;
         };
         const roads = linePath(this.data.roads), ridges = linePath(this.data.ridges);
-        const relief=paths.map((path,index)=>{
+        const relief=this.data.presentation_version || this.terrainImage ? [] : paths.map((path,index)=>{
             const marks=new Path2D();
             const feature=this.data.regions[index];
             const coords=feature.polygons.flatMap(p=>p[0]);

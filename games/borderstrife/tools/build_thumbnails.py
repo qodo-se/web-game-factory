@@ -10,6 +10,7 @@ import json
 from pathlib import Path
 from shapely.geometry import Polygon
 from games.borderstrife.engine.presets import PRESETS
+from .immutable_assets import write_immutable
 
 ROOT = Path(__file__).resolve().parents[1]
 COLORS = dict(city='#d6bb78', plains='#9caa78', hills='#9c8c70',
@@ -46,7 +47,7 @@ def build():
             color = COLORS[preset['regions'][region['id']][1]]
             parts.append(f'<path d="{"".join(paths)}" fill="{color}" fill-rule="evenodd" stroke="#253d3d" stroke-width=".45" stroke-linejoin="round"/>')
         parts.append('</svg>')
-        (target / f'{asset}.svg').write_text('\n'.join(parts)+'\n')
+        write_immutable(target / f'{asset}.svg', '\n'.join(parts)+'\n')
 
 
 if __name__ == '__main__':

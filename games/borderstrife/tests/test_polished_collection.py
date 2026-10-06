@@ -14,7 +14,7 @@ class PolishedCollectionTests(unittest.TestCase):
         for key,old in baseline.items():
             with self.subTest(map=key):
                 new=PRESETS[key]
-                self.assertEqual(new['map_asset_id'],key+('_atlas_v5' if key in {'japan_korea','viking_conquests','greco_persian'} else '_atlas_v4'))
+                self.assertEqual(new['map_asset_id'],key+('_atlas_v6' if key in {'japan_korea','viking_conquests','greco_persian'} else '_atlas_v4'))
                 for field in ['regions','player1_capital','player2_capital','player1_extra_starts','player2_extra_starts','battle']:
                     self.assertEqual(old.get(field),new.get(field))
                 rules=lambda p:json.loads((ROOT/f"engine/presets/geography/{p['map_asset_id']}.json").read_text())

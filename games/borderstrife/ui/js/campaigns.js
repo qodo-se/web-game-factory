@@ -7,7 +7,7 @@ const campaigns = {
         catch { return []; }
     },
     remember(id, state) {
-        const saved={id,name:state.campaign_name||'Campaign',preset:state.preset_id||'',turn:state.turn,
+        const saved={id,name:state.campaign_name||'Campaign',preset:state.preset_id||'',asset:state.map_asset_id||state.preset_id||'',turn:state.turn,
             finished:state.game_over,winner:state.winner,expires:state.expires_at,updated:new Date().toISOString()};
         const entries=[saved,...this.list().filter(item=>item.id!==id)].slice(0,50);
         try { localStorage.setItem(this.key,JSON.stringify(entries)); } catch { /* Server save still succeeded. */ }
@@ -27,10 +27,9 @@ const campaigns = {
             button.addEventListener('click',async()=>{
                 button.disabled=true;
                 try {
-                    const data=await api.getGame(item.id);
                     sessionStorage.setItem('gameId',item.id);
-                    sessionStorage.setItem('presetId',data.state.preset_id||'');
-                    sessionStorage.setItem('mapAssetId',data.state.map_asset_id||data.state.preset_id||'');
+                    sessionStorage.setItem('presetId',item.preset||'');
+                    sessionStorage.setItem('mapAssetId',item.asset||item.preset||'');
                     location.href='game.html';
                 } catch(error) { detail.textContent=error.message;button.disabled=false; }
             });

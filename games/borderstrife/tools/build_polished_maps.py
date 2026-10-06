@@ -14,6 +14,7 @@ from shapely.geometry import Polygon, Point, box, shape
 from shapely.ops import unary_union, transform, nearest_points
 from .map_partition import pieces
 from .map_details import WATERS
+from .immutable_assets import write_immutable
 ROOT=Path(__file__).resolve().parents[1]
 
 def rings(geometry):
@@ -58,7 +59,7 @@ def build(archive, only=None):
             continue
         p = copy.deepcopy(preset)
         old = p['map_asset_id']
-        asset = key + ('_atlas_v5' if key in {'japan_korea','viking_conquests','greco_persian'} else '_atlas_v4')
+        asset = key + ('_atlas_v6' if key in {'japan_korea','viking_conquests','greco_persian'} else '_atlas_v4')
         a = json.loads((ROOT / f'ui/maps/{old}.json').read_text())
         cells = [geometry(r) for r in a['regions']]
         old_land = unary_union(cells)
@@ -106,7 +107,7 @@ def build(archive, only=None):
         p['map_asset_id'] = asset
         a['setting'] = p.get('setting', {})
         for path, data in [(ROOT / f'ui/maps/{asset}.json', a), (ROOT / f'engine/presets/geography/{asset}.json', rules)]:
-            path.write_text(json.dumps(data, separators=(',', ':')) + '\n')
+            write_immutable(path, json.dumps(data, separators=(',', ':')) + '\n')
         out[key] = p
         print(key, flush=True)
     target.write_text(json.dumps(out, indent=2) + '\n')

@@ -12,7 +12,7 @@ from games.borderstrife.api.routes import _serialize_state
 engine=GameEngine.new_game(map_size=MapSize.SMALL, seed=42)
 print(json.dumps(dict(game_id='legacy-random',state=_serialize_state(engine),history=[],valid_moves=engine.get_valid_moves('player_1'))))
 `],{cwd:root,env:{...process.env,PYTHONDONTWRITEBYTECODE:'1'}}));
-    await page.route('**/api/imperium/games/legacy-random{,/**}',route=>route.fulfill({json:
+    await page.route(url=>/^\/api\/imperium\/games\/legacy-random(?:\/|$)/.test(url.pathname),route=>route.fulfill({json:
         route.request().url().endsWith('/valid-moves')?fixture.valid_moves:fixture}));
     await page.evaluate(()=>{sessionStorage.setItem('gameId','legacy-random');sessionStorage.removeItem('presetId');});
 };

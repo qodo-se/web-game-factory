@@ -1,5 +1,8 @@
 """Deterministic, connected starting kingdoms and honest strength previews."""
+import json
 from collections import deque
+from copy import deepcopy
+from functools import lru_cache
 from ..models import TERRAIN_POP_RATE, TerrainType
 
 
@@ -29,6 +32,12 @@ def kingdom_layout(raw, adjacency, capital):
 
 
 def starting_choices(preset):
+    return deepcopy(_starting_choices(json.dumps(preset, sort_keys=True)))
+
+
+@lru_cache(maxsize=64)
+def _starting_choices(definition):
+    preset = json.loads(definition)
     from .loader import load_preset
     from ..strategy import growth, supplied_regions
     choices = []

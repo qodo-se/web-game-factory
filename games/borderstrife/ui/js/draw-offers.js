@@ -46,6 +46,12 @@ const drawOffers = {
             this.busy = false;
             setResolving(false);
         }
+        // Bring the response into view even when the player was reading old turns.
+        ++historyVersion;
+        if(historyBrowsingOlder){
+            historyBrowsingOlder=false;campaignHistory=[];historyMore=state.turn>1;
+            await loadOlderHistory(true);
+        }
         campaigns.remember(gameId, state);
         updateTopBar();
         renderTimeline();

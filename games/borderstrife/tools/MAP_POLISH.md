@@ -1,6 +1,6 @@
 # Map refinement — atlas_v4
 
-The catalog uses atlas_v4 presentation assets, with the expanded Northeast Asia map using atlas_v5. Earlier regional geometry and thumbnails remain bundled for saved campaigns. Region names/counts, terrain rules, opening forces, capitals and route graphs are unchanged. The builder rejects changes to pairwise geographic adjacency.
+The catalog uses atlas_v4 presentation assets, with Northeast Asia, Viking World and Greece/Persia/Egypt using atlas_v6. Earlier regional geometry and thumbnails remain bundled for saved campaigns. Region names/counts, terrain rules, opening forces, capitals and route graphs are unchanged. The builder rejects changes to pairwise geographic adjacency.
 
 ## Changes by map
 
@@ -40,3 +40,5 @@ PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m games.borderstrife.tools.check_com
 An optional final map ID rebuilds one map. Sources are the bundled version-3 assets and the same Natural Earth archive used for previous maps; no network requests are needed. GIS and image dependencies are build-time only.
 
 Validation includes scenario/route equality against version 3, geographic adjacency, every shared border, old saves/replays, all 12 regional theaters in the browser, mobile/dark rendering, display controls and cached-render performance. Campaign-AI regressions cover forwarding while ahead, friendly-cycle avoidance and blocked routes through enemy territory.
+
+Published versioned atlas, geography and thumbnail files cannot be overwritten with different content. Increment the asset version in the builder when changing a map and retain older files for saves. Deploy the website assets before switching the API catalog to the new version.

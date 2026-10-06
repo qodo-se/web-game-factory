@@ -20,6 +20,10 @@ Side = Literal['player_1', 'player_2', 'rogue']
 Route = Literal['road', 'river', 'pass', 'sea']
 
 
+class UnavailableMapError(ValueError):
+    pass
+
+
 class Model(BaseModel):
     model_config = ConfigDict(extra='forbid', strict=True)
 
@@ -71,7 +75,7 @@ class Event(Model):
 class Position(Model):
     turn: Annotated[int, Field(ge=1)]
     game_over: bool
-    winner: Literal['player_1', 'player_2'] | None
+    winner: Literal['player_1', 'player_2', 'draw'] | None
     regions: dict[int, tuple[Side, UInt]]
 
 
@@ -81,7 +85,7 @@ class Report(Model):
     events: list[Event] = Field(default_factory=list)
     movements: list[Movement | tuple[UInt, UInt, UInt]]
     game_over: bool
-    winner: Literal['player_1', 'player_2'] | None
+    winner: Literal['player_1', 'player_2', 'draw'] | None
     replay_before: Position | None = None
 
 
@@ -108,7 +112,7 @@ def _check_tree(value, depth=0):
 def _map_regions(asset):
     path = Path(__file__).parents[1] / 'ui/maps' / f'{asset}.json'
     if not path.is_file():
-        raise ValueError('The map used by this save is unavailable.')
+        raise UnavailableMapError('The map used by this save is unavailable.')
     return {region['id']: region['name'] for region in json.loads(path.read_text())['regions']}
 
 
@@ -118,8 +122,25 @@ def _validate_state(state):
         raise ValueError('Unsupported campaign state.')
     if {p.id for p in state.players} != {'player_1', 'player_2'} or len(state.players) != 2:
         raise ValueError('Invalid players.')
-    if state.winner not in (None, 'player_1', 'player_2') or bool(state.winner) != state.game_over:
+    if state.winner not in (None, 'player_1', 'player_2', 'draw') or bool(state.winner) != state.game_over:
         raise ValueError('Invalid campaign result.')
+    if (state.draw_offer_turn is not None and not 30 <= state.draw_offer_turn <= state.turn) or len(state.draw_offer_message) > 500:
+        raise ValueError("Invalid draw offer.")
+    if state.resigned and (not state.game_over or state.winner != 'player_2'):
+        raise ValueError('Invalid resignation result.')
+    previous_offer = 25
+    for offer in state.draw_offers:
+        if (set(offer) != {'turn', 'accepted', 'message'} or
+                type(offer['turn']) is not int or not previous_offer + 5 <= offer['turn'] <= state.turn or
+                type(offer['accepted']) is not bool or not isinstance(offer['message'], str) or
+                len(offer['message']) > 500):
+            raise ValueError('Invalid draw offer history.')
+        if offer['accepted'] and (state.winner != 'draw' or offer['turn'] != state.turn):
+            raise ValueError('Invalid accepted draw.')
+        previous_offer = offer['turn']
+    if state.draw_offers and (state.draw_offer_turn != state.draw_offers[-1]['turn'] or
+                             state.draw_offer_message != state.draw_offers[-1]['message']):
+        raise ValueError('Inconsistent draw offer history.')
     for player in state.players:
         if player.is_ai != (player.id == 'player_2'):
             raise ValueError('This save requires an unsupported player configuration.')
@@ -145,7 +166,7 @@ def _validate_state(state):
     asset = state.map_asset_id or state.preset_id
     if asset is not None:
         if not re.fullmatch(r'[a-z0-9_]+', asset):
-            raise ValueError('The map used by this save is unavailable.')
+            raise UnavailableMapError('The map used by this save is unavailable.')
         if _map_regions(asset) != {rid: region.name for rid, region in state.regions.items()}:
             raise ValueError('The map regions do not match this save.')
     if state.battle is not None:

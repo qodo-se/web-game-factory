@@ -4,6 +4,8 @@ import hashlib
 import json
 from collections import OrderedDict
 from time import perf_counter
+from pathlib import Path
+import re
 from dataclasses import asdict
 from typing import Dict, List, Optional, Literal, Annotated
 from fastapi import APIRouter, HTTPException, Response, Query, Request
@@ -31,6 +33,16 @@ _game_locks = [threading.Lock() for _ in range(64)]
 
 def _get_game_lock(game_id):
     return _game_locks[hash(game_id) % len(_game_locks)]
+
+
+def _load_game(game_id, include_history=True):
+    engine = store.get(game_id, include_history=include_history)
+    if engine is not None:
+        asset = engine.state.map_asset_id or engine.state.preset_id
+        if asset and (not re.fullmatch(r'[a-z0-9_]+', asset) or
+                      not (Path(__file__).parents[1] / 'ui/maps' / f'{asset}.json').is_file()):
+            raise HTTPException(status_code=410, detail="This map has been retired. Please start a new game on a Regional Map.")
+    return engine
 
 
 # ── Request / Response models ─────────────────────────────────────────────────
@@ -62,6 +74,16 @@ class TurnRequest(BaseModel):
 
 
 # ── Serialisation helpers ─────────────────────────────────────────────────────
+
+def _draw_offer_history(state):
+    if state.draw_offers:
+        return state.draw_offers
+    # Preserve the latest offer from saves written before offer history existed.
+    if state.draw_offer_turn is not None:
+        return [{'turn': state.draw_offer_turn, 'accepted': state.winner == 'draw',
+                 'message': state.draw_offer_message}]
+    return []
+
 
 def _serialize_state(engine: GameEngine) -> dict:
     s = engine.state
@@ -98,6 +120,11 @@ def _serialize_state(engine: GameEngine) -> dict:
         "campaign_name": engine.campaign_name,
         "game_over": s.game_over,
         "winner": s.winner,
+        "resigned": s.resigned,
+        "draw_offers": _draw_offer_history(s),
+        "draw_offer_turn": s.draw_offer_turn,
+        "draw_offer_message": s.draw_offer_message,
+        "draw_available_turn": max(30, (s.draw_offer_turn + 5) if s.draw_offer_turn is not None else 30),
         "regions": regions,
         "player_1": {
             "name": p1.name,
@@ -178,6 +205,8 @@ async def restore_game(request: Request):
     def restore():
         try:
             engine = backups.decode(payload)
+        except backups.UnavailableMapError:
+            raise HTTPException(status_code=400, detail="This save uses a map that is no longer available. Only Regional Maps are supported.")
         except (ValueError, TypeError, KeyError, AttributeError, RecursionError, OverflowError):
             raise HTTPException(status_code=400, detail="This is not a valid supported BorderStrife save. Choose an unmodified downloaded .borderstrife.json file.")
         game_id = store.create(engine)
@@ -188,7 +217,7 @@ async def restore_game(request: Request):
 
 @router.get("/games/{game_id}/download")
 def download_game(game_id: str):
-    engine = store.get(game_id)
+    engine = _load_game(game_id)
     if engine is None:
         raise HTTPException(status_code=404, detail="Game not found or expired. Restore an earlier downloaded save from Resume game.")
     try:
@@ -203,7 +232,7 @@ def download_game(game_id: str):
 
 @router.get("/games/{game_id}")
 def get_game(game_id: str, history_limit: Annotated[Optional[int], Query(ge=1, le=100)] = None):
-    engine = store.get(game_id, include_history=history_limit is None)
+    engine = _load_game(game_id, include_history=history_limit is None)
     if not engine:
         raise HTTPException(status_code=404, detail="Game not found or expired. Games are kept for 7 days. Restore a downloaded save from Resume game.")
     entries = engine.history if history_limit is None else store.history_page(game_id, engine, engine.state.turn, history_limit+1)
@@ -222,7 +251,7 @@ def _public_report(entry):
 @router.get("/games/{game_id}/history")
 def get_history(game_id: str, before_turn: Annotated[int, Query(ge=1)],
                 limit: Annotated[int, Query(ge=1, le=100)] = 50):
-    engine = store.get(game_id, include_history=False)
+    engine = _load_game(game_id, include_history=False)
     if not engine:
         raise HTTPException(status_code=404, detail="Game not found or expired. Games are kept for 7 days. Restore a downloaded save from Resume game.")
     entries = store.history_page(game_id, engine, before_turn, limit+1)
@@ -234,7 +263,7 @@ def get_history(game_id: str, before_turn: Annotated[int, Query(ge=1)],
 
 @router.get("/games/{game_id}/valid-moves")
 def get_valid_moves(game_id: str):
-    engine = store.get(game_id, include_history=False)
+    engine = _load_game(game_id, include_history=False)
     if not engine:
         raise HTTPException(status_code=404, detail="Game not found or expired. Games are kept for 7 days. Restore a downloaded save from Resume game.")
     return engine.get_valid_moves("player_1")
@@ -242,7 +271,7 @@ def get_valid_moves(game_id: str):
 
 @router.post("/games/{game_id}/forecast")
 def get_forecast(game_id: str, req: TurnRequest):
-    engine = store.get(game_id, include_history=False)
+    engine = _load_game(game_id, include_history=False)
     if not engine:
         raise HTTPException(status_code=404, detail="Game not found or expired. Games are kept for 7 days. Restore a downloaded save from Resume game.")
     moves = [Move(m.from_region_id, m.to_region_id) for m in req.moves]
@@ -256,7 +285,7 @@ def get_forecast(game_id: str, req: TurnRequest):
 @router.post("/games/{game_id}/threats")
 def get_threats(game_id: str, req: TurnRequest):
     from games.borderstrife.engine.strategy import threats
-    engine = store.get(game_id, include_history=False)
+    engine = _load_game(game_id, include_history=False)
     if not engine:
         raise HTTPException(status_code=404, detail="Game not found or expired. Games are kept for 7 days. Restore a downloaded save from Resume game.")
     moves = [Move(m.from_region_id, m.to_region_id) for m in req.moves]
@@ -272,7 +301,7 @@ def submit_turn(game_id: str, req: TurnRequest, response: Response = None):
     started = perf_counter()
     with _get_game_lock(game_id):
         locked = perf_counter()
-        engine = store.get(game_id, include_history=False)
+        engine = _load_game(game_id, include_history=False)
         loaded = perf_counter()
         if not engine:
             raise HTTPException(status_code=404, detail="Game not found or expired. Games are kept for 7 days. Restore a downloaded save from Resume game.")
@@ -342,7 +371,7 @@ def _legacy_replay_page(game_id, engine, offset, limit):
             _legacy_replays.move_to_end(key)
     if cached is None:
         if engine._journal:
-            engine = store.get(game_id)
+            engine = _load_game(game_id)
             if engine is None:
                 raise HTTPException(status_code=404, detail="Game not found or expired. Games are kept for 7 days. Restore a downloaded save from Resume game.")
         reports = {entry['turn']: _public_report(entry) for entry in engine.history}
@@ -371,7 +400,7 @@ def _legacy_replay_page(game_id, engine, offset, limit):
 @router.get("/games/{game_id}/replay")
 def get_campaign_replay(game_id: str, offset: Annotated[Optional[int], Query(ge=0)] = None,
                         limit: Annotated[int, Query(ge=1, le=100)] = 50):
-    engine = store.get(game_id, include_history=offset is None)
+    engine = _load_game(game_id, include_history=offset is None)
     if not engine:
         raise HTTPException(status_code=404, detail="Game not found or expired. Games are kept for 7 days. Restore a downloaded save from Resume game.")
     if not engine.state.game_over:
@@ -402,3 +431,58 @@ def get_campaign_replay(game_id: str, offset: Annotated[Optional[int], Query(ge=
         reports = [_public_report(entry) for entry in engine.history if first-1 <= entry['turn'] < stop-1]
     return {'frames': [_replay_frame(position) for position in positions], 'complete': start == 1,
             'offset': offset or 0, 'total': total, 'history': reports}
+
+
+class DrawRequest(BaseModel):
+    expected_turn: int = Field(ge=1, strict=True)
+
+
+@router.post('/games/{game_id}/draw')
+def offer_draw(game_id: str, req: DrawRequest):
+    from games.borderstrife.engine.draw_offers import assess
+    with _get_game_lock(game_id):
+        engine = _load_game(game_id, include_history=False)
+        if engine is None:
+            raise HTTPException(404, 'Game not found or expired.')
+        state = engine.state
+        if state.game_over:
+            raise HTTPException(400, 'Game is already over.')
+        if state.turn != req.expected_turn:
+            raise HTTPException(409, 'This campaign changed. Reload before offering a draw.')
+        available = max(30, state.draw_offer_turn + 5 if state.draw_offer_turn is not None else 30)
+        if state.turn < available:
+            raise HTTPException(400, f'You can offer a draw on turn {available}.')
+        accepted, message = assess(state, store.history_page(game_id, engine, state.turn, 10))
+        state.draw_offers = [*_draw_offer_history(state),
+                             {"turn": state.turn, "accepted": accepted, "message": message}]
+        state.draw_offer_turn = state.turn
+        state.draw_offer_message = message
+        if accepted:
+            state.game_over = True
+            state.winner = 'draw'
+        try:
+            store.save(game_id, engine, req.expected_turn)
+        except store.ConflictError as error:
+            raise HTTPException(409, str(error))
+        return {'accepted': accepted, 'message': message, 'state': _serialize_state(engine)}
+
+
+@router.post('/games/{game_id}/resign')
+def resign_game(game_id: str, req: DrawRequest):
+    with _get_game_lock(game_id):
+        engine = _load_game(game_id, include_history=False)
+        if engine is None:
+            raise HTTPException(404, 'Game not found or expired.')
+        state = engine.state
+        if state.game_over:
+            raise HTTPException(400, 'Game is already over.')
+        if state.turn != req.expected_turn:
+            raise HTTPException(409, 'This campaign changed. Reload before resigning.')
+        state.game_over = True
+        state.winner = 'player_2'
+        state.resigned = True
+        try:
+            store.save(game_id, engine, req.expected_turn)
+        except store.ConflictError as error:
+            raise HTTPException(409, str(error))
+        return {'state': _serialize_state(engine)}

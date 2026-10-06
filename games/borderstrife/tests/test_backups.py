@@ -130,6 +130,20 @@ class BackupTests(unittest.TestCase):
             self.assertEqual(self.restore(payload).status_code, 400)
         self.assertEqual(store._execute('SELECT COUNT(*) FROM imperium_campaigns', fetch=True)[0][0], 1)
 
+    def test_retired_maps_are_rejected_before_restore_or_load(self):
+        engine = GameEngine.from_preset('india')
+        engine.state.preset_id = 'waterloo'
+        engine.state.map_asset_id = 'waterloo_atlas_v4'
+        response = self.restore(backups.encode(engine))
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('no longer available', response.json()['detail'])
+        # Model an existing server save created before the collection retired.
+        gid = store.create(engine)
+        for suffix in ('', '/replay', '/download', '/valid-moves'):
+            response = self.client.get(f'/api/imperium/games/{gid}{suffix}')
+            self.assertEqual(response.status_code, 410)
+            self.assertIn('retired', response.json()['detail'])
+
     def test_streamed_body_size_limit(self):
         with patch.object(backups, 'MAX_BYTES', 100):
             response = self.restore(iter([b'x' * 60, b'x' * 60]))

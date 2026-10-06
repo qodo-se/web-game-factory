@@ -9,9 +9,9 @@
     <link rel="stylesheet" href="css/polish.css">
     <link rel="stylesheet" href="css/welcome.css">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <meta name="description" content="Play BorderStrife, a browser strategy game of turn-based conquest. Command armies across regional maps and historic battlefields against the AI.">
+    <meta name="description" content="Play BorderStrife, a browser strategy game of turn-based conquest. Command armies across regional maps against the AI.">
     <meta property="og:title" content="BorderStrife — Turn-Based Conquest">
-    <meta property="og:description" content="Every turn redraws the map. Command armies across regional maps and historic battlefields.">
+    <meta property="og:description" content="Every turn redraws the map. Command armies across regional maps.">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="BorderStrife">
     <meta name="twitter:card" content="summary_large_image">
@@ -34,15 +34,8 @@
         </div>
         <form id="new-game-form" class="new-game-form" role="tabpanel" aria-labelledby="new-game-tab" data-step="maps">
             <fieldset class="map-picker">
-                <legend>Choose your map</legend>
-                <div class="map-categories" role="group" aria-label="Map category">
-                    <button type="button" data-category="world" aria-pressed="true">Regional Maps</button>
-                    <button type="button" data-category="historical" aria-pressed="false">Historical Battles</button>
-                    <button type="button" data-category="campaigns" aria-pressed="false">Historical Campaigns</button>
-                    <button type="button" data-category="sieges" aria-pressed="false">Cities &amp; Sieges</button>
-                    <button type="button" data-category="legends" aria-pressed="false">Epics</button>
-                </div>
-                <p id="category-description" class="preset-desc">Choose a theater for conquest.</p>
+                <legend>Choose your theater</legend>
+                <p id="map-gallery-description" class="preset-desc">Choose your region for conquest.</p>
                 <div id="map-grid" class="map-grid" aria-busy="true" tabindex="0" role="group" aria-label="Available maps">
                     <div class="map-skeleton" aria-hidden="true"></div><div class="map-skeleton" aria-hidden="true"></div><p class="sr-only" role="status">Loading maps…</p>
                 </div>
@@ -53,7 +46,6 @@
                 <img id="selected-map-preview" alt="" width="300" height="180" hidden>
                 <h2 id="selected-map-title" tabindex="-1">Choose a map</h2>
                 <p id="selected-map-summary" class="preset-desc"></p>
-                <p id="battle-essentials" class="preset-desc" hidden></p>
                 <div class="form-group">
                     <label id="starting-label" for="kingdom-select">Starting kingdom</label>
                     <select id="kingdom-select" disabled><option>Loading kingdoms…</option></select>
@@ -63,7 +55,7 @@
                     <summary>Map details &amp; rules</summary>
                     <p class="preset-desc" id="preset-desc"></p>
                     <p id="starting-details" class="preset-desc"></p>
-                    <div id="battle-briefing" hidden></div>
+                    <div id="map-briefing" hidden></div>
                 </details>
                 <details id="customize-names">
                     <summary>Customize names</summary>
@@ -82,7 +74,7 @@
                 <p id="error-msg" class="error-msg hidden" role="alert"></p>
                 <button type="button" id="retry-maps" class="btn-secondary" hidden>Retry loading maps</button>
                 <span id="mobile-selection" class="preset-desc" aria-live="polite">Choose your map</span>
-                <button type="button" class="btn-primary" id="continue-setup" disabled>Next: choose your side</button>
+                <button type="button" class="btn-primary" id="continue-setup" disabled>Next: choose your kingdom</button>
                 <button type="submit" class="btn-primary" id="start-btn" disabled>Begin Campaign</button>
             </footer>
         </form>

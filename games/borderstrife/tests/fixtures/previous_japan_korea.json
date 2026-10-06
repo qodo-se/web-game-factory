@@ -1,0 +1,170 @@
+{
+  "id": "japan_korea",
+  "name": "Japan & Korea",
+  "category": "world",
+  "description": "Mountain provinces, coastal corridors and a small network of sea crossings around the Sea of Japan. 24 regions.",
+  "map_asset_id": "japan_korea_atlas_v4",
+  "regions": [
+    [
+      "Hokkaido",
+      "forest",
+      0.809524,
+      0.15625
+    ],
+    [
+      "Aomori",
+      "forest",
+      0.747619,
+      0.325
+    ],
+    [
+      "Iwate",
+      "hills",
+      0.771429,
+      0.40625
+    ],
+    [
+      "Akita",
+      "forest",
+      0.719048,
+      0.39375
+    ],
+    [
+      "Sendai",
+      "city",
+      0.757143,
+      0.48125
+    ],
+    [
+      "Fukushima",
+      "hills",
+      0.733333,
+      0.51875
+    ],
+    [
+      "Niigata",
+      "coast",
+      0.666667,
+      0.50625
+    ],
+    [
+      "Edo Plain",
+      "city",
+      0.7,
+      0.64375
+    ],
+    [
+      "Nagano",
+      "hills",
+      0.628571,
+      0.5875
+    ],
+    [
+      "Kanazawa",
+      "coast",
+      0.557143,
+      0.5875
+    ],
+    [
+      "Owari",
+      "plains",
+      0.566667,
+      0.675
+    ],
+    [
+      "Kyoto",
+      "city",
+      0.514286,
+      0.6875
+    ],
+    [
+      "Kii",
+      "forest",
+      0.509524,
+      0.75625
+    ],
+    [
+      "Sanin",
+      "coast",
+      0.385714,
+      0.65625
+    ],
+    [
+      "Hiroshima",
+      "city",
+      0.357143,
+      0.725
+    ],
+    [
+      "Shikoku",
+      "hills",
+      0.404762,
+      0.775
+    ],
+    [
+      "Northern Kyushu",
+      "city",
+      0.257143,
+      0.775
+    ],
+    [
+      "Southern Kyushu",
+      "hills",
+      0.277823,
+      0.881047
+    ],
+    [
+      "Pyongyang",
+      "city",
+      0.038095,
+      0.4375
+    ],
+    [
+      "Hamhung",
+      "hills",
+      0.119048,
+      0.38125
+    ],
+    [
+      "Northern Korea",
+      "forest",
+      0.190476,
+      0.275
+    ],
+    [
+      "Seoul",
+      "city",
+      0.095238,
+      0.525
+    ],
+    [
+      "Jeolla",
+      "plains",
+      0.1,
+      0.675
+    ],
+    [
+      "Gyeongsang",
+      "coast",
+      0.171429,
+      0.63125
+    ]
+  ],
+  "player1_capital": 4,
+  "player2_capital": 20,
+  "player1_extra_starts": [
+    2,
+    3
+  ],
+  "player2_extra_starts": [
+    19,
+    21
+  ],
+  "setting": {
+    "era": "",
+    "note": "Natural Earth coastlines and geographic boundaries, with connected gameplay sectors around named locations. Internal lines are simplified interpretations, not surveyed historical political borders.",
+    "sources": [],
+    "terrain_note": "Modern coastlines and administrative geometry define gameplay regions; these are not exact historical political borders.",
+    "opening_note": "Recommended opening: 136 vs 136 troops. Territory growth and access also affect difficulty."
+  }
+}

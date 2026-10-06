@@ -21,13 +21,9 @@ def check():
     fixed=repair_fragments(broken,[Point(.1,.1),Point(.9,.1)])
     assert sum(c.covers(island) for c in fixed)==1
     assert fixed[0].boundary.intersection(fixed[1].boundary).length==0
-    # The alternate Troy source contains measured samples across the old void.
-    import numpy as np
-    dem=np.load(ROOT/'tools/battle_sources/troy_troad-reviewed-elevation.npz')['elevation']
-    assert np.all(np.isfinite(dem)) and dem.min()>-300
     count=0
     for key,p in PRESETS.items():
-        assert p['map_asset_id'].endswith('_atlas_v4'),key
+        assert p['map_asset_id'].endswith('_atlas_v5' if key in {'japan_korea','viking_conquests','greco_persian'} else '_atlas_v4'),key
         a=json.loads((ROOT/f'ui/maps/{p["map_asset_id"]}.json').read_text());s=load_preset(p)
         geoms=[];primary=[]
         for r in a['regions']:
@@ -52,14 +48,6 @@ def check():
                 for n in s.regions[todo.pop()].neighbors:
                     if n in owned and n not in seen:seen.add(n);todo.append(n)
             assert seen==owned,(key,'disconnected starting kingdom')
-        if key=='antietam_1862':
-            creek=LineString(a['rivers'][0]['points'])
-            for name in ['Upper bridge approach','Middle bridge approach','Burnside Bridge']:
-                r=next(r for r in a['regions'] if r['name']==name)
-                assert creek.distance(Point(r['center']))<.025,(name,'bridge detached from creek')
-        if key=='troy_troad':
-            assert a['terrain']['coastline_mask']
-            assert any(g.covers(Point(.6,.27)) for g in geoms),'DEM void stripe erased inland Troy'
     # Every pre-review preset still loads its original map and replay geometry.
     for source in ['compact.json','expansion.json','reviewed.json']:
         for key,p in json.loads((ROOT/'engine/presets'/source).read_text()).items():

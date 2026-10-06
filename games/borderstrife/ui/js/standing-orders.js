@@ -62,6 +62,7 @@ const standingOrders = {
     cancel(id) {this.change(this.orders.filter(o=>o.id!==id));},
     start(id=null, source=null) {
         if(!planning.allowed())return;
+        sidebar.open('orders');
         const order=this.orders.find(o=>o.id===id);
         this.editor={id,kind:'reinforce',path:order?[order.path[0]]:source!==null?[source]:[]};
         mapOrders.close();selectedFrom=null;planning.hidePreview();this.render();renderMap();updateMoveHint();

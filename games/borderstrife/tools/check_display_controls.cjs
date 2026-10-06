@@ -7,10 +7,6 @@ const base=process.env.IMPERIUM_TEST_URL||'http://localhost:3000';
   const page=await browser.newPage({viewport:{width:1440,height:1000},reducedMotion:'reduce'});
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto(base);await page.waitForFunction(()=>!document.getElementById('start-btn').disabled);
-  await page.click('[data-category="historical"]');
-  await page.locator('.battle-factions').first().waitFor();
-  assert.match(await page.locator('.battle-location').first().textContent(),/Belgium/);
-  assert.match(await page.locator('.battle-factions').first().textContent(),/French/);
   await page.waitForFunction(()=>!document.getElementById('start-btn').disabled);
   await page.click('#start-btn');await page.waitForURL('**/game.html');
   await page.locator('#load-screen').waitFor({state:'hidden'});
@@ -43,6 +39,6 @@ const base=process.env.IMPERIUM_TEST_URL||'http://localhost:3000';
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
   await page.screenshot({path:'/tmp/imperium-display-mobile.png'});
   assert.deepEqual(errors,[]);
-  console.log('Historical card metadata, controls help, label sizes, faction shapes, keyboard/drag resizing, fullscreen/fallback, persistence and mobile checks passed.');
+  console.log('Controls help, label sizes, faction shapes, keyboard/drag resizing, fullscreen/fallback, persistence and mobile checks passed.');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

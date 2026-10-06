@@ -1,0 +1,373 @@
+{
+  "napoleon_1805": {
+    "id": "napoleon_1805",
+    "name": "Napoleon \u00b7 Central Europe 1805",
+    "category": "historical",
+    "description": "From the Rhine and Ulm along the Danube to Vienna and Austerlitz. Alpine passes and Bohemian approaches frame the 1805 campaign theater. 28 regions.",
+    "map_asset_id": "napoleon_1805_atlas_v4",
+    "regions": [
+      [
+        "Strasbourg",
+        "city",
+        0.033654,
+        0.448889
+      ],
+      [
+        "Black Forest",
+        "forest",
+        0.100962,
+        0.555556
+      ],
+      [
+        "Stuttgart",
+        "city",
+        0.171154,
+        0.404444
+      ],
+      [
+        "Wurzburg",
+        "city",
+        0.244231,
+        0.18
+      ],
+      [
+        "Nuremberg",
+        "city",
+        0.353846,
+        0.255556
+      ],
+      [
+        "Ulm",
+        "city",
+        0.249038,
+        0.488889
+      ],
+      [
+        "Augsburg",
+        "plains",
+        0.336538,
+        0.495556
+      ],
+      [
+        "Munich",
+        "city",
+        0.401923,
+        0.546667
+      ],
+      [
+        "Regensburg",
+        "city",
+        0.451923,
+        0.351111
+      ],
+      [
+        "Passau",
+        "coast",
+        0.579808,
+        0.451111
+      ],
+      [
+        "Constance",
+        "coast",
+        0.171154,
+        0.653333
+      ],
+      [
+        "Tyrol",
+        "hills",
+        0.384615,
+        0.74
+      ],
+      [
+        "Salzburg",
+        "hills",
+        0.543269,
+        0.622222
+      ],
+      [
+        "Linz",
+        "city",
+        0.6625,
+        0.508889
+      ],
+      [
+        "Steyr",
+        "hills",
+        0.675,
+        0.568889
+      ],
+      [
+        "Amstetten",
+        "plains",
+        0.718269,
+        0.551111
+      ],
+      [
+        "St Polten",
+        "plains",
+        0.791346,
+        0.533333
+      ],
+      [
+        "Vienna",
+        "city",
+        0.8625,
+        0.531111
+      ],
+      [
+        "Graz",
+        "hills",
+        0.773077,
+        0.784444
+      ],
+      [
+        "Znojmo",
+        "plains",
+        0.831731,
+        0.386667
+      ],
+      [
+        "Brunn",
+        "city",
+        0.885577,
+        0.311111
+      ],
+      [
+        "Austerlitz",
+        "plains",
+        0.911538,
+        0.322222
+      ],
+      [
+        "Olmutz",
+        "city",
+        0.947115,
+        0.224444
+      ],
+      [
+        "Iglau",
+        "hills",
+        0.7875,
+        0.266667
+      ],
+      [
+        "Budweis",
+        "forest",
+        0.679808,
+        0.362222
+      ],
+      [
+        "Pilsen",
+        "plains",
+        0.575,
+        0.188889
+      ],
+      [
+        "Prague",
+        "city",
+        0.675,
+        0.115556
+      ],
+      [
+        "Pressburg",
+        "city",
+        0.933654,
+        0.544444
+      ]
+    ],
+    "player1_capital": 5,
+    "player2_capital": 20,
+    "player1_extra_starts": [
+      2,
+      6
+    ],
+    "player2_extra_starts": [
+      17,
+      19
+    ],
+    "setting": {
+      "era": "Central Europe \u00b7 1805 campaign",
+      "note": "Modern coastlines; interpreted gameplay sectors around historical places, not exact period borders. Starting territories are balanced for open-ended conquest, not historical deployments. Terrain symbols are illustrative.",
+      "sources": [
+        [
+          "West Point campaign atlases",
+          "https://dhc.westpoint.edu/atlases/"
+        ]
+      ],
+      "terrain_note": "Modern coastlines; interpreted gameplay sectors around historical places, not exact period borders. Starting territories are balanced for open-ended conquest, not historical deployments. Terrain symbols are illustrative.",
+      "opening_note": "Recommended opening: 224 vs 224 troops. Territory growth and access also affect difficulty."
+    },
+    "historical_sectors": true,
+    "sea_routes": []
+  },
+  "nile_horn": {
+    "id": "nile_horn",
+    "name": "Nile Valley & the Horn",
+    "category": "world",
+    "description": "Follow the Nile through desert approaches into the Ethiopian highlands and the Horn of Africa. 24 regions.",
+    "map_asset_id": "nile_horn_atlas_v4",
+    "regions": [
+      [
+        "Nile Delta",
+        "plains",
+        0.16,
+        0.036364
+      ],
+      [
+        "Cairo",
+        "city",
+        0.168,
+        0.060606
+      ],
+      [
+        "Western Oases",
+        "desert",
+        0.072,
+        0.112121
+      ],
+      [
+        "Middle Egypt",
+        "plains",
+        0.152,
+        0.118182
+      ],
+      [
+        "Thebaid",
+        "city",
+        0.224,
+        0.190909
+      ],
+      [
+        "Aswan",
+        "coast",
+        0.236,
+        0.239394
+      ],
+      [
+        "Nubia",
+        "desert",
+        0.168,
+        0.309091
+      ],
+      [
+        "Dongola",
+        "plains",
+        0.14,
+        0.387879
+      ],
+      [
+        "Red Sea Hills",
+        "hills",
+        0.36,
+        0.363636
+      ],
+      [
+        "Khartoum",
+        "city",
+        0.224,
+        0.49697
+      ],
+      [
+        "Kordofan",
+        "desert",
+        0.108,
+        0.569697
+      ],
+      [
+        "White Nile",
+        "plains",
+        0.224,
+        0.612121
+      ],
+      [
+        "Blue Nile",
+        "forest",
+        0.296,
+        0.627273
+      ],
+      [
+        "Sudd",
+        "forest",
+        0.148,
+        0.727273
+      ],
+      [
+        "Equatoria",
+        "forest",
+        0.184,
+        0.821212
+      ],
+      [
+        "Eritrean Highlands",
+        "hills",
+        0.476,
+        0.506061
+      ],
+      [
+        "Tigray",
+        "hills",
+        0.5,
+        0.560606
+      ],
+      [
+        "Lake Tana",
+        "hills",
+        0.416,
+        0.618182
+      ],
+      [
+        "Shewa",
+        "city",
+        0.468,
+        0.69697
+      ],
+      [
+        "Afar",
+        "desert",
+        0.56,
+        0.606061
+      ],
+      [
+        "Harar",
+        "city",
+        0.604,
+        0.687879
+      ],
+      [
+        "Somali Plateau",
+        "desert",
+        0.76,
+        0.727273
+      ],
+      [
+        "Somali Coast",
+        "coast",
+        0.86,
+        0.666667
+      ],
+      [
+        "Jubba Valley",
+        "plains",
+        0.66,
+        0.939394
+      ]
+    ],
+    "player1_capital": 1,
+    "player2_capital": 20,
+    "player1_extra_starts": [
+      3,
+      4
+    ],
+    "player2_extra_starts": [
+      18,
+      23
+    ],
+    "setting": {
+      "era": "",
+      "note": "Natural Earth coastlines and geographic boundaries, with connected gameplay sectors around named locations. Internal lines are simplified interpretations, not surveyed historical political borders.",
+      "sources": [],
+      "terrain_note": "Modern coastlines and administrative geometry define gameplay regions; these are not exact historical political borders.",
+      "opening_note": "Recommended opening: 224 vs 224 troops. Territory growth and access also affect difficulty."
+    }
+  }
+}

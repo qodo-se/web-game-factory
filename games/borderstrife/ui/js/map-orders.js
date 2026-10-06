@@ -53,7 +53,7 @@ const mapOrders = {
         for(const button of this.menu.querySelectorAll('[data-map-order]'))button.onclick=()=>{
             const kind=button.dataset.mapOrder;this.close();
             if(kind==='move') {
-                standingOrders.editor=null;standingOrders.render();selectedFrom=id;renderMap();updateMoveHint();
+                sidebar.open('orders');standingOrders.editor=null;standingOrders.render();selectedFrom=id;renderMap();updateMoveHint();
             } else standingOrders.start(null,id);
         };
         for(const button of this.menu.querySelectorAll('[data-existing]'))button.onclick=()=>{

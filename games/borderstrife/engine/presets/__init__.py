@@ -8,7 +8,6 @@ from .africa_middle_east import PRESET as AFRICA_MIDDLE_EAST
 
 from .balochistan_borderlands_expanded import PRESET as BALOCHISTAN_BORDERLANDS
 
-from .battles import PRESETS as BATTLES
 
 # Registry: id → preset dict
 SOURCE_PRESETS = {
@@ -22,7 +21,6 @@ SOURCE_PRESETS = {
         BALOCHISTAN_BORDERLANDS,
         INDIA,
         SOUTHEAST_ASIA,
-        *BATTLES,
     ]
 }
 
@@ -55,7 +53,6 @@ def list_presets() -> list:
             "name": p["name"],
             "description": p["description"],
             "category": p.get("category", "world"),
-            "battle": {key: p["battle"][key] for key in ("date", "sides", "commanders", "context", "sources")} if "battle" in p else None,
             "region_count": len(p["regions"]),
             "setting": p.get("setting"),
         }

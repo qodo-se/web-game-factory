@@ -12,7 +12,7 @@ const apiBase = process.env.IMPERIUM_TEST_API || 'http://localhost:8091';
         await page.addInitScript(url => localStorage.setItem('IMPERIUM_API_BASE', url), apiBase);
         await page.goto(base);
         await page.waitForFunction(() => !document.getElementById('start-btn').disabled);
-        assert.equal(await page.locator('.map-card').count(), 14);
+        assert.equal(await page.locator('.map-card').count(), 16);
         assert.equal(await page.locator('#random-options, #preset-select, .mode-tabs').count(), 0);
         await page.waitForFunction(() => [...document.images].every(i => i.complete && i.naturalWidth > 0));
         await page.screenshot({ path: '/tmp/imperium-gallery-desktop.png', fullPage: true });
@@ -63,28 +63,15 @@ const apiBase = process.env.IMPERIUM_TEST_API || 'http://localhost:8091';
         }
         const rejected = await page.request.post(`${apiBase}/api/imperium/games`,{data:{mode:'random'}});
         assert.equal(rejected.status(),422);
-        // Website may deploy before the API: no historical category in an old catalog.
-        await page.route('**/api/imperium/presets', async route => {
-            const response = await route.fetch();
-            const catalog = await response.json();
-            await route.fulfill({json:catalog.filter(p=>p.category==='world').map(({category,battle,...p})=>p)});
+        // An older API can still return removed categories during a rolling deploy.
+        await page.route('**/api/imperium/presets',async route=>{
+            const response=await route.fetch(),catalog=await response.json();
+            await route.fulfill({json:[...catalog,{id:'waterloo',category:'historical'}]});
         });
-        await page.goto(base);
-        await page.waitForFunction(()=>!document.getElementById('start-btn').disabled);
-        let releasePreview;
-        const waitingPreview = new Promise(resolve=>{releasePreview=resolve;});
-        await page.route('**/presets/americas/starts',async route=>{await waitingPreview;await route.continue();});
-        await page.locator('input[value="americas"]').check();
-        await page.getByRole('button',{name:'Historical Battles'}).click();
-        assert.ok(await page.locator('#start-btn').isDisabled());
-        releasePreview();
-        await page.waitForResponse(r=>r.url().endsWith('/americas/starts'));
-        assert.ok(await page.locator('#start-btn').isDisabled());
-        assert.ok(await page.locator('#kingdom-select').isDisabled());
-        assert.equal(await page.locator('.map-card').count(),0);
-        assert.match(await page.locator('#map-grid').textContent(),/No maps available/);
-        await page.getByRole('button',{name:'Regional Maps'}).click();
-        await page.waitForFunction(()=>!document.getElementById('start-btn').disabled);
+        await page.goto(base);await page.waitForFunction(()=>!document.getElementById('start-btn').disabled);
+        assert.equal(await page.locator('.map-card').count(),16);
+        assert.equal(await page.locator('[data-category],.map-categories').count(),0);
+        assert.equal(await page.locator('input[value="waterloo"]').count(),0);
         assert.deepEqual(errors,[]);
         console.log('Gallery, mobile layout, stale preview, new campaigns, maps and turns passed.');
     } finally { await browser.close(); }

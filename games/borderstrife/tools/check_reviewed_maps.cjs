@@ -1,4 +1,4 @@
-// All 35 maps: browser rendering, hit targets, turn/reload, fit/reset and mobile.
+// All 16 maps: browser rendering, hit targets, turn/reload, fit/reset and mobile.
 const {chromium}=require('playwright');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
@@ -11,8 +11,8 @@ if(!['localhost','127.0.0.1'].includes(new URL(base).hostname))throw Error('Loca
   const errors=[],missing=[],timings=[];
   page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)missing.push([r.status(),r.url()]);});
   await page.goto(base);await page.locator('#start-btn').waitFor();
-  assert.equal(await page.locator('[data-category="legends"]').textContent(),'Epics');
-  const catalog=await page.evaluate(()=>api.getPresets());assert.equal(catalog.length,35);
+  assert.equal(await page.locator('[data-category],.map-categories').count(),0);
+  const catalog=await page.evaluate(()=>api.getPresets());assert.equal(catalog.length,16);
   for(const p of catalog){
    const created=await page.evaluate(id=>api.newGame({mode:'preset',preset_id:id}),p.id);
    await page.evaluate(r=>{sessionStorage.setItem('gameId',r.game_id);sessionStorage.setItem('presetId',r.state.preset_id);sessionStorage.setItem('mapAssetId',r.state.map_asset_id);},created);
@@ -25,7 +25,7 @@ if(!['localhost','127.0.0.1'].includes(new URL(base).hostname))throw Error('Loca
    const ms=await page.evaluate(()=>{const before=performance.now();for(let i=0;i<10;i++)renderMap();return (performance.now()-before)/10;});timings.push({id:p.id,cachedRenderMs:Math.round(ms*10)/10});
    await page.locator('#end-turn-btn').click();await page.waitForFunction(()=>state.turn===2&&!resolving);
    await page.reload();await page.locator('#load-screen').waitFor({state:'hidden'});assert.equal(await page.evaluate(()=>state.turn),2);
-   if(['india','malta','troy_troad','emberfall'].includes(p.id)){
+   if(['india','japan_korea','nile_horn','americas'].includes(p.id)){
     await page.locator('#sidebar-settings-toggle').click();await page.locator('#map-theme').selectOption('dark');
     await page.screenshot({path:'/tmp/polished-'+p.id+'-dark.png'});
     await page.locator('#map-theme').selectOption('light');
@@ -40,6 +40,6 @@ if(!['localhost','127.0.0.1'].includes(new URL(base).hostname))throw Error('Loca
   }
   assert.deepEqual(errors,[]);assert.deepEqual(missing,[]);
   fs.writeFileSync('/tmp/reviewed-render-timings.json',JSON.stringify(timings,null,2));
-  console.log('All 35 reviewed maps passed.');
+  console.log('All 16 reviewed maps passed.');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

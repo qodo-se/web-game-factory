@@ -36,6 +36,7 @@ const orderHistory = {
         this.changed(redo?'Order redone.':'Order undone.');
     },
     changed(message) {
+        sidebar.open('orders');
         planning.clearEffects();
         selectedFrom=null;clearRegionInfo();lastHoverId=null;
         renderMap();updateMovesList();updateMoveHint();

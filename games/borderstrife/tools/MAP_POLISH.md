@@ -1,6 +1,6 @@
 # Map refinement — atlas_v4
 
-All 35 maps use new presentation assets. The previous `atlas_v3` geometry, terrain and thumbnails remain bundled for saved campaigns. Region names/counts, terrain rules, opening forces, capitals and route graphs are unchanged. The builder rejects any change to pairwise geographic adjacency. Slight battlefield boundary warps and smoothed exposed shoreline corners are cartographic changes only.
+The catalog uses atlas_v4 presentation assets, with the expanded Northeast Asia map using atlas_v5. Earlier regional geometry and thumbnails remain bundled for saved campaigns. Region names/counts, terrain rules, opening forces, capitals and route graphs are unchanged. The builder rejects changes to pairwise geographic adjacency.
 
 ## Changes by map
 
@@ -14,41 +14,18 @@ All 35 maps use new presentation assets. The previous `atlas_v3` geometry, terra
 | Afghanistan, Balochistan & Indus | Hindu Kush relief and Indus contrast; excluded territory appears only as non-playable context. |
 | Indian Subcontinent | Mountain spines, vegetation and river contrast; label placement and protected geographic coverage retained. |
 | Southeast Asia & Oceania | Curved, stronger sea lanes, context islands and mountain spines. |
-| Japan & Korea | Clearer sea lanes, rivers and mountain ranges. |
+| Northeast Asia | Expanded to 30 regions spanning Japan, Korea, Manchuria and the Russian Pacific frontier, with new coastlines, Amur river context and sea connections. |
 | British & Irish Isles | Relief and vegetation treatment, clearer rivers and crossings. |
 | Anatolia & the Caucasus | Continuous mountain hachures, strait connections and contextual neighboring land. |
 | Nile Valley & the Horn | Stronger river contrast; cropped inland borders no longer sit against ocean. |
-| Andes & Pacific Coast | Alternating label callouts use the available horizontal space without stretching geography; adjacent land provides context. |
-| Caribbean & Central America | Clearer curved sea lanes and their endpoints; surrounding islands and mainland context. |
-| Waterloo | Distinct farm clusters, stronger ridge rendering, contrast and counter separation. |
-| Sekigahara | Valley relief and approach lines; counter spacing retains geographic anchor leaders. |
-| Hastings | Ridge visibility, camp artwork, context and terrain contrast. |
-| Hattin | Springs and Horns artwork, clearer approaches and contrast. |
-| Gettysburg | Larger recognizable farms/ridge, counter separation and existing portrait framing. |
-| First Panipat | Gently warped sectors, prominent wagon frontage and camp/flag groups. |
-| Austerlitz | Stronger ridge/bridge rendering, contrast and counter separation. |
-| Antietam | Bridges stay on geographic anchors; counters move independently, with leader lines. |
-| Cannae | Gently warped sectors and clearer battle fronts, camps and river contrast. |
-| Naseby | Gently warped sectors, strong hedge/ridge treatment and camp groups. |
-| Crusader States | Real surrounding land, stronghold artwork and clearer mountain/river context. |
-| Civil War: Eastern Theater | Appalachian relief, rivers and settlement groups; neighboring land is not painted as sea. |
-| Rome vs Carthage | Clearer Mediterranean lanes, mountain spines and surrounding geographic context. |
-| Sengoku Japan | Mountain spines, river contrast and consistent marker/label spacing. |
-| Constantinople | Urban blocks clipped to districts, prominent walls/gates and landmark palace artwork. |
-| Chittorgarh | Fort footprints, stronger perimeter/gates and separation of counters from landmark anchors. |
-| Malta | Bastioned fort symbols, harbors/ships, improved shoreline compositing and counter separation. |
-| Kurukshetra | Gently warped sectors, distinct camps, standards and chariot-ground symbols. |
-| Troy & the Troad | Smoothed shoreline corners, terrain alpha at the coast, citadel/gates and ship groups; the void-free DEM remains unchanged. |
-| Lanka | Canopy clusters and central relief, palace and fortified landing-camp artwork. |
-| Emberfall | Regenerated illustrated terrain with individual relief peaks, clustered canopies, a finer river, volcanic landmark and distinct settlements. |
 
 Landmarks, vegetation and regional relief remain illustrative. They are not surveyed historical reconstructions. Muted surrounding land is explicitly labeled as non-playable in map settings; it never enters hit-testing, supply or movement. Atmospheric waves exclude that land through a cached raster mask. Landmark drawing is cached with the terrain rather than repeated during pointer movement.
 
 ## Campaign pacing
 
-Investigation reproduced idle interior troops in a stalled Japan & Korea campaign. The campaign AI previously skipped reinforcement through quiet friendly regions while ahead in total army strength. It now routes reserves along owned territory toward reachable hostile borders, including neutral frontiers. Friendly frontline consolidation gathers into the larger stack rather than exchanging stacks. Historical-battle AI, combat probabilities, recruitment and all map route graphs are unchanged.
+Investigation reproduced idle interior troops in a stalled Japan & Korea campaign. The campaign AI previously skipped reinforcement through quiet friendly regions while ahead in total army strength. It now routes reserves along owned territory toward reachable hostile borders, including neutral frontiers. Friendly frontline consolidation gathers into the larger stack rather than exchanging stacks. Combat probabilities, recruitment and map route graphs are unchanged.
 
-`pacing-comparison.json` records the same eight deterministic seeds on each of the five flagged maps. Unfinished campaigns at the 60-turn observation cutoff decreased from 40/40 to 25/40. Longer campaigns still occur; this is evidence of improved reinforcement behavior, not a guarantee of short games or human competitive balance. `opening-playtest-report.json` contains all 280 current runs.
+`pacing-comparison.json` records the same eight deterministic seeds on each of the two retained flagged maps. Unfinished campaigns at the 60-turn observation cutoff decreased from 16/16 to 10/16. Longer campaigns still occur; this is evidence of improved reinforcement behavior, not a guarantee of short games or human competitive balance. `opening-playtest-report.json` contains the retained regional runs.
 
 ## Reproduction and verification
 
@@ -62,4 +39,4 @@ PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m games.borderstrife.tools.check_com
 
 An optional final map ID rebuilds one map. Sources are the bundled version-3 assets and the same Natural Earth archive used for previous maps; no network requests are needed. GIS and image dependencies are build-time only.
 
-Validation includes scenario/route equality against version 3, geographic adjacency, every shared border, old saves/replays, all 35 maps in the browser, mobile/dark rendering, display controls and cached-render performance. Campaign-AI regressions cover forwarding while ahead, friendly-cycle avoidance and blocked routes through enemy territory.
+Validation includes scenario/route equality against version 3, geographic adjacency, every shared border, old saves/replays, all 12 regional theaters in the browser, mobile/dark rendering, display controls and cached-render performance. Campaign-AI regressions cover forwarding while ahead, friendly-cycle avoidance and blocked routes through enemy territory.

@@ -221,15 +221,19 @@ def create(engine):
                   (game_id, engine.state.turn, _encode(engine, journal=True), now(), engine.expires_at), False)]
                  + _journal_inserts(game_id, engine.history))
     engine._journal = True
+    engine._store_revision = engine.state.turn
+    engine._loaded_turn = engine.state.turn
     return game_id
 
 
 def get(game_id, include_history=True):
-    rows = _execute('SELECT payload, expires_at FROM imperium_campaigns WHERE id = ? AND (expires_at > ? OR expires_at IS NULL)', (game_id, now()), fetch=True)
+    rows = _execute('SELECT payload, expires_at, revision FROM imperium_campaigns WHERE id = ? AND (expires_at > ? OR expires_at IS NULL)', (game_id, now()), fetch=True)
     if not rows:
         return None
     engine = _decode(rows[0][0])
     engine.expires_at = rows[0][1]
+    engine._store_revision = rows[0][2]
+    engine._loaded_turn = engine.state.turn
     if engine._journal and include_history:
         # A concurrent turn may commit between reads. Its entry belongs to a
         # newer snapshot and must not appear in this response's history.
@@ -244,6 +248,9 @@ def get(game_id, include_history=True):
 
 
 def save(game_id, engine, expected_turn):
+    if getattr(engine, "_loaded_turn", expected_turn) != expected_turn:
+        raise ConflictError("This campaign changed. Reload to continue.")
+    revision = getattr(engine, "_store_revision", expected_turn)
     # Old inline histories migrate once, in the same transaction as the turn.
     # Subsequent turns append only their new entry, independent of campaign age.
     if not getattr(engine, '_replay_indexed', False):
@@ -259,8 +266,10 @@ def save(game_id, engine, expected_turn):
     entries = ([entry for entry in engine.history if entry['turn'] >= expected_turn]
                if getattr(engine, '_journal', False) else engine.history)
     _transaction([('UPDATE imperium_campaigns SET revision = ?, payload = ?, updated_at = ? WHERE id = ? AND revision = ? AND (expires_at > ? OR expires_at IS NULL)',
-                   (engine.state.turn, _encode(engine, journal=True), now(), game_id, expected_turn, now()), False)]
+                   (revision + 1, _encode(engine, journal=True), now(), game_id, revision, now()), False)]
                  + _journal_inserts(game_id, entries), check_revision=True)
+    engine._store_revision = revision + 1
+    engine._loaded_turn = engine.state.turn
     engine._journal = True
 
 

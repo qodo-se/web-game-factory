@@ -102,10 +102,6 @@ def build_one(key, source):
         if join(*edge):edges.add(edge)
     if len(components)>1:raise ValueError(f'{key}: disconnected compact routes')
     assert connected(n,edges) and land_edges<=edges
-    if source.get('battle'):
-        for side in (0,1):
-            subset={i for i,site in enumerate(source['battle']['sites']) if site[4]==side}
-            assert connected(n,edges,subset),(key,'disconnected deployment',side)
     degree=[sum(i in edge for edge in edges) for i in range(n)]
     routes={f'{a}:{b}':candidates[(a,b)] for a,b in sorted(edges)}
     neighbors={str(i):sorted(b if a==i else a for a,b in edges if i in (a,b)) for i in range(n)}
@@ -113,21 +109,17 @@ def build_one(key, source):
     asset=f"{key}_{ASSET_VERSIONS.get(key, 'compact')}";out=copy.deepcopy(source)
     out.update(map_asset_id=asset,regions=raw,player1_capital=mapping[source['player1_capital']],player2_capital=mapping[source['player2_capital']],extra_edges=[],removed_edges=[])
     if countries:out['anchor_countries']=[countries[i] for i in reps]
-    if source.get('battle'):
-        out['player1_extra_starts']=[mapping[i] for i in source['player1_extra_starts']]
-        out['player2_extra_starts']=[mapping[i] for i in source['player2_extra_starts']]
-    else:
-        def start(seat,excluded):
-            owned={seat}
-            while len(owned)<3:
-                frontier={b for a in owned for b in neighbors[str(a)]}-owned-excluded
-                if not frontier:raise ValueError(f'{key}: starting kingdom too small')
-                owned.add(min(frontier))
-            return sorted(owned-{seat})
-        out['player1_extra_starts']=start(out['player1_capital'],{out['player2_capital']})
-        out['player2_extra_starts']=start(out['player2_capital'],{out['player1_capital'],*out['player1_extra_starts']})
+    def start(seat,excluded):
+        owned={seat}
+        while len(owned)<3:
+            frontier={b for a in owned for b in neighbors[str(a)]}-owned-excluded
+            if not frontier:raise ValueError(f'{key}: starting kingdom too small')
+            owned.add(min(frontier))
+        return sorted(owned-{seat})
+    out['player1_extra_starts']=start(out['player1_capital'],{out['player2_capital']})
+    out['player2_extra_starts']=start(out['player2_capital'],{out['player1_capital'],*out['player1_extra_starts']})
     data.update(id=asset,regions=features)
-    if not source.get('battle'):out['description']+=f' {n} larger regions with a focused network of routes.'
+    out['description']+=f' {n} larger regions with a focused network of routes.'
     (ROOT/f'ui/maps/{asset}.json').write_text(json.dumps(data,separators=(',',':'))+'\n')
     (ROOT/f'engine/presets/geography/{asset}.json').write_text(json.dumps(dict(neighbors=neighbors,routes=routes,ports=ports),separators=(',',':'))+'\n')
     return out,dict(map=key,regions=n,old_regions=len(original),routes=len(edges),old_routes=len(old_rules['routes']),max_connections=max(degree),groups=merges)

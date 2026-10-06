@@ -18,8 +18,8 @@ EXPANSION={key:PRESETS[key] for key in json.loads((ROOT/'engine/presets/expansio
 
 class ExpandedCollectionTests(unittest.TestCase):
     def test_catalog_and_assets(self):
-        self.assertEqual(Counter(p['category'] for p in list_presets()),dict(world=14,historical=10,campaigns=4,sieges=3,legends=4))
-        self.assertEqual(len(EXPANSION),22)
+        self.assertEqual(Counter(p['category'] for p in list_presets()),dict(world=11,historical=5))
+        self.assertEqual(len(EXPANSION),8)
         for key,preset in EXPANSION.items():
             with self.subTest(map=key):
                 self.assertTrue(24<=len(preset['regions'])<=30)
@@ -31,18 +31,13 @@ class ExpandedCollectionTests(unittest.TestCase):
                 self.assertEqual([r['name'] for r in atlas['regions']],[r[0] for r in preset['regions']])
                 self.assertTrue((ROOT/f'ui/maps/thumbnails/{asset}.svg').exists())
                 if 'terrain' in atlas:self.assertTrue((ROOT/'ui/maps'/atlas['terrain']['image']).exists())
-                self.assertEqual('battle' in preset,preset['category']=='historical')
+                self.assertNotIn('battle',preset)
                 self.assertTrue(preset['setting']['note'])
-        fantasy=json.loads((ROOT/f"ui/maps/{PRESETS['emberfall']['map_asset_id']}.json").read_text())
-        self.assertTrue(fantasy['terrain']['illustrated'])
-        self.assertNotIn('elevations',fantasy['terrain'])
-        self.assertNotIn('width_m',fantasy['terrain'])
-
     def test_new_campaigns_all_start_choices_and_persistence(self):
         for key,preset in EXPANSION.items():
             with self.subTest(map=key):
                 choices=starting_choices(preset)
-                self.assertEqual(len(choices),2 if 'battle' in preset else len(preset['regions'])+1)
+                self.assertEqual(len(choices),len(preset['regions'])+1)
                 for choice in choices:
                     state=GameEngine.from_preset(key,start_region_id=choice['id']).state
                     for player in state.players:
@@ -61,18 +56,4 @@ class ExpandedCollectionTests(unittest.TestCase):
                 self.assertEqual(restored.state.map_asset_id,preset['map_asset_id'])
                 self.assertEqual(restored.state.routes,engine.state.routes)
                 self.assertEqual([f.turn for f in campaign_states(restored)],[1,2])
-                if 'battle' in preset:
-                    self.assertEqual(set(report.population_generated.values()),{0})
-                else:self.assertTrue(any(n>0 for n in report.population_generated.values()))
-
-    def test_each_new_battle_finishes_for_either_side(self):
-        for key,preset in EXPANSION.items():
-            if 'battle' not in preset:continue
-            for capital in preset['battle']['capitals']:
-                with self.subTest(map=key,side=capital):
-                    state=GameEngine.from_preset(key,start_region_id=capital).state
-                    for turn in range(20):
-                        resolve_turn(state,decide_actions(state,'player_1',seed=turn),decide_actions(state,'player_2',seed=turn+1),seed=turn)
-                        if state.game_over:break
-                    self.assertTrue(state.game_over)
-                    self.assertIn(state.winner,['player_1','player_2'])
+                self.assertTrue(any(n>0 for n in report.population_generated.values()))

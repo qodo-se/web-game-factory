@@ -48,42 +48,6 @@
     "max_neighbors": 5
   },
   {
-    "id": "waterloo",
-    "regions": 18,
-    "routes": 39,
-    "max_neighbors": 6
-  },
-  {
-    "id": "sekigahara",
-    "regions": 18,
-    "routes": 42,
-    "max_neighbors": 7
-  },
-  {
-    "id": "hastings",
-    "regions": 16,
-    "routes": 33,
-    "max_neighbors": 7
-  },
-  {
-    "id": "hattin",
-    "regions": 16,
-    "routes": 34,
-    "max_neighbors": 6
-  },
-  {
-    "id": "gettysburg",
-    "regions": 22,
-    "routes": 49,
-    "max_neighbors": 7
-  },
-  {
-    "id": "japan_korea",
-    "regions": 24,
-    "routes": 34,
-    "max_neighbors": 5
-  },
-  {
     "id": "british_irish_isles",
     "regions": 24,
     "routes": 39,
@@ -96,117 +60,39 @@
     "max_neighbors": 7
   },
   {
-    "id": "nile_horn",
-    "regions": 24,
-    "routes": 49,
-    "max_neighbors": 7
-  },
-  {
-    "id": "andes_pacific",
-    "regions": 24,
-    "routes": 38,
-    "max_neighbors": 7
-  },
-  {
-    "id": "caribbean_central_america",
-    "regions": 24,
-    "routes": 32,
+    "id": "japan_korea",
+    "regions": 30,
+    "routes": 45,
     "max_neighbors": 6
   },
   {
-    "id": "civil_war_east",
-    "regions": 24,
-    "routes": 53,
-    "max_neighbors": 7
-  },
-  {
-    "id": "rome_carthage",
-    "regions": 24,
-    "routes": 30,
+    "id": "crusader_levant",
+    "regions": 28,
+    "routes": 61,
     "max_neighbors": 6
   },
   {
-    "id": "sengoku_japan",
-    "regions": 24,
-    "routes": 43,
-    "max_neighbors": 7
-  },
-  {
-    "id": "panipat_1526",
-    "regions": 24,
-    "routes": 52,
-    "max_neighbors": 7
-  },
-  {
-    "id": "austerlitz_1805",
-    "regions": 24,
-    "routes": 56,
-    "max_neighbors": 7
-  },
-  {
-    "id": "antietam_1862",
-    "regions": 24,
+    "id": "norman_england_1066",
+    "regions": 28,
     "routes": 58,
     "max_neighbors": 7
   },
   {
-    "id": "cannae_216",
-    "regions": 24,
-    "routes": 50,
-    "max_neighbors": 7
+    "id": "civil_war_eastern_theater",
+    "regions": 28,
+    "routes": 62,
+    "max_neighbors": 6
   },
   {
-    "id": "naseby_1645",
-    "regions": 24,
-    "routes": 45,
-    "max_neighbors": 7
+    "id": "viking_conquests",
+    "regions": 30,
+    "routes": 43,
+    "max_neighbors": 5
   },
   {
-    "id": "constantinople",
-    "regions": 24,
-    "routes": 47,
-    "max_neighbors": 7
-  },
-  {
-    "id": "malta",
-    "regions": 24,
-    "routes": 44,
-    "max_neighbors": 7
-  },
-  {
-    "id": "kurukshetra",
-    "regions": 24,
+    "id": "greco_persian",
+    "regions": 30,
     "routes": 51,
-    "max_neighbors": 7
-  },
-  {
-    "id": "troy_troad",
-    "regions": 24,
-    "routes": 54,
-    "max_neighbors": 7
-  },
-  {
-    "id": "emberfall",
-    "regions": 24,
-    "routes": 53,
-    "max_neighbors": 7
-  },
-  {
-    "id": "crusader_states",
-    "regions": 24,
-    "routes": 51,
-    "max_neighbors": 7
-  },
-  {
-    "id": "chittorgarh",
-    "regions": 24,
-    "routes": 57,
-    "max_neighbors": 7
-  },
-  {
-    "id": "epic_lanka",
-    "regions": 24,
-    "routes": 55,
-    "max_neighbors": 7
+    "max_neighbors": 6
   }
 ]

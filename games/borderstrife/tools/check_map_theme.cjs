@@ -10,9 +10,8 @@ const base=process.env.IMPERIUM_TEST_URL||'http://localhost:3000';
    const c=document.getElementById('map-canvas'),pixels=c.getContext('2d').getImageData(0,0,c.width,c.height).data;
    let sum=0,n=0;for(let i=0;i<pixels.length;i+=400){sum+=pixels[i]+pixels[i+1]+pixels[i+2];n+=3;}return sum/n;
   });
-  for(const preset of ['india','waterloo']) {
+  for(const preset of ['india','japan_korea']) {
    await page.goto(base);await page.waitForFunction(()=>!document.getElementById('start-btn').disabled);
-   if(preset==='waterloo')await page.click('[data-category="historical"]');
    await page.locator(`input[value="${preset}"]`).check();
    await page.waitForFunction(()=>!document.getElementById('start-btn').disabled);await page.click('#start-btn');
    await page.waitForURL('**/game.html');await page.locator('#load-screen').waitFor({state:'hidden'});
@@ -41,6 +40,6 @@ const base=process.env.IMPERIUM_TEST_URL||'http://localhost:3000';
   await page.selectOption('#map-theme','system');await page.emulateMedia({colorScheme:'dark'});
   await page.waitForFunction(()=>interfaceView.darkMap);assert.ok(await brightness()<legacyLight*.8);
   assert.deepEqual(errors,[]);
-  console.log('Regional and historical dark terrain, live system preference, explicit overrides, persistence and unchanged saved campaigns passed.');
+  console.log('Regional dark terrain, live system preference, explicit overrides, persistence and unchanged saved campaigns passed.');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

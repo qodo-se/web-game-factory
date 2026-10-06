@@ -53,7 +53,6 @@ def build(archive, only=None):
         # assets belong to their dedicated builders, regardless of suffix.
         preset_path=ROOT/'engine/presets'/f'{key}.py'
         if not preset_path.is_file(): continue
-        if data.get('category') == 'historical': continue  # Built by build_battle_maps.py
         preset=runpy.run_path(str(preset_path))['PRESET']
         west,south,east,north=data['bounds']
         project=lambda x,y:((x-west)/(east-west),(north-y)/(north-south))

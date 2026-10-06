@@ -1,93 +1,67 @@
-# BorderStrife map expansion
+# Regional Maps
 
-35 active maps in five categories. Every newly added map has 24 regions; India
-and Central Asia now have 30. Existing battlefields retain their original sizes.
-All saved games keep their own map asset IDs, terrain, rules and route graphs.
+The catalog contains 11 regional and five historical theaters in one gallery. There is no category switcher. All maps use standard recruitment and conquest rules, with 24–30 regions each.
 
-| Collection | Added maps | Rules |
-|---|---|---|
-| Regional Maps | Japan & Korea; British & Irish Isles; Anatolia & the Caucasus; Nile Valley & the Horn; Andes & Pacific Coast; Caribbean & Central America | Standard recruitment and conquest |
-| Historical Battles | First Panipat (1526); Austerlitz (1805); Antietam (1862); Cannae (216 BCE); Naseby (1645) | Existing fixed forces, two selectable sides, three objectives and 20-turn limit |
-| Historical Campaigns | The Crusader States (1187); Civil War: Eastern Theater (1863); Rome vs Carthage (218 BCE); Sengoku Japan (1560) | Period-inspired geographic theaters, standard conquest; no new diplomacy or historical faction system |
-| Cities & Sieges | Constantinople; Chittorgarh; Malta | Standard conquest on close-up terrain; no breach or bombardment mechanics |
-| Epics | Kurukshetra; Troy & the Troad; Lanka: The Epic Campaign; Emberfall: Kingdoms of Ash | Standard conquest; no supernatural mechanics |
+| Map | Regions | Preset ID |
+|---|---:|---|
+| Mediterranean | 24 | `mediterranean` |
+| Europe | 28 | `europe` |
+| The Americas | 28 | `americas` |
+| Africa & Middle East | 28 | `africa_middle_east` |
+| Central Asia | 30 | `central_asia` |
+| Afghanistan, Balochistan & Indus | 30 | `balochistan_borderlands_expanded` |
+| Indian Subcontinent | 30 | `india` |
+| Southeast Asia & Oceania | 28 | `southeast_asia_oceania` |
+| Northeast Asia | 30 | `japan_korea` |
+| British & Irish Isles | 24 | `british_irish_isles` |
+| Anatolia & the Caucasus | 24 | `anatolia_caucasus` |
 
-## Authorship and interpretation
+The retained theaters keep their current geometry, route graphs, terrain rules and starts, except for the expanded Northeast Asia map. Northeast Asia has 30 regions across Japan, Korea, the three northeastern Chinese provinces and the Pacific-facing Russian Far East, including Amur, Primorye, Khabarovsk, Magadan, Sakhalin, the Kurils and Kamchatka. Its internal ID remains `japan_korea`; new games use `japan_korea_atlas_v5`. Older Japan & Korea assets remain for save compatibility. The Caribbean and Andes theaters are retired. The three additional regional specifications live in `collection_sources.py`; the original eight are Python definitions in `engine/presets/`. `compact.json`, `expansion.json`, `reviewed.json` and `polished.json` are successive build stages containing the active theater definitions.
 
-`collection_sources.py` defines the 22 new settings, geographic frames, names,
-terrain types, approximate anchors, historical references and battle parameters.
-Regional maps retain Natural Earth 1:10m coastlines and most geographic region
-boundaries. Disconnected fragments are reassigned through actual land borders;
-only problem areas are repartitioned to enlarge micro-enclaves or simplify hubs.
-Sea lanes connect separate landmasses. Every genuine shared border permits travel.
-The approved Kashyap Meer outline and borderlands territorial coverage are retained.
-Internal sectors remain gameplay interpretations, not exact period political borders.
+Historical Battles, Historical Campaigns, Cities & Sieges, and Epics have been removed, including their versioned assets and source datasets. Their IDs are rejected for new games; existing saves show a retired-map error and their downloaded files cannot be restored. Older **regional** assets are retained for existing saves, including the regional maps retired during earlier catalog revisions.
 
-The ten local maps (five battles, three city settings, Kurukshetra and Troy) use
-Mapzen Terrain Tiles. The clipped elevation arrays and source manifests are pinned
-under `battle_sources/`. Modern terrain is not a reconstruction of all ancient
-river courses, shorelines or earthworks. Woods, fields, forts and roads are original
-interpretive cartography. Local coast masks use valid DEM sea-level samples, with an independent coastline
-mask wherever elevations are missing. Troy uses an alternate pinned Mapzen/Skadi
-HGT source with no missing samples in its frame, avoiding the defective tile strip.
-
-Kurukshetra and Troy locate imaginary literary sectors around the associated
-real-world landscapes. Lanka uses Sri Lanka's coast with invented epic place
-assignments. These do not claim archaeological verification. Emberfall is original
-fictional geography and artwork inspired by the broad high-fantasy genre, with
-mountain halls, ancient woods, river kingdoms and a volcanic realm; it copies no
-Tolkien map, place names or characters. Its illustrated relief has no metric scale
-or claimed real elevation. Per-map notes and sources are visible before starting.
-
-The five new historical battles use explicitly authored fronts and relative force
-weights in `map_details.py`, checked for connected deployments and playtested.
-Strengths and sectors are game abstractions, not regimental surveys.
-Recommended campaign starts use recognizable opposing locations. Players can
-choose any region under the existing kingdom-start system.
-
-## Rebuild
-
-With the existing map-build dependencies installed:
+Regional generation uses local Natural Earth province and river archives. No GIS dependencies or third-party map requests are needed at runtime.
 
 ```sh
-# Explicit network step; normal builds use only pinned data.
-.venv/bin/python -m games.borderstrife.tools.build_collections --fetch-terrain
-.venv/bin/python -m games.borderstrife.tools.build_collections /path/to/provinces.zip /path/to/rivers.zip
-.venv/bin/python -m games.borderstrife.tools.fetch_troy_terrain  # explicit network step, once
-.venv/bin/python -m games.borderstrife.tools.build_reviewed_maps /path/to/provinces.zip
-.venv/bin/python -m games.borderstrife.tools.build_polished_maps /path/to/provinces.zip
-.venv/bin/python -m games.borderstrife.tools.build_thumbnails
+python -m games.borderstrife.tools.build_collections /path/to/provinces.zip /path/to/rivers.zip
+python -m games.borderstrife.tools.build_reviewed_maps /path/to/provinces.zip
+python -m games.borderstrife.tools.build_polished_maps /path/to/provinces.zip
+python -m games.borderstrife.tools.build_thumbnails
 ```
 
-An optional final map ID rebuilds one map. `compact.json` and `expansion.json`
-retain the pre-review definitions. The active registry overlays `reviewed.json`,
-whose geometry, routes, terrain and thumbnails use `<id>_atlas_v3`. The final
-`polished.json` overlay selects `<id>_atlas_v4`; see [the map refinement record](MAP_POLISH.md). Older assets
-remain available to saved games. `source_region_ids` retain name/group provenance
-for original maps; they do not assert that revised boundaries equal those groups.
-Terrain images and annotations are bundled. Increasing a released map's region count or
-changing its IDs requires a new asset version and preservation of its old files.
-The runtime imports no GIS dependencies and makes no external map requests.
+Publish a new immutable map asset version if changing geography or rules used by saved campaigns.
 
-## Validation
+## Historical theaters
+
+Five campaign-scale maps now accompany the 11 regional maps in the same gallery:
+Crusader Levant (1187, 28 regions), Civil War Eastern Theater (28), Greece, Persia & Egypt
+(ancient-war composite, 30), Viking World · Northern Europe (composite, 30), and Norman England (1066, 28).
+
+`historical_sources.py` specifies scope, dated place anchors, terrain types,
+research references and explicit sea crossings. Historical sectors grow on the
+coastline-clipped land around those anchors; modern internal province boundaries
+are dissolved. England's modern outer outline defines the Norman theater and is
+not asserted to be an exact medieval frontier. Relief symbols and supplemental
+rivers are illustrative, using the same presentation as regional theaters.
+
+These are open-ended conquest maps with balanced recommended starts, not military
+simulations or historical orders of battle. Composite maps do not imply all named
+places belonged to one polity at one time. No naval, siege or faction rules change.
+
+Rebuild one theater with the existing map-build environment:
 
 ```sh
-PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m unittest discover -s games/borderstrife/tests -q
-PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m games.borderstrife.tools.check_compact_borders
-PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m games.borderstrife.tools.check_reviewed_maps
-PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m games.borderstrife.tools.check_map_openings
-IMPERIUM_TEST_URL=http://127.0.0.1:3013 node games/borderstrife/tools/check_reviewed_maps.cjs
-IMPERIUM_TEST_URL=http://127.0.0.1:3013 node games/borderstrife/tools/check_expanded_collection.cjs
+python -m games.borderstrife.tools.build_collections /path/to/provinces.zip /path/to/rivers.zip crusader_levant
+python -m games.borderstrife.tools.build_reviewed_maps /path/to/provinces.zip crusader_levant
+python -m games.borderstrife.tools.build_polished_maps /path/to/provinces.zip crusader_levant
+python -m games.borderstrife.tools.build_thumbnails
 ```
 
-Browser checks create local test campaigns for every new map, verify category
-switching, mobile layout, assets, turn submission, reloads and fantasy map notes.
-Backend checks cover all start choices, connected deployments, saves/replays,
-rule separation and completed battles from both sides. Old compact India/Central
-Asia fixtures exercise compatibility with the former 26/24-region versions.
+Use new asset versions when changing any map after release; saves retain their
+original geometry. The six new IDs intentionally do not reuse retired maps.
 
-`opening-playtest-report.json` records eight deterministic AI runs per map,
-with a 60-turn observation window for campaigns and the existing 20-turn cap for
-battles. Unfinished runs and one-sided outcomes are reported, not discarded.
-This smoke test is not a human win-rate guarantee. `reviewed-map-report.json`
-records graph sizes and maximum degree.
+Nile Valley & the Horn and Napoleon (1805) are retired from selection and build specifications. Their versioned map assets remain available for existing games and downloaded saves.
+
+Viking World uses `viking_conquests_atlas_v5` with 30 regions across Nordic homelands, the North Atlantic, northern Francia and Baltic/Rus approaches. The previous 28-region Britain/Ireland assets remain immutable for saves. Authored sea links keep crossings explicit; shared land borders remain traversable. Modern administrative outlines restrict the outer theater in Francia, Germany and northwestern Russia; internal sectors are gameplay interpretations.
+
+Greece, Persia & Egypt uses `greco_persian_atlas_v5`, spanning Greece, Anatolia, Cyprus, the Levant, Mesopotamia, Egypt and the Iranian plateau. Its 30 larger sectors replace the tightly packed Aegean map for new games. Earlier Aegean assets remain available for saved games. This 499–330 BC composite uses modern coastline data, interpreted historic place anchors, illustrative terrain and balanced conquest starts; it is not a political snapshot or the full extent of the Achaemenid Empire.

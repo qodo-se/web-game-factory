@@ -1,7 +1,7 @@
 {
   "observation_turns": 60,
   "runs_per_map": 8,
-  "note": "Deterministic AI smoke tests, not a human balance study. Historical battle AI unchanged.",
+  "note": "Deterministic AI smoke tests, not a human balance study.",
   "maps": [
     {
       "id": "southeast_asia_oceania",
@@ -26,45 +26,6 @@
       "after": {
         "player_1": 1,
         "player_2": 1,
-        "unfinished": 6
-      }
-    },
-    {
-      "id": "andes_pacific",
-      "before": {
-        "player_1": 0,
-        "player_2": 0,
-        "unfinished": 8
-      },
-      "after": {
-        "player_1": 0,
-        "player_2": 1,
-        "unfinished": 7
-      }
-    },
-    {
-      "id": "caribbean_central_america",
-      "before": {
-        "player_1": 0,
-        "player_2": 0,
-        "unfinished": 8
-      },
-      "after": {
-        "player_1": 3,
-        "player_2": 3,
-        "unfinished": 2
-      }
-    },
-    {
-      "id": "rome_carthage",
-      "before": {
-        "player_1": 0,
-        "player_2": 0,
-        "unfinished": 8
-      },
-      "after": {
-        "player_1": 0,
-        "player_2": 2,
         "unfinished": 6
       }
     }

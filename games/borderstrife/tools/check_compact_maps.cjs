@@ -14,7 +14,7 @@ from games.borderstrife.engine.replay import snapshot
 from games.borderstrife.api import store
 result=[]
 previous=json.loads(Path('games/borderstrife/tests/fixtures/previous_compact_presets.json').read_text())
-collections=[(key,SOURCE_PRESETS[key]) for key in ['india','balochistan_borderlands_expanded','waterloo']]+list(previous.items())
+collections=[(key,SOURCE_PRESETS[key]) for key in ['india','balochistan_borderlands_expanded','europe']]+list(previous.items())
 for key,preset in collections:
  e=GameEngine(load_preset(preset));before=snapshot(e.state)
  e.state.turn=2;e.state.game_over=True;e.state.winner='player_1'

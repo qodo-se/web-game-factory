@@ -22,6 +22,8 @@ async function _req(method, path, body, signal) {
 }
 
 const api = {
+    resign: (id, expected_turn) => _req('POST', `/api/imperium/games/${id}/resign`, {expected_turn}),
+    offerDraw: (id, expected_turn) => _req('POST', `/api/imperium/games/${id}/draw`, {expected_turn}),
     getPresets:    ()          => _req('GET',  '/api/imperium/presets'),
     getStarts: (id) => _req('GET', `/api/imperium/presets/${id}/starts`),
     threats: (id, moves, signal) => _req('POST', `/api/imperium/games/${id}/threats`, {moves}, signal),

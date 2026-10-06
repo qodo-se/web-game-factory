@@ -8,6 +8,8 @@ const campaignFiles = {
     },
     async download(id, button, status) {
         button.disabled = true;
+        clearTimeout(status.hideTimer);
+        status.hidden = false;
         status.textContent = 'Preparing download…';
         try {
             const response = await fetch(`${API_BASE}/api/imperium/games/${encodeURIComponent(id)}/download`);
@@ -23,7 +25,10 @@ const campaignFiles = {
             setTimeout(() => URL.revokeObjectURL(url), 60000);
             status.textContent = 'Save downloaded. Keep the file to restore this campaign later.';
         } catch (error) { status.textContent = error.message; }
-        finally { button.disabled = false; }
+        finally {
+            button.disabled = false;
+            if (status.id === 'download-status') status.hideTimer = setTimeout(() => { status.hidden = true; }, 10000);
+        }
     },
     async restore(file, input, status) {
         if (!file) return;
@@ -45,10 +50,21 @@ const campaignFiles = {
         } catch (error) { status.textContent = error.message; }
         finally { input.disabled = false; input.value = ''; }
     },
+    updateGameButtons() {
+        for (const button of document.querySelectorAll('[data-campaign-download]')) button.disabled = resolving || !!this.gameDownloading;
+    },
     initGame(id, state) {
         document.getElementById('campaign-expiry').textContent = this.expiry(state.expires_at);
-        const button = document.getElementById('download-campaign');
-        button.addEventListener('click', () => this.download(id, button, document.getElementById('download-status')));
+        for (const button of document.querySelectorAll('[data-campaign-download]')) {
+            button.addEventListener('click', async () => {
+                if (resolving || this.gameDownloading) return;
+                this.gameDownloading = true;
+                this.updateGameButtons();
+                const status = document.getElementById(button.id === 'download-completed' ? 'completed-download-status' : 'download-status');
+                try { await this.download(id, button, status); }
+                finally { this.gameDownloading = false; this.updateGameButtons(); }
+            });
+        }
     },
 };
 const restoreInput = document.getElementById('restore-campaign');

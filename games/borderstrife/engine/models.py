@@ -152,6 +152,10 @@ class GameState:
     battle: Optional[dict] = None
     map_asset_id: Optional[str] = None
     standing_orders: List[dict] = field(default_factory=list)
+    resigned: bool = False
+    draw_offer_turn: Optional[int] = None
+    draw_offer_message: str = ""
+    draw_offers: List[dict] = field(default_factory=list)
 
     def get_player(self, player_id: str) -> Optional[Player]:
         for p in self.players:

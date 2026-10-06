@@ -45,13 +45,6 @@ def build():
                     paths.append('M' + 'L'.join(f'{left+x*width:.2f},{top+y*height:.2f}' for x,y in ring.coords) + 'Z')
             color = COLORS[preset['regions'][region['id']][1]]
             parts.append(f'<path d="{"".join(paths)}" fill="{color}" fill-rule="evenodd" stroke="#253d3d" stroke-width=".45" stroke-linejoin="round"/>')
-        if data.get('category') == 'historical':
-            for line in ([] if data.get('terrain') else data.get('roads', [])):
-                d='M'+'L'.join(f'{left+x*width:.2f},{top+y*height:.2f}' for x,y in line)
-                parts.append(f'<path d="{d}" fill="none" stroke="#ede0b3" stroke-width="1.4" stroke-dasharray="3 2"/>')
-            for rid in preset['battle']['objectives']:
-                x,y=data['regions'][rid]['center'];x=left+x*width;y=top+y*height
-                parts.append(f'<path d="M{x:.2f},{y-4:.2f}l4,4 -4,4 -4,-4Z" fill="#ffe09a" stroke="#5b4622" stroke-width=".8"/>')
         parts.append('</svg>')
         (target / f'{asset}.svg').write_text('\n'.join(parts)+'\n')
 

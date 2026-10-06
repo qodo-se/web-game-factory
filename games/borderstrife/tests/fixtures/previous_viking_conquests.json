@@ -1,0 +1,218 @@
+{
+  "id": "viking_conquests",
+  "name": "Viking Conquests \u00b7 Britain & Ireland",
+  "category": "historical",
+  "description": "A composite of Viking raids, settlements and conquests around Britain and Ireland. York, Dublin and the island sea routes span several centuries, not a single political snapshot. 28 regions.",
+  "map_asset_id": "viking_conquests_atlas_v4",
+  "regions": [
+    [
+      "Orkney",
+      "coast",
+      0.612308,
+      0.053608
+    ],
+    [
+      "Caithness",
+      "hills",
+      0.580769,
+      0.110309
+    ],
+    [
+      "Hebrides",
+      "coast",
+      0.342308,
+      0.134021
+    ],
+    [
+      "Inverness",
+      "hills",
+      0.521538,
+      0.208247
+    ],
+    [
+      "Argyll",
+      "forest",
+      0.425385,
+      0.318557
+    ],
+    [
+      "Galloway",
+      "hills",
+      0.538462,
+      0.463918
+    ],
+    [
+      "Lothian",
+      "plains",
+      0.600769,
+      0.365979
+    ],
+    [
+      "Lindisfarne",
+      "coast",
+      0.708287,
+      0.397316
+    ],
+    [
+      "Durham",
+      "hills",
+      0.724615,
+      0.486598
+    ],
+    [
+      "Jorvik",
+      "city",
+      0.763077,
+      0.571134
+    ],
+    [
+      "Cumbria",
+      "hills",
+      0.615385,
+      0.505155
+    ],
+    [
+      "Isle of Man",
+      "coast",
+      0.496154,
+      0.546392
+    ],
+    [
+      "Chester",
+      "city",
+      0.623846,
+      0.650515
+    ],
+    [
+      "Lincoln",
+      "city",
+      0.804615,
+      0.646392
+    ],
+    [
+      "Nottingham",
+      "plains",
+      0.757692,
+      0.675258
+    ],
+    [
+      "East Anglia",
+      "plains",
+      0.923077,
+      0.731959
+    ],
+    [
+      "London",
+      "city",
+      0.836154,
+      0.823711
+    ],
+    [
+      "Canterbury",
+      "coast",
+      0.929231,
+      0.847423
+    ],
+    [
+      "Winchester",
+      "city",
+      0.744615,
+      0.870103
+    ],
+    [
+      "Exeter",
+      "hills",
+      0.574615,
+      0.905155
+    ],
+    [
+      "Gwynedd",
+      "hills",
+      0.517692,
+      0.65567
+    ],
+    [
+      "Dyfed",
+      "coast",
+      0.515385,
+      0.78866
+    ],
+    [
+      "Dublin",
+      "city",
+      0.364615,
+      0.634021
+    ],
+    [
+      "Waterford",
+      "coast",
+      0.299231,
+      0.746392
+    ],
+    [
+      "Cork",
+      "coast",
+      0.194615,
+      0.783505
+    ],
+    [
+      "Limerick",
+      "city",
+      0.182308,
+      0.705155
+    ],
+    [
+      "Connacht",
+      "plains",
+      0.2,
+      0.592784
+    ],
+    [
+      "Ulster",
+      "hills",
+      0.333077,
+      0.530928
+    ]
+  ],
+  "player1_capital": 9,
+  "player2_capital": 24,
+  "player1_extra_starts": [
+    12,
+    21
+  ],
+  "player2_extra_starts": [
+    22,
+    25
+  ],
+  "setting": {
+    "era": "Composite \u00b7 Britain & Ireland, 793\u20131066",
+    "note": "Modern coastlines; interpreted gameplay sectors around historical places, not exact period borders. Starting territories are balanced for open-ended conquest, not historical deployments. Terrain symbols are illustrative.",
+    "sources": [
+      [
+        "British Museum: Sutton Hoo and Europe",
+        "https://www.britishmuseum.org/collection/galleries/sutton-hoo-and-europe"
+      ]
+    ],
+    "terrain_note": "Modern coastlines; interpreted gameplay sectors around historical places, not exact period borders. Starting territories are balanced for open-ended conquest, not historical deployments. Terrain symbols are illustrative.",
+    "opening_note": "Recommended opening: 232 vs 232 troops. Territory growth and access also affect difficulty."
+  },
+  "historical_sectors": true,
+  "sea_routes": [
+    [
+      "Dublin",
+      "Chester"
+    ],
+    [
+      "Waterford",
+      "Dyfed"
+    ],
+    [
+      "Isle of Man",
+      "Dublin"
+    ],
+    [
+      "Orkney",
+      "Caithness"
+    ]
+  ]
+}

@@ -1629,1947 +1629,248 @@
       "opening_note": "Recommended opening: 208 vs 208 troops. Territory growth and access also affect difficulty."
     }
   },
-  "waterloo": {
-    "id": "waterloo",
-    "name": "Waterloo \u00b7 1815",
-    "category": "historical",
-    "description": "Hold the ridge and farm strongpoints, or break the Allied line before the battle ends.",
+  "japan_korea": {
+    "id": "japan_korea",
+    "name": "Northeast Asia",
+    "category": "world",
+    "description": "Japan, Korea, Manchuria and the Russian Pacific frontier, from the Amur basin to Sakhalin, the Kurils and Kamchatka. 30 regions.",
+    "map_asset_id": "japan_korea_reviewed_v5",
     "regions": [
       [
-        "Braine approach",
-        "plains",
-        0.107143,
-        0.133333
-      ],
-      [
-        "Mont-Saint-Jean",
-        "city",
-        0.357143,
-        0.133333
-      ],
-      [
-        "Allied reverse slope",
-        "hills",
-        0.535714,
-        0.2
-      ],
-      [
-        "Ohain approach",
-        "plains",
-        0.857143,
-        0.133333
-      ],
-      [
-        "Western ridge",
-        "hills",
-        0.190476,
-        0.333333
-      ],
-      [
-        "Hougoumont",
-        "city",
-        0.154762,
-        0.555556
-      ],
-      [
-        "Central ridge",
-        "hills",
-        0.380952,
-        0.288889
-      ],
-      [
-        "La Haye Sainte",
-        "city",
-        0.345238,
-        0.4
-      ],
-      [
-        "Eastern slope",
-        "plains",
-        0.607143,
-        0.4
-      ],
-      [
-        "Papelotte",
-        "city",
-        0.797619,
-        0.333333
-      ],
-      [
-        "Hougoumont wood",
+        "Hokkaido",
         "forest",
-        0.142857,
-        0.755556
+        0.421053,
+        0.546512
       ],
       [
-        "French left",
-        "plains",
-        0.285714,
-        0.688889
-      ],
-      [
-        "La Belle Alliance",
+        "Tohoku",
         "city",
-        0.369048,
-        0.6
+        0.401228,
+        0.668372
       ],
       [
-        "French right",
-        "plains",
-        0.595238,
-        0.555556
+        "Hokuriku",
+        "coast",
+        0.327193,
+        0.707907
       ],
       [
-        "Rossomme",
-        "plains",
-        0.440476,
-        0.844444
-      ],
-      [
-        "Plancenoit",
+        "Kanto",
         "city",
-        0.571429,
-        0.8
+        0.380702,
+        0.728372
       ],
       [
-        "Eastern approaches",
+        "Chubu",
+        "hills",
+        0.354035,
+        0.705814
+      ],
+      [
+        "Kansai",
+        "city",
+        0.307018,
+        0.751395
+      ],
+      [
+        "Chugoku",
+        "hills",
+        0.253684,
+        0.758372
+      ],
+      [
+        "Shikoku",
         "forest",
-        0.869048,
-        0.644444
+        0.272807,
+        0.777674
       ],
       [
-        "Southern reserve",
+        "Northern Kyushu",
+        "city",
+        0.217544,
+        0.776977
+      ],
+      [
+        "Southern Kyushu",
+        "coast",
+        0.220351,
+        0.823488
+      ],
+      [
+        "Pyongyang",
+        "city",
+        0.135965,
+        0.650465
+      ],
+      [
+        "Hamhung",
+        "hills",
+        0.167193,
+        0.63
+      ],
+      [
+        "Seoul",
+        "city",
+        0.157544,
+        0.684419
+      ],
+      [
+        "Jeolla",
         "plains",
-        0.738095,
-        0.911111
+        0.160351,
+        0.725116
+      ],
+      [
+        "Gyeongsang",
+        "coast",
+        0.194211,
+        0.74
+      ],
+      [
+        "Dalian",
+        "coast",
+        0.063509,
+        0.653023
+      ],
+      [
+        "Shenyang",
+        "city",
+        0.095263,
+        0.586047
+      ],
+      [
+        "Changchun",
+        "plains",
+        0.128421,
+        0.53907
+      ],
+      [
+        "Yanbian",
+        "forest",
+        0.20193,
+        0.560465
+      ],
+      [
+        "Harbin",
+        "city",
+        0.151579,
+        0.493953
+      ],
+      [
+        "Qiqihar",
+        "plains",
+        0.104561,
+        0.456977
+      ],
+      [
+        "Jiamusi",
+        "forest",
+        0.217018,
+        0.469767
+      ],
+      [
+        "Amur",
+        "forest",
+        0.167193,
+        0.388605
+      ],
+      [
+        "Primorye",
+        "city",
+        0.243684,
+        0.555349
+      ],
+      [
+        "Khabarovsk",
+        "city",
+        0.299474,
+        0.430698
+      ],
+      [
+        "Okhotsk",
+        "coast",
+        0.33685,
+        0.189941
+      ],
+      [
+        "Magadan",
+        "hills",
+        0.575439,
+        0.173023
+      ],
+      [
+        "Sakhalin",
+        "forest",
+        0.43386,
+        0.386047
+      ],
+      [
+        "Kuril Islands",
+        "hills",
+        0.52348,
+        0.512001
+      ],
+      [
+        "Kamchatka",
+        "hills",
+        0.713158,
+        0.325116
       ]
     ],
     "player1_capital": 1,
     "player2_capital": 14,
     "player1_extra_starts": [
-      0,
       2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8,
-      9
+      4
     ],
     "player2_extra_starts": [
-      10,
-      11,
-      12,
-      13,
-      15,
-      16,
-      17
-    ],
-    "battle": {
-      "id": "waterloo",
-      "name": "Waterloo \u00b7 1815",
-      "date": "18 June 1815",
-      "description": "Hold the ridge and farm strongpoints, or break the Allied line before the battle ends.",
-      "bounds": [
-        4.382,
-        50.651,
-        4.466,
-        50.696
-      ],
-      "sides": [
-        "Anglo-Allied army",
-        "French army"
-      ],
-      "commanders": [
-        "Wellington",
-        "Napoleon"
-      ],
-      "capitals": [
-        1,
-        14
-      ],
-      "objectives": [
-        5,
-        7,
-        9
-      ],
-      "defender": 0,
-      "context": "A focused reconstruction of the main battlefield. Prussian arrival, artillery and cavalry are abstracted into the starting forces; there are no scripted reinforcements.",
-      "sources": [
-        [
-          "National Army Museum",
-          "https://www.nam.ac.uk/explore/battle-waterloo"
-        ],
-        [
-          "Waterloo Association",
-          "https://waterlooassociation.org.uk/The%20Battle%20of%20Waterloo.pdf"
-        ]
-      ],
-      "sites": [
-        [
-          "Braine approach",
-          "plains",
-          4.391,
-          50.69,
-          0,
-          35
-        ],
-        [
-          "Mont-Saint-Jean",
-          "city",
-          4.412,
-          50.69,
-          0,
-          75
-        ],
-        [
-          "Allied reverse slope",
-          "hills",
-          4.427,
-          50.687,
-          0,
-          50
-        ],
-        [
-          "Ohain approach",
-          "plains",
-          4.454,
-          50.69,
-          0,
-          30
-        ],
-        [
-          "Western ridge",
-          "hills",
-          4.398,
-          50.681,
-          0,
-          40
-        ],
-        [
-          "Hougoumont",
-          "city",
-          4.395,
-          50.671,
-          0,
-          45
-        ],
-        [
-          "Central ridge",
-          "hills",
-          4.414,
-          50.683,
-          0,
-          45
-        ],
-        [
-          "La Haye Sainte",
-          "city",
-          4.411,
-          50.678,
-          0,
-          35
-        ],
-        [
-          "Eastern slope",
-          "plains",
-          4.433,
-          50.678,
-          0,
-          30
-        ],
-        [
-          "Papelotte",
-          "city",
-          4.449,
-          50.681,
-          0,
-          35
-        ],
-        [
-          "Hougoumont wood",
-          "forest",
-          4.394,
-          50.662,
-          1,
-          55
-        ],
-        [
-          "French left",
-          "plains",
-          4.406,
-          50.665,
-          1,
-          55
-        ],
-        [
-          "La Belle Alliance",
-          "city",
-          4.413,
-          50.669,
-          1,
-          85
-        ],
-        [
-          "French right",
-          "plains",
-          4.432,
-          50.671,
-          1,
-          65
-        ],
-        [
-          "Rossomme",
-          "plains",
-          4.419,
-          50.658,
-          1,
-          90
-        ],
-        [
-          "Plancenoit",
-          "city",
-          4.43,
-          50.66,
-          1,
-          55
-        ],
-        [
-          "Eastern approaches",
-          "forest",
-          4.455,
-          50.667,
-          1,
-          40
-        ],
-        [
-          "Southern reserve",
-          "plains",
-          4.444,
-          50.655,
-          1,
-          40
-        ]
-      ],
-      "roads": [
-        [
-          1,
-          6,
-          7,
-          12,
-          14
-        ]
-      ],
-      "ridges": [
-        [
-          4,
-          6,
-          2,
-          9
-        ]
-      ]
-    },
-    "map_asset_id": "waterloo_atlas_v3",
-    "extra_edges": [],
-    "removed_edges": []
-  },
-  "sekigahara": {
-    "id": "sekigahara",
-    "name": "Sekigahara \u00b7 1600",
-    "category": "historical",
-    "description": "Fight for the valley road and the heights overlooking the route between eastern and western Japan.",
-    "regions": [
-      [
-        "Mount Sasao",
-        "hills",
-        0.496371,
-        0.391918
-      ],
-      [
-        "Northern foothills",
-        "forest",
-        0.414286,
-        0.22449
-      ],
-      [
-        "Shimazu position",
-        "plains",
-        0.502814,
-        0.488429
-      ],
-      [
-        "Western valley",
-        "plains",
-        0.114286,
-        0.346939
-      ],
-      [
-        "Konishi position",
-        "plains",
-        0.484643,
-        0.513959
-      ],
-      [
-        "Ukita position",
-        "plains",
-        0.440814,
-        0.575306
-      ],
-      [
-        "Otani position",
-        "hills",
-        0.378514,
-        0.633959
-      ],
-      [
-        "Southern foothills",
-        "forest",
-        0.242857,
-        0.836735
-      ],
-      [
-        "Mount Matsuo",
-        "hills",
-        0.432914,
-        0.892367
-      ],
-      [
-        "Northern approach",
-        "plains",
-        0.771429,
-        0.163265
-      ],
-      [
-        "Kuroda position",
-        "plains",
-        0.665157,
-        0.438388
-      ],
-      [
-        "Central battlefield",
-        "plains",
-        0.536614,
-        0.418571
-      ],
-      [
-        "Sekigahara village",
-        "city",
-        0.571429,
-        0.591837
-      ],
-      [
-        "Tokugawa reserve",
-        "hills",
-        0.920157,
-        0.522551
-      ],
-      [
-        "Fukushima position",
-        "plains",
-        0.529014,
-        0.650571
-      ],
-      [
-        "Nakasendo east",
-        "plains",
-        0.914286,
-        0.285714
-      ],
-      [
-        "Southern valley",
-        "plains",
-        0.685714,
-        0.836735
-      ],
-      [
-        "Eastern woodland",
-        "forest",
-        0.9,
-        0.877551
-      ]
-    ],
-    "player1_capital": 0,
-    "player2_capital": 13,
-    "player1_extra_starts": [
-      1,
-      2,
-      3,
-      4,
-      5,
       6,
-      7,
       8
-    ],
-    "player2_extra_starts": [
-      9,
-      10,
-      11,
-      12,
-      14,
-      15,
-      16,
-      17
-    ],
-    "battle": {
-      "id": "sekigahara",
-      "name": "Sekigahara \u00b7 1600",
-      "date": "21 October 1600",
-      "description": "Fight for the valley road and the heights overlooking the route between eastern and western Japan.",
-      "bounds": [
-        136.424,
-        35.342,
-        136.494,
-        35.391
-      ],
-      "sides": [
-        "Western Army",
-        "Eastern Army"
-      ],
-      "commanders": [
-        "Ishida Mitsunari",
-        "Tokugawa Ieyasu"
-      ],
-      "capitals": [
-        0,
-        13
-      ],
-      "objectives": [
-        0,
-        8,
-        12
-      ],
-      "defender": 0,
-      "context": "The core valley battlefield, with approximate encampments. Kobayakawa starts with the Western Army and remains loyal in this what-if scenario; defections and the distant Nangu forces are not simulated.",
-      "sources": [
-        [
-          "Gifu Sekigahara battlefield guide",
-          "https://www.sekigahara1600.com/download/"
-        ],
-        [
-          "National Park Service / Gifu museum",
-          "https://www.nps.gov/articles/000/battle-of-sekigahara.htm"
-        ]
-      ],
-      "sites": [
-        [
-          "Mount Sasao",
-          "hills",
-          136.458746,
-          35.371796,
-          0,
-          80
-        ],
-        [
-          "Northern foothills",
-          "forest",
-          136.453,
-          35.38,
-          0,
-          35
-        ],
-        [
-          "Shimazu position",
-          "plains",
-          136.459197,
-          35.367067,
-          0,
-          45
-        ],
-        [
-          "Western valley",
-          "plains",
-          136.432,
-          35.374,
-          0,
-          35
-        ],
-        [
-          "Konishi position",
-          "plains",
-          136.457925,
-          35.365816,
-          0,
-          45
-        ],
-        [
-          "Ukita position",
-          "plains",
-          136.454857,
-          35.36281,
-          0,
-          70
-        ],
-        [
-          "Otani position",
-          "hills",
-          136.450496,
-          35.359936,
-          0,
-          40
-        ],
-        [
-          "Southern foothills",
-          "forest",
-          136.441,
-          35.35,
-          0,
-          35
-        ],
-        [
-          "Mount Matsuo",
-          "hills",
-          136.454304,
-          35.347274,
-          0,
-          70
-        ],
-        [
-          "Northern approach",
-          "plains",
-          136.478,
-          35.383,
-          1,
-          45
-        ],
-        [
-          "Kuroda position",
-          "plains",
-          136.470561,
-          35.369519,
-          1,
-          65
-        ],
-        [
-          "Central battlefield",
-          "plains",
-          136.461563,
-          35.37049,
-          1,
-          75
-        ],
-        [
-          "Sekigahara village",
-          "city",
-          136.464,
-          35.362,
-          1,
-          65
-        ],
-        [
-          "Tokugawa reserve",
-          "hills",
-          136.488411,
-          35.365395,
-          1,
-          90
-        ],
-        [
-          "Fukushima position",
-          "plains",
-          136.461031,
-          35.359122,
-          1,
-          70
-        ],
-        [
-          "Nakasendo east",
-          "plains",
-          136.488,
-          35.377,
-          1,
-          45
-        ],
-        [
-          "Southern valley",
-          "plains",
-          136.472,
-          35.35,
-          1,
-          40
-        ],
-        [
-          "Eastern woodland",
-          "forest",
-          136.487,
-          35.348,
-          1,
-          30
-        ]
-      ],
-      "roads": [
-        [
-          3,
-          4,
-          11,
-          12,
-          13,
-          15
-        ]
-      ],
-      "ridges": [
-        [
-          3,
-          0,
-          1
-        ],
-        [
-          6,
-          7,
-          8
-        ]
-      ]
-    },
-    "map_asset_id": "sekigahara_atlas_v3",
-    "extra_edges": [],
-    "removed_edges": []
-  },
-  "hastings": {
-    "id": "hastings",
-    "name": "Hastings \u00b7 1066",
-    "category": "historical",
-    "description": "Defend the English ridge or find a route uphill with William\u2019s Norman army.",
-    "regions": [
-      [
-        "Northern woodland",
-        "forest",
-        0.166667,
-        0.130435
-      ],
-      [
-        "Northern reserve",
-        "plains",
-        0.466667,
-        0.173913
-      ],
-      [
-        "Caldbec approach",
-        "hills",
-        0.8,
-        0.130435
-      ],
-      [
-        "Western ridge",
-        "hills",
-        0.2,
-        0.347826
-      ],
-      [
-        "Harold\u2019s ridge",
-        "hills",
-        0.466667,
-        0.391304
-      ],
-      [
-        "Eastern ridge",
-        "hills",
-        0.733333,
-        0.347826
-      ],
-      [
-        "Western slope",
-        "plains",
-        0.133333,
-        0.608696
-      ],
-      [
-        "Central slope",
-        "plains",
-        0.433333,
-        0.608696
-      ],
-      [
-        "Eastern spur",
-        "hills",
-        0.866667,
-        0.521739
-      ],
-      [
-        "Western hollow",
-        "forest",
-        0.133333,
-        0.869565
-      ],
-      [
-        "Lower hillside",
-        "plains",
-        0.366667,
-        0.826087
-      ],
-      [
-        "Norman centre",
-        "plains",
-        0.6,
-        0.695652
-      ],
-      [
-        "Southeastern approach",
-        "plains",
-        0.866667,
-        0.73913
-      ],
-      [
-        "Southern approach",
-        "plains",
-        0.6,
-        0.913043
-      ],
-      [
-        "Eastern woodland",
-        "forest",
-        0.9,
-        0.173913
-      ],
-      [
-        "William\u2019s reserve",
-        "plains",
-        0.9,
-        0.913043
-      ]
-    ],
-    "player1_capital": 4,
-    "player2_capital": 15,
-    "player1_extra_starts": [
-      0,
-      1,
-      2,
-      3,
-      5,
-      6,
-      7,
-      14
-    ],
-    "player2_extra_starts": [
-      8,
-      9,
-      10,
-      11,
-      12,
-      13
-    ],
-    "battle": {
-      "id": "hastings",
-      "name": "Hastings \u00b7 1066",
-      "date": "14 October 1066",
-      "description": "Defend the English ridge or find a route uphill with William\u2019s Norman army.",
-      "bounds": [
-        0.473,
-        50.9,
-        0.503,
-        50.923
-      ],
-      "sides": [
-        "English army",
-        "Norman army"
-      ],
-      "commanders": [
-        "Harold Godwinson",
-        "William of Normandy"
-      ],
-      "capitals": [
-        4,
-        15
-      ],
-      "objectives": [
-        3,
-        4,
-        5
-      ],
-      "defender": 0,
-      "context": "Uses the traditional Battle Abbey location and a southeast approach. The extent and orientation of the fighting are debated. Ridge sectors refer to the terrain before the abbey was built.",
-      "sources": [
-        [
-          "English Heritage: location and landscape",
-          "https://www.english-heritage.org.uk/visit/places/1066-battle-of-hastings-abbey-and-battlefield/history-and-stories/battle-of-hastings-location/"
-        ],
-        [
-          "Historic England battlefield register",
-          "https://historicengland.org.uk/listing/the-list/list-entry/1000013"
-        ]
-      ],
-      "sites": [
-        [
-          "Northern woodland",
-          "forest",
-          0.478,
-          50.92,
-          0,
-          35
-        ],
-        [
-          "Northern reserve",
-          "plains",
-          0.487,
-          50.919,
-          0,
-          60
-        ],
-        [
-          "Caldbec approach",
-          "hills",
-          0.497,
-          50.92,
-          0,
-          40
-        ],
-        [
-          "Western ridge",
-          "hills",
-          0.479,
-          50.915,
-          0,
-          65
-        ],
-        [
-          "Harold\u2019s ridge",
-          "hills",
-          0.487,
-          50.914,
-          0,
-          90
-        ],
-        [
-          "Eastern ridge",
-          "hills",
-          0.495,
-          50.915,
-          0,
-          60
-        ],
-        [
-          "Western slope",
-          "plains",
-          0.477,
-          50.909,
-          0,
-          35
-        ],
-        [
-          "Central slope",
-          "plains",
-          0.486,
-          50.909,
-          0,
-          45
-        ],
-        [
-          "Eastern spur",
-          "hills",
-          0.499,
-          50.911,
-          1,
-          50
-        ],
-        [
-          "Western hollow",
-          "forest",
-          0.477,
-          50.903,
-          1,
-          40
-        ],
-        [
-          "Lower hillside",
-          "plains",
-          0.484,
-          50.904,
-          1,
-          70
-        ],
-        [
-          "Norman centre",
-          "plains",
-          0.491,
-          50.907,
-          1,
-          90
-        ],
-        [
-          "Southeastern approach",
-          "plains",
-          0.499,
-          50.906,
-          1,
-          70
-        ],
-        [
-          "Southern approach",
-          "plains",
-          0.491,
-          50.902,
-          1,
-          55
-        ],
-        [
-          "Eastern woodland",
-          "forest",
-          0.5,
-          50.919,
-          0,
-          35
-        ],
-        [
-          "William\u2019s reserve",
-          "plains",
-          0.5,
-          50.902,
-          1,
-          90
-        ]
-      ],
-      "roads": [
-        [
-          15,
-          12,
-          8,
-          5
-        ]
-      ],
-      "ridges": [
-        [
-          3,
-          4,
-          5
-        ]
-      ]
-    },
-    "map_asset_id": "hastings_atlas_v3",
-    "extra_edges": [],
-    "removed_edges": []
-  },
-  "hattin": {
-    "id": "hattin",
-    "name": "Hattin \u00b7 1187",
-    "category": "historical",
-    "description": "Contest the Horns of Hattin and the routes to fresh water during the Crusades.",
-    "regions": [
-      [
-        "Western approach",
-        "plains",
-        0.070588,
-        0.559524
-      ],
-      [
-        "Lubiya",
-        "city",
-        0.205882,
-        0.75
-      ],
-      [
-        "Northern plateau",
-        "hills",
-        0.129412,
-        0.22619
-      ],
-      [
-        "Hattin springs",
-        "plains",
-        0.323529,
-        0.333333
-      ],
-      [
-        "Western ridge",
-        "hills",
-        0.217647,
-        0.416667
-      ],
-      [
-        "Crusader camp",
-        "plains",
-        0.282353,
-        0.607143
-      ],
-      [
-        "Southern plateau",
-        "plains",
-        0.317647,
-        0.892857
-      ],
-      [
-        "Horns of Hattin",
-        "hills",
-        0.376471,
-        0.488095
-      ],
-      [
-        "Northern escape route",
-        "hills",
-        0.464706,
-        0.202381
-      ],
-      [
-        "Eastern descent",
-        "hills",
-        0.547059,
-        0.47619
-      ],
-      [
-        "Southern heights",
-        "hills",
-        0.5,
-        0.761905
-      ],
-      [
-        "Ayyubid reserve",
-        "plains",
-        0.670588,
-        0.630952
-      ],
-      [
-        "Lakeshore access",
-        "coast",
-        0.747059,
-        0.416667
-      ],
-      [
-        "Tiberias approaches",
-        "plains",
-        0.8,
-        0.654762
-      ],
-      [
-        "Tiberias",
-        "city",
-        0.852941,
-        0.821429
-      ],
-      [
-        "Northern lakeside",
-        "coast",
-        0.647059,
-        0.095238
-      ]
-    ],
-    "player1_capital": 5,
-    "player2_capital": 11,
-    "player1_extra_starts": [
-      0,
-      1,
-      2,
-      4,
-      6
-    ],
-    "player2_extra_starts": [
-      3,
-      7,
-      8,
-      9,
-      10,
-      12,
-      13,
-      14,
-      15
-    ],
-    "battle": {
-      "id": "hattin",
-      "name": "Hattin \u00b7 1187",
-      "date": "3\u20134 July 1187",
-      "description": "Contest the Horns of Hattin and the routes to fresh water during the Crusades.",
-      "bounds": [
-        35.395,
-        32.757,
-        35.565,
-        32.841
-      ],
-      "sides": [
-        "Kingdom of Jerusalem",
-        "Ayyubid army"
-      ],
-      "commanders": [
-        "Guy of Lusignan",
-        "Saladin"
-      ],
-      "capitals": [
-        5,
-        11
-      ],
-      "objectives": [
-        3,
-        7,
-        12
-      ],
-      "defender": 1,
-      "context": "Covers the final approach from the plateau toward Hattin and Lake Tiberias. Water access is represented by objectives and supply routes; thirst, fire and historical troop totals are not simulated. An asymmetric scenario: the Crusader force begins outnumbered. Objective control matters; equal forces are not assumed.",
-      "sources": [
-        [
-          "Fordham: translated contemporary account",
-          "https://sourcebooks.web.fordham.edu/source/1187hattin.asp"
-        ],
-        [
-          "Encyclopaedia Britannica",
-          "https://www.britannica.com/event/Battle-of-Hattin"
-        ]
-      ],
-      "sites": [
-        [
-          "Western approach",
-          "plains",
-          35.407,
-          32.794,
-          0,
-          45
-        ],
-        [
-          "Lubiya",
-          "city",
-          35.43,
-          32.778,
-          0,
-          50
-        ],
-        [
-          "Northern plateau",
-          "hills",
-          35.417,
-          32.822,
-          0,
-          40
-        ],
-        [
-          "Hattin springs",
-          "plains",
-          35.45,
-          32.813,
-          1,
-          40
-        ],
-        [
-          "Western ridge",
-          "hills",
-          35.432,
-          32.806,
-          0,
-          45
-        ],
-        [
-          "Crusader camp",
-          "plains",
-          35.443,
-          32.79,
-          0,
-          85
-        ],
-        [
-          "Southern plateau",
-          "plains",
-          35.449,
-          32.766,
-          0,
-          40
-        ],
-        [
-          "Horns of Hattin",
-          "hills",
-          35.459,
-          32.8,
-          1,
-          55
-        ],
-        [
-          "Northern escape route",
-          "hills",
-          35.474,
-          32.824,
-          1,
-          45
-        ],
-        [
-          "Eastern descent",
-          "hills",
-          35.488,
-          32.801,
-          1,
-          65
-        ],
-        [
-          "Southern heights",
-          "hills",
-          35.48,
-          32.777,
-          1,
-          45
-        ],
-        [
-          "Ayyubid reserve",
-          "plains",
-          35.509,
-          32.788,
-          1,
-          85
-        ],
-        [
-          "Lakeshore access",
-          "coast",
-          35.522,
-          32.806,
-          1,
-          55
-        ],
-        [
-          "Tiberias approaches",
-          "plains",
-          35.531,
-          32.786,
-          1,
-          40
-        ],
-        [
-          "Tiberias",
-          "city",
-          35.54,
-          32.772,
-          1,
-          35
-        ],
-        [
-          "Northern lakeside",
-          "coast",
-          35.505,
-          32.833,
-          1,
-          35
-        ]
-      ],
-      "roads": [
-        [
-          0,
-          5,
-          7,
-          9,
-          12
-        ],
-        [
-          1,
-          5,
-          10,
-          11,
-          13,
-          14
-        ]
-      ],
-      "ridges": [
-        [
-          2,
-          4,
-          7,
-          10
-        ]
-      ],
-      "shoreline": [
-        [
-          35.518,
-          32.841
-        ],
-        [
-          35.526,
-          32.826
-        ],
-        [
-          35.532,
-          32.808
-        ],
-        [
-          35.54,
-          32.792
-        ],
-        [
-          35.55,
-          32.775
-        ],
-        [
-          35.555,
-          32.757
-        ]
-      ]
-    },
-    "map_asset_id": "hattin_atlas_v3",
-    "extra_edges": [],
-    "removed_edges": []
-  },
-  "gettysburg": {
-    "id": "gettysburg",
-    "name": "Gettysburg \u00b7 1863",
-    "category": "historical",
-    "description": "Hold the Union fishhook or advance from Seminary Ridge across the fields of Gettysburg.",
-    "regions": [
-      [
-        "Cemetery Hill",
-        "hills",
-        0.580645,
-        0.409091
-      ],
-      [
-        "Culp\u2019s Hill",
-        "forest",
-        0.767742,
-        0.416667
-      ],
-      [
-        "Cemetery Ridge",
-        "hills",
-        0.508065,
-        0.515152
-      ],
-      [
-        "Spangler\u2019s Spring",
-        "forest",
-        0.774194,
-        0.530303
-      ],
-      [
-        "Little Round Top",
-        "hills",
-        0.487097,
-        0.833333
-      ],
-      [
-        "Meade\u2019s headquarters",
-        "city",
-        0.572581,
-        0.492424
-      ],
-      [
-        "Peach Orchard",
-        "plains",
-        0.290323,
-        0.689394
-      ],
-      [
-        "Wheatfield",
-        "plains",
-        0.387097,
-        0.765152
-      ],
-      [
-        "Devil\u2019s Den",
-        "hills",
-        0.398387,
-        0.848485
-      ],
-      [
-        "Round Top",
-        "forest",
-        0.451613,
-        0.924242
-      ],
-      [
-        "Baltimore Pike",
-        "plains",
-        0.91129,
-        0.659091
-      ],
-      [
-        "Taneytown Road",
-        "plains",
-        0.637097,
-        0.757576
-      ],
-      [
-        "Gettysburg town",
-        "city",
-        0.580645,
-        0.242424
-      ],
-      [
-        "Seminary Ridge",
-        "hills",
-        0.346774,
-        0.272727
-      ],
-      [
-        "Oak Hill approach",
-        "hills",
-        0.387097,
-        0.075758
-      ],
-      [
-        "Benner\u2019s Hill",
-        "hills",
-        0.895161,
-        0.272727
-      ],
-      [
-        "Pitzer\u2019s Woods",
-        "forest",
-        0.233871,
-        0.507576
-      ],
-      [
-        "Spangler farm",
-        "plains",
-        0.209677,
-        0.628788
-      ],
-      [
-        "Warfield Ridge",
-        "hills",
-        0.201613,
-        0.80303
-      ],
-      [
-        "Southern Confederate approach",
-        "plains",
-        0.25,
-        0.939394
-      ],
-      [
-        "Emmitsburg Road",
-        "plains",
-        0.395161,
-        0.477273
-      ],
-      [
-        "Herr Ridge approach",
-        "plains",
-        0.104839,
-        0.25
-      ]
-    ],
-    "player1_capital": 5,
-    "player2_capital": 13,
-    "player1_extra_starts": [
-      0,
-      1,
-      2,
-      3,
-      4,
-      6,
-      7,
-      8,
-      9,
-      10,
-      11
-    ],
-    "player2_extra_starts": [
-      12,
-      14,
-      15,
-      16,
-      17,
-      18,
-      19,
-      20,
-      21
-    ],
-    "battle": {
-      "id": "gettysburg",
-      "name": "Gettysburg \u00b7 1863",
-      "date": "2\u20133 July 1863",
-      "description": "Hold the Union fishhook or advance from Seminary Ridge across the fields of Gettysburg.",
-      "bounds": [
-        -77.267,
-        39.781,
-        -77.205,
-        39.847
-      ],
-      "sides": [
-        "Union army",
-        "Confederate army"
-      ],
-      "commanders": [
-        "George G. Meade",
-        "Robert E. Lee"
-      ],
-      "capitals": [
-        5,
-        13
-      ],
-      "objectives": [
-        1,
-        2,
-        4
-      ],
-      "defender": 0,
-      "context": "A compressed July 2\u20133 scenario around the Union fishhook and Confederate approaches. July 1 and the distant cavalry battle are outside this scenario. Artillery and cavalry are abstracted into fixed strengths; assaults, reinforcements and day changes are not scripted. Sector control represents an approximate opening deployment, not exact regimental lines.",
-      "sources": [
-        [
-          "National Park Service: battlefield landscape",
-          "https://www.nps.gov/gett/learn/historyculture/places.htm"
-        ],
-        [
-          "National Park Service: battle overview",
-          "https://www.nps.gov/gett/learn/historyculture/gettysburg-overview.htm"
-        ]
-      ],
-      "sites": [
-        [
-          "Cemetery Hill",
-          "hills",
-          -77.231,
-          39.82,
-          0,
-          65
-        ],
-        [
-          "Culp\u2019s Hill",
-          "forest",
-          -77.2194,
-          39.8195,
-          0,
-          60
-        ],
-        [
-          "Cemetery Ridge",
-          "hills",
-          -77.2355,
-          39.813,
-          0,
-          70
-        ],
-        [
-          "Spangler\u2019s Spring",
-          "forest",
-          -77.219,
-          39.812,
-          0,
-          40
-        ],
-        [
-          "Little Round Top",
-          "hills",
-          -77.2368,
-          39.792,
-          0,
-          60
-        ],
-        [
-          "Meade\u2019s headquarters",
-          "city",
-          -77.2315,
-          39.8145,
-          0,
-          80
-        ],
-        [
-          "Peach Orchard",
-          "plains",
-          -77.249,
-          39.8015,
-          0,
-          40
-        ],
-        [
-          "Wheatfield",
-          "plains",
-          -77.243,
-          39.7965,
-          0,
-          45
-        ],
-        [
-          "Devil\u2019s Den",
-          "hills",
-          -77.2423,
-          39.791,
-          0,
-          45
-        ],
-        [
-          "Round Top",
-          "forest",
-          -77.239,
-          39.786,
-          0,
-          35
-        ],
-        [
-          "Baltimore Pike",
-          "plains",
-          -77.2105,
-          39.8035,
-          0,
-          45
-        ],
-        [
-          "Taneytown Road",
-          "plains",
-          -77.2275,
-          39.797,
-          0,
-          45
-        ],
-        [
-          "Gettysburg town",
-          "city",
-          -77.231,
-          39.831,
-          1,
-          55
-        ],
-        [
-          "Seminary Ridge",
-          "hills",
-          -77.2455,
-          39.829,
-          1,
-          80
-        ],
-        [
-          "Oak Hill approach",
-          "hills",
-          -77.243,
-          39.842,
-          1,
-          50
-        ],
-        [
-          "Benner\u2019s Hill",
-          "hills",
-          -77.2115,
-          39.829,
-          1,
-          45
-        ],
-        [
-          "Pitzer\u2019s Woods",
-          "forest",
-          -77.2525,
-          39.8135,
-          1,
-          65
-        ],
-        [
-          "Spangler farm",
-          "plains",
-          -77.254,
-          39.8055,
-          1,
-          55
-        ],
-        [
-          "Warfield Ridge",
-          "hills",
-          -77.2545,
-          39.794,
-          1,
-          70
-        ],
-        [
-          "Southern Confederate approach",
-          "plains",
-          -77.2515,
-          39.785,
-          1,
-          55
-        ],
-        [
-          "Emmitsburg Road",
-          "plains",
-          -77.2425,
-          39.8155,
-          1,
-          60
-        ],
-        [
-          "Herr Ridge approach",
-          "plains",
-          -77.2605,
-          39.8305,
-          1,
-          45
-        ]
-      ],
-      "roads": [
-        [
-          12,
-          20,
-          6,
-          19
-        ],
-        [
-          12,
-          0,
-          5,
-          11
-        ]
-      ],
-      "ridges": [
-        [
-          0,
-          2,
-          4,
-          9
-        ],
-        [
-          13,
-          16,
-          18
-        ]
-      ]
-    },
-    "map_asset_id": "gettysburg_atlas_v3",
-    "extra_edges": [],
-    "removed_edges": []
-  },
-  "japan_korea": {
-    "id": "japan_korea",
-    "name": "Japan & Korea",
-    "category": "world",
-    "description": "Mountain provinces, coastal corridors and a small network of sea crossings around the Sea of Japan. 24 regions.",
-    "map_asset_id": "japan_korea_atlas_v3",
-    "regions": [
-      [
-        "Hokkaido",
-        "forest",
-        0.809524,
-        0.15625
-      ],
-      [
-        "Aomori",
-        "forest",
-        0.747619,
-        0.325
-      ],
-      [
-        "Iwate",
-        "hills",
-        0.771429,
-        0.40625
-      ],
-      [
-        "Akita",
-        "forest",
-        0.719048,
-        0.39375
-      ],
-      [
-        "Sendai",
-        "city",
-        0.757143,
-        0.48125
-      ],
-      [
-        "Fukushima",
-        "hills",
-        0.733333,
-        0.51875
-      ],
-      [
-        "Niigata",
-        "coast",
-        0.666667,
-        0.50625
-      ],
-      [
-        "Edo Plain",
-        "city",
-        0.7,
-        0.64375
-      ],
-      [
-        "Nagano",
-        "hills",
-        0.628571,
-        0.5875
-      ],
-      [
-        "Kanazawa",
-        "coast",
-        0.557143,
-        0.5875
-      ],
-      [
-        "Owari",
-        "plains",
-        0.566667,
-        0.675
-      ],
-      [
-        "Kyoto",
-        "city",
-        0.514286,
-        0.6875
-      ],
-      [
-        "Kii",
-        "forest",
-        0.509524,
-        0.75625
-      ],
-      [
-        "Sanin",
-        "coast",
-        0.385714,
-        0.65625
-      ],
-      [
-        "Hiroshima",
-        "city",
-        0.357143,
-        0.725
-      ],
-      [
-        "Shikoku",
-        "hills",
-        0.404762,
-        0.775
-      ],
-      [
-        "Northern Kyushu",
-        "city",
-        0.257143,
-        0.775
-      ],
-      [
-        "Southern Kyushu",
-        "hills",
-        0.277823,
-        0.881047
-      ],
-      [
-        "Pyongyang",
-        "city",
-        0.038095,
-        0.4375
-      ],
-      [
-        "Hamhung",
-        "hills",
-        0.119048,
-        0.38125
-      ],
-      [
-        "Northern Korea",
-        "forest",
-        0.190476,
-        0.275
-      ],
-      [
-        "Seoul",
-        "city",
-        0.095238,
-        0.525
-      ],
-      [
-        "Jeolla",
-        "plains",
-        0.1,
-        0.675
-      ],
-      [
-        "Gyeongsang",
-        "coast",
-        0.171429,
-        0.63125
-      ]
-    ],
-    "player1_capital": 4,
-    "player2_capital": 20,
-    "player1_extra_starts": [
-      2,
-      3
-    ],
-    "player2_extra_starts": [
-      19,
-      21
     ],
     "setting": {
       "era": "",
       "note": "Natural Earth coastlines and geographic boundaries, with connected gameplay sectors around named locations. Internal lines are simplified interpretations, not surveyed historical political borders.",
-      "sources": [],
+      "sources": [
+        [
+          "Natural Earth admin-1 boundaries",
+          "https://www.naturalearthdata.com/downloads/10m-cultural-vectors/10m-admin-1-states-provinces/"
+        ]
+      ],
       "terrain_note": "Modern coastlines and administrative geometry define gameplay regions; these are not exact historical political borders.",
-      "opening_note": "Recommended opening: 136 vs 136 troops. Territory growth and access also affect difficulty."
-    }
+      "opening_note": "Recommended opening: 152 vs 152 troops. Territory growth and access also affect difficulty."
+    },
+    "anchor_countries": [
+      "JPN",
+      "JPN",
+      "JPN",
+      "JPN",
+      "JPN",
+      "JPN",
+      "JPN",
+      "JPN",
+      "JPN",
+      "JPN",
+      "PRK",
+      "PRK",
+      "KOR",
+      "KOR",
+      "KOR",
+      "CHN",
+      "CHN",
+      "CHN",
+      "CHN",
+      "CHN",
+      "CHN",
+      "CHN",
+      "RUS",
+      "RUS",
+      "RUS",
+      "RUS",
+      "RUS",
+      "RUS",
+      "RUS",
+      "RUS"
+    ]
   },
   "british_irish_isles": {
     "id": "british_irish_isles",
@@ -3911,4559 +2212,1140 @@
       "opening_note": "Recommended opening: 168 vs 168 troops. Territory growth and access also affect difficulty."
     }
   },
-  "nile_horn": {
-    "id": "nile_horn",
-    "name": "Nile Valley & the Horn",
-    "category": "world",
-    "description": "Follow the Nile through desert approaches into the Ethiopian highlands and the Horn of Africa. 24 regions.",
-    "map_asset_id": "nile_horn_atlas_v3",
-    "regions": [
-      [
-        "Nile Delta",
-        "plains",
-        0.16,
-        0.036364
-      ],
-      [
-        "Cairo",
-        "city",
-        0.168,
-        0.060606
-      ],
-      [
-        "Western Oases",
-        "desert",
-        0.072,
-        0.112121
-      ],
-      [
-        "Middle Egypt",
-        "plains",
-        0.152,
-        0.118182
-      ],
-      [
-        "Thebaid",
-        "city",
-        0.224,
-        0.190909
-      ],
-      [
-        "Aswan",
-        "coast",
-        0.236,
-        0.239394
-      ],
-      [
-        "Nubia",
-        "desert",
-        0.168,
-        0.309091
-      ],
-      [
-        "Dongola",
-        "plains",
-        0.14,
-        0.387879
-      ],
-      [
-        "Red Sea Hills",
-        "hills",
-        0.36,
-        0.363636
-      ],
-      [
-        "Khartoum",
-        "city",
-        0.224,
-        0.49697
-      ],
-      [
-        "Kordofan",
-        "desert",
-        0.108,
-        0.569697
-      ],
-      [
-        "White Nile",
-        "plains",
-        0.224,
-        0.612121
-      ],
-      [
-        "Blue Nile",
-        "forest",
-        0.296,
-        0.627273
-      ],
-      [
-        "Sudd",
-        "forest",
-        0.148,
-        0.727273
-      ],
-      [
-        "Equatoria",
-        "forest",
-        0.184,
-        0.821212
-      ],
-      [
-        "Eritrean Highlands",
-        "hills",
-        0.476,
-        0.506061
-      ],
-      [
-        "Tigray",
-        "hills",
-        0.5,
-        0.560606
-      ],
-      [
-        "Lake Tana",
-        "hills",
-        0.416,
-        0.618182
-      ],
-      [
-        "Shewa",
-        "city",
-        0.468,
-        0.69697
-      ],
-      [
-        "Afar",
-        "desert",
-        0.56,
-        0.606061
-      ],
-      [
-        "Harar",
-        "city",
-        0.604,
-        0.687879
-      ],
-      [
-        "Somali Plateau",
-        "desert",
-        0.76,
-        0.727273
-      ],
-      [
-        "Somali Coast",
-        "coast",
-        0.86,
-        0.666667
-      ],
-      [
-        "Jubba Valley",
-        "plains",
-        0.66,
-        0.939394
-      ]
-    ],
-    "player1_capital": 1,
-    "player2_capital": 20,
-    "player1_extra_starts": [
-      3,
-      4
-    ],
-    "player2_extra_starts": [
-      18,
-      23
-    ],
-    "setting": {
-      "era": "",
-      "note": "Natural Earth coastlines and geographic boundaries, with connected gameplay sectors around named locations. Internal lines are simplified interpretations, not surveyed historical political borders.",
-      "sources": [],
-      "terrain_note": "Modern coastlines and administrative geometry define gameplay regions; these are not exact historical political borders.",
-      "opening_note": "Recommended opening: 224 vs 224 troops. Territory growth and access also affect difficulty."
-    }
-  },
-  "andes_pacific": {
-    "id": "andes_pacific",
-    "name": "Andes & Pacific Coast",
-    "category": "world",
-    "description": "A long mountain theater: Pacific lowlands, Andean valleys and a handful of passes between them. 24 regions.",
-    "map_asset_id": "andes_pacific_atlas_v3",
-    "regions": [
-      [
-        "Caribbean Andes",
-        "coast",
-        0.468421,
-        0.037681
-      ],
-      [
-        "Antioquia",
-        "hills",
-        0.389474,
-        0.097101
-      ],
-      [
-        "Bogota Plateau",
-        "city",
-        0.468421,
-        0.12029
-      ],
-      [
-        "Cauca Valley",
-        "plains",
-        0.342105,
-        0.13913
-      ],
-      [
-        "Narino",
-        "hills",
-        0.3,
-        0.171014
-      ],
-      [
-        "Quito",
-        "city",
-        0.236842,
-        0.191304
-      ],
-      [
-        "Guayas",
-        "coast",
-        0.163158,
-        0.22029
-      ],
-      [
-        "Azuay",
-        "hills",
-        0.210526,
-        0.230435
-      ],
-      [
-        "Piura",
-        "desert",
-        0.126316,
-        0.263768
-      ],
-      [
-        "Cajamarca",
-        "hills",
-        0.236842,
-        0.292754
-      ],
-      [
-        "Trujillo",
-        "coast",
-        0.210526,
-        0.305797
-      ],
-      [
-        "Huanuco",
-        "forest",
-        0.357895,
-        0.331884
-      ],
-      [
-        "Lima",
-        "city",
-        0.315789,
-        0.362319
-      ],
-      [
-        "Ayacucho",
-        "hills",
-        0.463158,
-        0.37971
-      ],
-      [
-        "Cusco",
-        "city",
-        0.578947,
-        0.384058
-      ],
-      [
-        "Arequipa",
-        "hills",
-        0.605263,
-        0.426087
-      ],
-      [
-        "Titicaca",
-        "hills",
-        0.731579,
-        0.42029
-      ],
-      [
-        "Altiplano",
-        "hills",
-        0.784211,
-        0.446377
-      ],
-      [
-        "Atacama",
-        "desert",
-        0.694737,
-        0.531884
-      ],
-      [
-        "Norte Chico",
-        "desert",
-        0.621053,
-        0.621739
-      ],
-      [
-        "Central Chile",
-        "city",
-        0.647368,
-        0.673913
-      ],
-      [
-        "Araucania",
-        "forest",
-        0.547368,
-        0.749275
-      ],
-      [
-        "Patagonia",
-        "hills",
-        0.6,
-        0.855072
-      ],
-      [
-        "Magellan Strait",
-        "coast",
-        0.525385,
-        0.932279
-      ]
-    ],
-    "player1_capital": 2,
-    "player2_capital": 21,
-    "player1_extra_starts": [
-      1,
-      4
-    ],
-    "player2_extra_starts": [
-      18,
-      20
-    ],
-    "setting": {
-      "era": "",
-      "note": "Natural Earth coastlines and geographic boundaries, with connected gameplay sectors around named locations. Internal lines are simplified interpretations, not surveyed historical political borders.",
-      "sources": [],
-      "terrain_note": "Modern coastlines and administrative geometry define gameplay regions; these are not exact historical political borders.",
-      "opening_note": "Recommended opening: 128 vs 128 troops. Territory growth and access also affect difficulty."
-    }
-  },
-  "caribbean_central_america": {
-    "id": "caribbean_central_america",
-    "name": "Caribbean & Central America",
-    "category": "world",
-    "description": "Island chains meet a continental corridor. Limited sea lanes keep the archipelago readable. 24 regions.",
-    "map_asset_id": "caribbean_central_america_atlas_v3",
-    "regions": [
-      [
-        "Yucatan",
-        "plains",
-        0.142857,
-        0.347619
-      ],
-      [
-        "Chiapas",
-        "forest",
-        0.057143,
-        0.552381
-      ],
-      [
-        "Guatemala Highlands",
-        "hills",
-        0.094286,
-        0.628571
-      ],
-      [
-        "Peten",
-        "forest",
-        0.114286,
-        0.533333
-      ],
-      [
-        "Belize",
-        "coast",
-        0.151429,
-        0.514286
-      ],
-      [
-        "Western Honduras",
-        "hills",
-        0.171429,
-        0.628571
-      ],
-      [
-        "Eastern Honduras",
-        "forest",
-        0.257143,
-        0.619048
-      ],
-      [
-        "El Salvador",
-        "city",
-        0.137143,
-        0.680952
-      ],
-      [
-        "Western Nicaragua",
-        "plains",
-        0.22,
-        0.747619
-      ],
-      [
-        "Mosquito Coast",
-        "forest",
-        0.28,
-        0.714286
-      ],
-      [
-        "Costa Rica",
-        "hills",
-        0.282857,
-        0.861905
-      ],
-      [
-        "Western Panama",
-        "hills",
-        0.331429,
-        0.928571
-      ],
-      [
-        "Panama Canal Lands",
-        "coast",
-        0.414286,
-        0.904762
-      ],
-      [
-        "Darien",
-        "forest",
-        0.462857,
-        0.938095
-      ],
-      [
-        "Western Cuba",
-        "city",
-        0.331429,
-        0.238095
-      ],
-      [
-        "Central Cuba",
-        "plains",
-        0.414286,
-        0.3
-      ],
-      [
-        "Eastern Cuba",
-        "hills",
-        0.505714,
-        0.366667
-      ],
-      [
-        "Jamaica",
-        "hills",
-        0.477143,
-        0.471429
-      ],
-      [
-        "Haiti",
-        "hills",
-        0.611429,
-        0.428571
-      ],
-      [
-        "Hispaniola East",
-        "plains",
-        0.671429,
-        0.433333
-      ],
-      [
-        "Puerto Rico",
-        "coast",
-        0.788571,
-        0.466667
-      ],
-      [
-        "Bahamas",
-        "coast",
-        0.474286,
-        0.142857
-      ],
-      [
-        "Leeward Islands",
-        "coast",
-        0.92,
-        0.519048
-      ],
-      [
-        "Windward Islands",
-        "coast",
-        0.942857,
-        0.67619
-      ]
-    ],
-    "player1_capital": 7,
-    "player2_capital": 23,
-    "player1_extra_starts": [
-      2,
-      5
-    ],
-    "player2_extra_starts": [
-      20,
-      22
-    ],
-    "setting": {
-      "era": "",
-      "note": "Natural Earth coastlines and geographic boundaries, with connected gameplay sectors around named locations. Internal lines are simplified interpretations, not surveyed historical political borders.",
-      "sources": [],
-      "terrain_note": "Modern coastlines and administrative geometry define gameplay regions; these are not exact historical political borders.",
-      "opening_note": "Recommended opening: 128 vs 120 troops. Territory growth and access also affect difficulty."
-    }
-  },
-  "crusader_states": {
-    "id": "crusader_states",
-    "name": "The Crusader States \u00b7 1187",
-    "category": "campaigns",
-    "description": "A Levant campaign inspired by 1187: coastal strongholds, inland cities and the approaches between them. 24 regions.",
-    "map_asset_id": "crusader_states_atlas_v3",
+  "crusader_levant": {
+    "id": "crusader_levant",
+    "name": "Crusader Levant \u00b7 1187",
+    "category": "historical",
+    "description": "Coastal strongholds, the Lebanon mountains and the Jordan Valley in the age of Saladin. A geographic conquest sandbox inspired by 1187. 28 regions.",
+    "map_asset_id": "crusader_levant_atlas_v3",
     "regions": [
       [
         "Antioch",
         "city",
-        0.533333,
-        0.152941
-      ],
-      [
-        "Cilician Gates",
-        "hills",
-        0.366667,
-        0.047059
+        0.568421,
+        0.095238
       ],
       [
         "Latakia",
         "coast",
-        0.496809,
-        0.227201
+        0.471053,
+        0.201587
       ],
       [
-        "Orontes Valley",
+        "Jabala",
+        "coast",
+        0.507895,
+        0.228571
+      ],
+      [
+        "Shaizar",
         "plains",
-        0.583333,
-        0.258824
-      ],
-      [
-        "Aleppo",
-        "city",
-        0.7,
-        0.152941
+        0.676316,
+        0.242857
       ],
       [
         "Hama",
         "city",
-        0.633333,
-        0.282353
+        0.723684,
+        0.265079
       ],
       [
         "Tortosa",
         "coast",
-        0.483333,
-        0.305882
+        0.497368,
+        0.303175
       ],
       [
-        "Krak Highlands",
+        "Krak des Chevaliers",
         "hills",
-        0.55,
-        0.317647
-      ],
-      [
-        "Tripoli",
-        "city",
-        0.466667,
-        0.364706
+        0.602632,
+        0.32381
       ],
       [
         "Homs",
         "city",
-        0.616667,
-        0.329412
+        0.713158,
+        0.328571
+      ],
+      [
+        "Tripoli",
+        "city",
+        0.484211,
+        0.374603
       ],
       [
         "Baalbek",
         "hills",
-        0.533333,
-        0.411765
+        0.578947,
+        0.442857
+      ],
+      [
+        "Byblos",
+        "coast",
+        0.434211,
+        0.425397
       ],
       [
         "Beirut",
         "coast",
-        0.416667,
-        0.423529
-      ],
-      [
-        "Sidon",
-        "coast",
-        0.4,
-        0.458824
+        0.397368,
+        0.461905
       ],
       [
         "Damascus",
         "city",
-        0.55,
-        0.470588
+        0.605263,
+        0.522222
+      ],
+      [
+        "Sidon",
+        "coast",
+        0.360526,
+        0.514286
       ],
       [
         "Tyre",
-        "city",
-        0.381427,
-        0.489463
+        "coast",
+        0.315789,
+        0.560317
       ],
       [
-        "Banias",
+        "Banyas",
         "hills",
-        0.45,
-        0.505882
+        0.444737,
+        0.563492
       ],
       [
         "Acre",
         "city",
-        0.35,
-        0.541176
+        0.284211,
+        0.614286
       ],
       [
-        "Galilee",
-        "hills",
-        0.416667,
-        0.564706
+        "Tiberias",
+        "plains",
+        0.402632,
+        0.636508
       ],
       [
         "Hauran",
         "plains",
-        0.55,
-        0.576471
+        0.676316,
+        0.650794
       ],
       [
         "Caesarea",
         "coast",
-        0.316667,
-        0.588235
+        0.239474,
+        0.68254
       ],
       [
-        "Jerusalem",
-        "city",
-        0.366667,
-        0.670588
+        "Nablus",
+        "hills",
+        0.331579,
+        0.726984
       ],
       [
         "Jaffa",
         "coast",
-        0.3,
-        0.647059
+        0.2,
+        0.753968
+      ],
+      [
+        "Jerusalem",
+        "city",
+        0.323684,
+        0.796825
+      ],
+      [
+        "Jericho",
+        "plains",
+        0.384211,
+        0.784127
+      ],
+      [
+        "Ascalon",
+        "coast",
+        0.144737,
+        0.814286
+      ],
+      [
+        "Gaza",
+        "coast",
+        0.121053,
+        0.84127
       ],
       [
         "Kerak",
         "hills",
-        0.45,
-        0.741176
+        0.447368,
+        0.892063
       ],
       [
-        "Transjordan",
-        "desert",
-        0.533333,
-        0.835294
+        "Montreal",
+        "hills",
+        0.410526,
+        0.995238
       ]
     ],
-    "player1_capital": 20,
-    "player2_capital": 13,
+    "player1_capital": 22,
+    "player2_capital": 1,
     "player1_extra_starts": [
-      15,
-      17
+      23,
+      24
     ],
     "player2_extra_starts": [
-      7,
-      10
+      3,
+      4
     ],
     "setting": {
-      "era": "1187",
-      "note": "Natural Earth coastlines and geographic boundaries, with connected gameplay sectors around named locations. Internal lines are simplified interpretations, not surveyed historical political borders.",
+      "era": "Levant \u00b7 1187 setting",
+      "note": "Modern coastlines; interpreted gameplay sectors around historical places, not exact period borders. Starting territories are balanced for open-ended conquest, not historical deployments. Terrain symbols are illustrative.",
       "sources": [
         [
-          "Fordham: Hattin and the Levant",
-          "https://sourcebooks.web.fordham.edu/source/1187hattin.asp"
+          "West Point campaign atlases",
+          "https://dhc.westpoint.edu/atlases/"
         ]
       ],
-      "terrain_note": "Modern coastlines and administrative geometry define gameplay regions; these are not exact historical political borders.",
-      "opening_note": "Recommended opening: 128 vs 128 troops. Territory growth and access also affect difficulty."
-    }
+      "terrain_note": "Modern coastlines; interpreted gameplay sectors around historical places, not exact period borders. Starting territories are balanced for open-ended conquest, not historical deployments. Terrain symbols are illustrative.",
+      "opening_note": "Recommended opening: 168 vs 168 troops. Territory growth and access also affect difficulty."
+    },
+    "historical_sectors": true,
+    "sea_routes": []
   },
-  "civil_war_east": {
-    "id": "civil_war_east",
-    "name": "Civil War: Eastern Theater \u00b7 1863",
-    "category": "campaigns",
-    "description": "A summer 1863-inspired campaign across Virginia, Maryland and Pennsylvania. Historical locations, open conquest rules. 24 regions.",
-    "map_asset_id": "civil_war_east_atlas_v3",
+  "civil_war_eastern_theater": {
+    "id": "civil_war_eastern_theater",
+    "name": "Civil War \u00b7 Eastern Theater",
+    "category": "historical",
+    "description": "The Blue Ridge, Shenandoah Valley and Chesapeake approaches from Pennsylvania to Virginia. Campaign geography inspired by 1861\u20131865. 28 regions.",
+    "map_asset_id": "civil_war_eastern_theater_atlas_v3",
     "regions": [
       [
         "Pittsburgh",
         "city",
-        0.266667,
-        0.109091
+        0.123509,
+        0.158333
       ],
       [
-        "Allegheny Mountains",
+        "Johnstown",
         "hills",
-        0.44,
-        0.163636
+        0.312281,
+        0.18125
+      ],
+      [
+        "Bedford",
+        "hills",
+        0.385965,
+        0.245833
       ],
       [
         "Harrisburg",
         "city",
-        0.68,
-        0.127273
+        0.670175,
+        0.19375
+      ],
+      [
+        "Lancaster",
+        "plains",
+        0.77193,
+        0.241667
+      ],
+      [
+        "York",
+        "plains",
+        0.696491,
+        0.258333
       ],
       [
         "Gettysburg",
         "plains",
-        0.64,
-        0.218182
-      ],
-      [
-        "Philadelphia",
-        "city",
-        0.906667,
-        0.181818
+        0.608772,
+        0.285417
       ],
       [
         "Cumberland",
         "hills",
-        0.426667,
-        0.236364
+        0.340351,
+        0.322917
       ],
       [
-        "Sharpsburg",
+        "Hagerstown",
         "plains",
-        0.573333,
-        0.272727
+        0.522807,
+        0.325
       ],
       [
         "Frederick",
-        "city",
-        0.613333,
-        0.290909
+        "plains",
+        0.577193,
+        0.372917
       ],
       [
         "Baltimore",
         "city",
-        0.72,
-        0.309091
+        0.717544,
+        0.397917
+      ],
+      [
+        "Annapolis",
+        "coast",
+        0.738596,
+        0.4625
       ],
       [
         "Washington",
         "city",
-        0.666667,
-        0.381818
-      ],
-      [
-        "Eastern Shore",
-        "coast",
-        0.8,
-        0.418182
-      ],
-      [
-        "Harpers Ferry",
-        "hills",
-        0.573333,
-        0.309091
+        0.642105,
+        0.477083
       ],
       [
         "Winchester",
         "plains",
-        0.506667,
-        0.327273
+        0.445614,
+        0.41875
+      ],
+      [
+        "Harpers Ferry",
+        "hills",
+        0.519298,
+        0.389583
       ],
       [
         "Manassas",
         "plains",
-        0.6,
-        0.4
+        0.564912,
+        0.510417
+      ],
+      [
+        "Culpeper",
+        "plains",
+        0.473684,
+        0.56875
       ],
       [
         "Fredericksburg",
         "city",
-        0.6,
-        0.490909
+        0.568421,
+        0.604167
       ],
       [
-        "Shenandoah Valley",
+        "Harrisonburg",
         "plains",
-        0.413333,
-        0.472727
+        0.321053,
+        0.572917
+      ],
+      [
+        "Staunton",
+        "hills",
+        0.285965,
+        0.635417
       ],
       [
         "Charlottesville",
-        "city",
-        0.466667,
-        0.545455
-      ],
-      [
-        "Richmond",
-        "city",
-        0.613333,
-        0.636364
-      ],
-      [
-        "Virginia Peninsula",
-        "coast",
-        0.72,
-        0.690909
+        "plains",
+        0.389474,
+        0.660417
       ],
       [
         "Lynchburg",
         "city",
-        0.386667,
-        0.654545
+        0.273684,
+        0.789583
       ],
       [
-        "Appomattox",
-        "plains",
-        0.426667,
-        0.654545
+        "Richmond",
+        "city",
+        0.57193,
+        0.7625
       ],
       [
         "Petersburg",
         "city",
-        0.613333,
-        0.690909
+        0.578947,
+        0.827083
+      ],
+      [
+        "Yorktown",
+        "coast",
+        0.734645,
+        0.825394
       ],
       [
         "Norfolk",
         "coast",
-        0.76,
-        0.745455
+        0.773684,
+        0.90625
       ],
       [
-        "Southside",
+        "Danville",
         "plains",
-        0.346667,
-        0.781818
-      ]
-    ],
-    "player1_capital": 9,
-    "player2_capital": 17,
-    "player1_extra_starts": [
-      7,
-      8
-    ],
-    "player2_extra_starts": [
-      14,
-      16
-    ],
-    "setting": {
-      "era": "Summer 1863",
-      "note": "Natural Earth coastlines and geographic boundaries, with connected gameplay sectors around named locations. Internal lines are simplified interpretations, not surveyed historical political borders.",
-      "sources": [
-        [
-          "National Park Service: Civil War",
-          "https://www.nps.gov/civilwar/index.htm"
-        ]
-      ],
-      "terrain_note": "Modern coastlines and administrative geometry define gameplay regions; these are not exact historical political borders.",
-      "opening_note": "Recommended opening: 288 vs 288 troops. Territory growth and access also affect difficulty."
-    }
-  },
-  "rome_carthage": {
-    "id": "rome_carthage",
-    "name": "Rome vs Carthage \u00b7 218 BCE",
-    "category": "campaigns",
-    "description": "A western Mediterranean theater inspired by the opening of the Second Punic War. Sea crossings connect its competing shores. 24 regions.",
-    "map_asset_id": "rome_carthage_atlas_v3",
-    "regions": [
-      [
-        "Lusitania",
-        "plains",
-        0.068966,
-        0.411765
+        0.22807,
+        0.960417
       ],
       [
-        "Gallaecia",
-        "hills",
-        0.068966,
-        0.176471
-      ],
-      [
-        "Baetica",
-        "plains",
-        0.172414,
-        0.529412
-      ],
-      [
-        "Carthago Nova",
-        "city",
-        0.310345,
-        0.494118
-      ],
-      [
-        "Tarraco",
-        "city",
-        0.386207,
-        0.288235
-      ],
-      [
-        "Ebro Valley",
-        "plains",
-        0.310345,
-        0.235294
-      ],
-      [
-        "Pyrenees",
-        "hills",
-        0.37931,
-        0.194118
-      ],
-      [
-        "Massalia",
+        "Eastern Shore",
         "coast",
-        0.531034,
-        0.158824
-      ],
-      [
-        "Narbonensis",
-        "plains",
-        0.448276,
-        0.164706
-      ],
-      [
-        "Western Alps",
-        "hills",
-        0.586207,
-        0.088235
-      ],
-      [
-        "Po Valley",
-        "plains",
-        0.689655,
-        0.058824
-      ],
-      [
-        "Liguria",
-        "coast",
-        0.641705,
-        0.062037
-      ],
-      [
-        "Etruria",
-        "plains",
-        0.724138,
-        0.176471
-      ],
-      [
-        "Rome",
-        "city",
-        0.775862,
-        0.241176
-      ],
-      [
-        "Campania",
-        "city",
-        0.837931,
-        0.3
-      ],
-      [
-        "Apulia",
-        "plains",
-        0.913793,
-        0.288235
-      ],
-      [
-        "Bruttium",
-        "hills",
-        0.903448,
-        0.4
-      ],
-      [
-        "Sicily West",
-        "coast",
-        0.806897,
-        0.464706
-      ],
-      [
-        "Syracuse",
-        "city",
-        0.872414,
-        0.523529
-      ],
-      [
-        "Sardinia",
-        "hills",
-        0.655172,
-        0.352941
-      ],
-      [
-        "Corsica",
-        "forest",
-        0.655172,
-        0.235294
-      ],
-      [
-        "Mauretania",
-        "hills",
-        0.206897,
-        0.705882
-      ],
-      [
-        "Numidia",
-        "plains",
-        0.551724,
-        0.647059
-      ],
-      [
-        "Carthage",
-        "city",
-        0.7,
-        0.535294
-      ]
-    ],
-    "player1_capital": 13,
-    "player2_capital": 23,
-    "player1_extra_starts": [
-      12,
-      20
-    ],
-    "player2_extra_starts": [
-      21,
-      22
-    ],
-    "setting": {
-      "era": "218 BCE",
-      "note": "Natural Earth coastlines and geographic boundaries, with connected gameplay sectors around named locations. Internal lines are simplified interpretations, not surveyed historical political borders.",
-      "sources": [
-        [
-          "World History Encyclopedia: Second Punic War",
-          "https://www.worldhistory.org/Second_Punic_War/"
-        ]
-      ],
-      "terrain_note": "Modern coastlines and administrative geometry define gameplay regions; these are not exact historical political borders.",
-      "opening_note": "Recommended opening: 152 vs 144 troops. Territory growth and access also affect difficulty."
-    }
-  },
-  "sengoku_japan": {
-    "id": "sengoku_japan",
-    "name": "Sengoku Japan \u00b7 1560",
-    "category": "campaigns",
-    "description": "An interpretation of Japan in 1560, divided into provincial theaters. Domain alliances and diplomacy are not simulated. 24 regions.",
-    "map_asset_id": "sengoku_japan_atlas_v3",
-    "regions": [
-      [
-        "Mutsu",
-        "forest",
-        0.9,
-        0.12069
-      ],
-      [
-        "Dewa",
-        "hills",
-        0.869231,
-        0.241379
-      ],
-      [
-        "Echigo",
-        "plains",
-        0.769231,
-        0.318966
-      ],
-      [
-        "Etchu",
-        "hills",
-        0.630769,
-        0.422414
-      ],
-      [
-        "Kaga",
-        "coast",
-        0.584615,
-        0.431034
-      ],
-      [
-        "Echizen",
-        "plains",
-        0.553846,
-        0.474138
-      ],
-      [
-        "Shinano",
-        "hills",
-        0.707692,
-        0.439655
-      ],
-      [
-        "Kai",
-        "hills",
-        0.738462,
-        0.508621
-      ],
-      [
-        "Musashi",
-        "city",
-        0.815385,
-        0.5
-      ],
-      [
-        "Sagami",
-        "coast",
-        0.784615,
-        0.543103
-      ],
-      [
-        "Suruga",
-        "coast",
-        0.723077,
-        0.568966
-      ],
-      [
-        "Mikawa",
-        "plains",
-        0.630769,
-        0.577586
-      ],
-      [
-        "Owari",
-        "city",
-        0.607692,
-        0.551724
-      ],
-      [
-        "Mino",
-        "hills",
-        0.6,
-        0.517241
-      ],
-      [
-        "Omi",
-        "plains",
-        0.546154,
-        0.551724
-      ],
-      [
-        "Yamashiro",
-        "city",
-        0.523077,
-        0.568966
-      ],
-      [
-        "Settsu",
-        "city",
-        0.5,
-        0.594828
-      ],
-      [
-        "Kii",
-        "forest",
-        0.515385,
-        0.663793
-      ],
-      [
-        "Harima",
-        "plains",
-        0.438462,
-        0.577586
-      ],
-      [
-        "Izumo",
-        "coast",
-        0.292308,
-        0.534483
-      ],
-      [
-        "Aki",
-        "hills",
-        0.269231,
-        0.612069
-      ],
-      [
-        "Tosa",
-        "hills",
-        0.346154,
-        0.689655
-      ],
-      [
-        "Bungo",
-        "coast",
-        0.2,
-        0.724138
-      ],
-      [
-        "Satsuma",
-        "hills",
-        0.141383,
-        0.835551
+        0.884211,
+        0.727083
       ]
     ],
     "player1_capital": 12,
-    "player2_capital": 7,
+    "player2_capital": 26,
     "player1_extra_starts": [
-      6,
-      11
+      5,
+      10
     ],
     "player2_extra_starts": [
-      2,
-      8
-    ],
-    "setting": {
-      "era": "1560",
-      "note": "Natural Earth coastlines and geographic boundaries, with connected gameplay sectors around named locations. Internal lines are simplified interpretations, not surveyed historical political borders.",
-      "sources": [
-        [
-          "Japan National Tourism Organization: Sengoku period",
-          "https://www.japan.travel/en/guide/japanese-history/"
-        ]
-      ],
-      "terrain_note": "Modern coastlines and administrative geometry define gameplay regions; these are not exact historical political borders.",
-      "opening_note": "Recommended opening: 144 vs 144 troops. Territory growth and access also affect difficulty."
-    }
-  },
-  "epic_lanka": {
-    "id": "epic_lanka",
-    "name": "Lanka: The Epic Campaign",
-    "category": "legends",
-    "description": "A Ramayana-inspired island campaign. Real island geography supports imagined epic kingdoms, forests and mountain strongholds. 24 regions. The Northern Landing is an established fortified camp.",
-    "map_asset_id": "epic_lanka_atlas_v3",
-    "regions": [
-      [
-        "Northern Landing",
-        "city",
-        0.25,
-        0.090909
-      ],
-      [
-        "Bridgeward Coast",
-        "coast",
-        0.193361,
-        0.242845
-      ],
-      [
-        "Pearl Shore",
-        "coast",
-        0.214802,
-        0.395521
-      ],
-      [
-        "Palmyra Country",
-        "plains",
-        0.392857,
-        0.181818
-      ],
-      [
-        "Elephant Forest",
-        "forest",
-        0.428571,
-        0.272727
-      ],
-      [
-        "Moonwater Port",
-        "coast",
-        0.642857,
-        0.340909
-      ],
-      [
-        "Northern Watch",
-        "hills",
-        0.428571,
-        0.386364
-      ],
-      [
-        "Lotus Lakes",
-        "plains",
-        0.392857,
-        0.454545
-      ],
-      [
-        "Western March",
-        "coast",
-        0.214286,
-        0.522727
-      ],
-      [
-        "Lion Plateau",
-        "hills",
-        0.5,
-        0.5
-      ],
-      [
-        "Eastern Groves",
-        "forest",
-        0.714286,
-        0.477273
-      ],
-      [
-        "Thunder Coast",
-        "coast",
-        0.756346,
-        0.51509
-      ],
-      [
-        "River Kingdom",
-        "plains",
-        0.321429,
-        0.568182
-      ],
-      [
-        "Cloud Citadel",
-        "city",
-        0.464286,
-        0.636364
-      ],
-      [
-        "Ashoka Grove",
-        "forest",
-        0.535714,
-        0.681818
-      ],
-      [
-        "Emerald Highlands",
-        "hills",
-        0.535714,
-        0.727273
-      ],
-      [
-        "Western Gate",
-        "city",
-        0.214286,
-        0.704545
-      ],
-      [
-        "Ravana's Court",
-        "city",
-        0.357143,
-        0.727273
-      ],
-      [
-        "Mountain Sanctum",
-        "hills",
-        0.428571,
-        0.75
-      ],
-      [
-        "Eastern Wilds",
-        "forest",
-        0.714286,
-        0.704545
-      ],
-      [
-        "Sunrise Haven",
-        "coast",
-        0.892857,
-        0.727273
-      ],
-      [
-        "Southern Forest",
-        "forest",
-        0.678571,
-        0.818182
-      ],
-      [
-        "Cinnamon Coast",
-        "coast",
-        0.321429,
-        0.886364
-      ],
-      [
-        "Southern Bastion",
-        "city",
-        0.535714,
-        0.909091
-      ]
-    ],
-    "player1_capital": 0,
-    "player2_capital": 17,
-    "player1_extra_starts": [
-      3,
-      4
-    ],
-    "player2_extra_starts": [
-      18,
+      21,
       22
     ],
     "setting": {
-      "era": "Epic interpretation",
-      "note": "Literary-inspired place assignments, not archaeological evidence. Natural Earth coastlines and geographic boundaries, with connected gameplay sectors around named locations. Internal lines are simplified interpretations, not surveyed historical political borders.",
+      "era": "Eastern Theater \u00b7 1861\u20131865",
+      "note": "Modern coastlines; interpreted gameplay sectors around historical places, not exact period borders. Starting territories are balanced for open-ended conquest, not historical deployments. Terrain symbols are illustrative.",
       "sources": [
         [
-          "The Ramayana",
-          "https://www.britannica.com/topic/Ramayana-Indian-epic"
+          "Library of Congress Civil War Maps",
+          "https://www.loc.gov/collections/civil-war-maps/about-this-collection/"
         ]
       ],
-      "terrain_note": "Literary-inspired setting with imaginative place assignments, not archaeological evidence. Modern coastlines and administrative geometry define gameplay regions; these are not exact historical political borders.",
-      "opening_note": "Recommended opening: 152 vs 152 troops. Territory growth and access also affect difficulty."
-    }
-  },
-  "panipat_1526": {
-    "id": "panipat_1526",
-    "name": "First Panipat \u00b7 1526",
-    "category": "historical",
-    "description": "An interpretation of Babur\u2019s defensive position and the Lodi approach. Artillery, wagons and elephants are abstracted into fixed forces. 24 regions.",
-    "map_asset_id": "panipat_1526_atlas_v3",
-    "regions": [
-      [
-        "Northern track",
-        "plains",
-        0.125,
-        0.092308
-      ],
-      [
-        "Timurid rear",
-        "plains",
-        0.375,
-        0.084615
-      ],
-      [
-        "Babur's reserve",
-        "city",
-        0.583333,
-        0.1
-      ],
-      [
-        "Northeast fields",
-        "plains",
-        0.866667,
-        0.1
-      ],
-      [
-        "Western screen",
-        "plains",
-        0.116667,
-        0.269231
-      ],
-      [
-        "Left reserve",
-        "plains",
-        0.366667,
-        0.253846
-      ],
-      [
-        "Central reserve",
-        "plains",
-        0.608333,
-        0.246154
-      ],
-      [
-        "Eastern screen",
-        "plains",
-        0.866667,
-        0.261538
-      ],
-      [
-        "Western earthworks",
-        "hills",
-        0.125,
-        0.415385
-      ],
-      [
-        "Wagon line west",
-        "city",
-        0.366667,
-        0.407692
-      ],
-      [
-        "Wagon line east",
-        "city",
-        0.608333,
-        0.4
-      ],
-      [
-        "Eastern ditch",
-        "hills",
-        0.866667,
-        0.415385
-      ],
-      [
-        "Panipat outskirts",
-        "city",
-        0.125,
-        0.576923
-      ],
-      [
-        "Western battle plain",
-        "plains",
-        0.366667,
-        0.569231
-      ],
-      [
-        "Central battle plain",
-        "plains",
-        0.608333,
-        0.561538
-      ],
-      [
-        "Eastern battle plain",
-        "plains",
-        0.866667,
-        0.576923
-      ],
-      [
-        "Lodi left",
-        "plains",
-        0.125,
-        0.730769
-      ],
-      [
-        "Lodi centre",
-        "plains",
-        0.366667,
-        0.723077
-      ],
-      [
-        "Ibrahim's position",
-        "city",
-        0.608333,
-        0.730769
-      ],
-      [
-        "Lodi right",
-        "plains",
-        0.866667,
-        0.723077
-      ],
-      [
-        "Southwest approach",
-        "plains",
-        0.125,
-        0.892308
-      ],
-      [
-        "Southern road",
-        "plains",
-        0.366667,
-        0.892308
-      ],
-      [
-        "Lodi reserve",
-        "plains",
-        0.608333,
-        0.892308
-      ],
-      [
-        "Southeast approach",
-        "plains",
-        0.866667,
-        0.892308
-      ]
-    ],
-    "player1_capital": 2,
-    "player2_capital": 18,
-    "player1_extra_starts": [
-      0,
-      1,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8,
-      9,
-      10,
-      11
-    ],
-    "player2_extra_starts": [
-      12,
-      13,
-      14,
-      15,
-      16,
-      17,
-      19,
-      20,
-      21,
-      22,
-      23
-    ],
-    "setting": {
-      "era": "21 April 1526",
-      "note": "Measured modern elevation; historical land cover, paths and sector boundaries are reconstructed for play.",
-      "sources": [
-        [
-          "Panipat district: First Battle",
-          "https://panipat.gov.in/first-battle/"
-        ]
-      ],
-      "terrain_note": "Measured modern elevation; historical land cover, paths and sector boundaries are reconstructed for play. Opening sectors and relative strengths are authored scenario interpretations, not an exact order of battle."
+      "terrain_note": "Modern coastlines; interpreted gameplay sectors around historical places, not exact period borders. Starting territories are balanced for open-ended conquest, not historical deployments. Terrain symbols are illustrative.",
+      "opening_note": "Recommended opening: 224 vs 224 troops. Territory growth and access also affect difficulty."
     },
-    "battle": {
-      "id": "panipat_1526",
-      "name": "First Panipat \u00b7 1526",
-      "bounds": [
-        76.91,
-        29.33,
-        77.03,
-        29.46
-      ],
-      "date": "21 April 1526",
-      "sides": [
-        "Timurid army",
-        "Lodi army"
-      ],
-      "commanders": [
-        "Babur",
-        "Ibrahim Lodi"
-      ],
-      "capitals": [
-        2,
-        18
-      ],
-      "objectives": [
-        9,
-        10,
-        14
-      ],
-      "defender": 0,
-      "sources": [
-        [
-          "Panipat district: First Battle",
-          "https://panipat.gov.in/first-battle/"
-        ]
-      ],
-      "context": "An interpretation of Babur\u2019s defensive position and the Lodi approach. Artillery, wagons and elephants are abstracted into fixed forces.",
-      "terrain_note": "Measured modern elevation; historical land cover, paths and sector boundaries are reconstructed for play. Opening sectors and relative strengths are authored scenario interpretations, not an exact order of battle.",
-      "sites": [
-        [
-          "Northern track",
-          "plains",
-          76.925,
-          29.448,
-          0,
-          25
-        ],
-        [
-          "Timurid rear",
-          "plains",
-          76.955,
-          29.449,
-          0,
-          40
-        ],
-        [
-          "Babur's reserve",
-          "city",
-          76.98,
-          29.447,
-          0,
-          65
-        ],
-        [
-          "Northeast fields",
-          "plains",
-          77.014,
-          29.447,
-          0,
-          25
-        ],
-        [
-          "Western screen",
-          "plains",
-          76.924,
-          29.425,
-          0,
-          45
-        ],
-        [
-          "Left reserve",
-          "plains",
-          76.954,
-          29.427,
-          0,
-          45
-        ],
-        [
-          "Central reserve",
-          "plains",
-          76.983,
-          29.428,
-          0,
-          45
-        ],
-        [
-          "Eastern screen",
-          "plains",
-          77.014,
-          29.426,
-          0,
-          45
-        ],
-        [
-          "Western earthworks",
-          "hills",
-          76.925,
-          29.406,
-          0,
-          55
-        ],
-        [
-          "Wagon line west",
-          "city",
-          76.954,
-          29.407,
-          0,
-          70
-        ],
-        [
-          "Wagon line east",
-          "city",
-          76.983,
-          29.408,
-          0,
-          70
-        ],
-        [
-          "Eastern ditch",
-          "hills",
-          77.014,
-          29.406,
-          0,
-          55
-        ],
-        [
-          "Panipat outskirts",
-          "city",
-          76.925,
-          29.385,
-          1,
-          40
-        ],
-        [
-          "Western battle plain",
-          "plains",
-          76.954,
-          29.386,
-          1,
-          55
-        ],
-        [
-          "Central battle plain",
-          "plains",
-          76.983,
-          29.387,
-          1,
-          60
-        ],
-        [
-          "Eastern battle plain",
-          "plains",
-          77.014,
-          29.385,
-          1,
-          55
-        ],
-        [
-          "Lodi left",
-          "plains",
-          76.925,
-          29.365,
-          1,
-          65
-        ],
-        [
-          "Lodi centre",
-          "plains",
-          76.954,
-          29.366,
-          1,
-          75
-        ],
-        [
-          "Ibrahim's position",
-          "city",
-          76.983,
-          29.365,
-          1,
-          90
-        ],
-        [
-          "Lodi right",
-          "plains",
-          77.014,
-          29.366,
-          1,
-          65
-        ],
-        [
-          "Southwest approach",
-          "plains",
-          76.925,
-          29.344,
-          1,
-          35
-        ],
-        [
-          "Southern road",
-          "plains",
-          76.954,
-          29.344,
-          1,
-          40
-        ],
-        [
-          "Lodi reserve",
-          "plains",
-          76.983,
-          29.344,
-          1,
-          65
-        ],
-        [
-          "Southeast approach",
-          "plains",
-          77.014,
-          29.344,
-          1,
-          35
-        ]
-      ],
-      "roads": [],
-      "ridges": []
-    }
-  },
-  "austerlitz_1805": {
-    "id": "austerlitz_1805",
-    "name": "Austerlitz \u00b7 1805",
-    "category": "historical",
-    "description": "Contest the Pratzen Heights and village approaches. Fog, timed arrivals and artillery are abstracted; no scripted historical maneuvers. 24 regions.",
-    "map_asset_id": "austerlitz_1805_atlas_v3",
-    "regions": [
+    "historical_sectors": true,
+    "sea_routes": [
       [
-        "Bosenitz approach",
-        "plains",
-        0.258824,
-        0.076923
-      ],
-      [
-        "Santon Hill",
-        "hills",
-        0.364706,
-        0.207692
-      ],
-      [
-        "Bellowitz",
-        "city",
-        0.335294,
-        0.346154
-      ],
-      [
-        "Zuran Hill",
-        "hills",
-        0.223529,
-        0.392308
-      ],
-      [
-        "Schlapanitz",
-        "city",
-        0.164706,
-        0.469231
-      ],
-      [
-        "Jirzikowitz",
-        "city",
-        0.341176,
-        0.492308
-      ],
-      [
-        "Western reserve",
-        "plains",
-        0.088235,
-        0.246154
-      ],
-      [
-        "Goldbach north",
-        "plains",
-        0.270588,
-        0.615385
-      ],
-      [
-        "Kobelnitz",
-        "city",
-        0.194118,
-        0.684615
-      ],
-      [
-        "Sokolnitz",
-        "city",
-        0.317647,
-        0.876923
-      ],
-      [
-        "French southern approach",
-        "plains",
-        0.082353,
-        0.876923
-      ],
-      [
-        "French centre",
-        "plains",
-        0.105882,
-        0.592308
-      ],
-      [
-        "Holubitz",
-        "city",
-        0.670588,
-        0.415385
-      ],
-      [
-        "Blasowitz",
-        "city",
-        0.505882,
-        0.5
-      ],
-      [
-        "Pratzen village",
-        "city",
-        0.382353,
-        0.684615
-      ],
-      [
-        "Pratzen Heights",
-        "hills",
-        0.464706,
-        0.769231
-      ],
-      [
-        "Stare Vinohrady",
-        "hills",
-        0.6,
-        0.623077
-      ],
-      [
-        "Krenowitz",
-        "city",
-        0.758824,
-        0.669231
-      ],
-      [
-        "Austerlitz",
-        "city",
-        0.982353,
-        0.592308
-      ],
-      [
-        "Allied northern reserve",
-        "plains",
-        0.841176,
-        0.146154
-      ],
-      [
-        "Eastern plateau",
-        "hills",
-        0.864706,
-        0.376923
-      ],
-      [
-        "Augezd approach",
-        "plains",
-        0.411765,
-        0.938462
-      ],
-      [
-        "Eastern ponds approach",
-        "plains",
-        0.641176,
-        0.930769
-      ],
-      [
-        "Allied southern reserve",
-        "plains",
-        0.894118,
-        0.861538
+        "Eastern Shore",
+        "Norfolk"
       ]
-    ],
-    "player1_capital": 3,
-    "player2_capital": 17,
-    "player1_extra_starts": [
-      0,
-      1,
-      2,
-      4,
-      5,
-      6,
-      7,
-      8,
-      9,
-      10,
-      11
-    ],
-    "player2_extra_starts": [
-      12,
-      13,
-      14,
-      15,
-      16,
-      18,
-      19,
-      20,
-      21,
-      22,
-      23
-    ],
-    "setting": {
-      "era": "2 December 1805",
-      "note": "Measured modern elevation; historical land cover, paths and sector boundaries are reconstructed for play.",
-      "sources": [
-        [
-          "Fondation Napol\u00e9on: Austerlitz",
-          "https://www.napoleon.org/en/history-of-the-two-empires/articles/the-battle-of-austerlitz-and-the-principles-of-war/"
-        ]
-      ],
-      "terrain_note": "Measured modern elevation; historical land cover, paths and sector boundaries are reconstructed for play. Opening sectors and relative strengths are authored scenario interpretations, not an exact order of battle."
-    },
-    "battle": {
-      "id": "austerlitz_1805",
-      "name": "Austerlitz \u00b7 1805",
-      "bounds": [
-        16.7,
-        49.1,
-        16.87,
-        49.23
-      ],
-      "date": "2 December 1805",
-      "sides": [
-        "French army",
-        "Allied army"
-      ],
-      "commanders": [
-        "Napoleon",
-        "Kutuzov"
-      ],
-      "capitals": [
-        3,
-        17
-      ],
-      "objectives": [
-        9,
-        14,
-        15
-      ],
-      "defender": 1,
-      "sources": [
-        [
-          "Fondation Napol\u00e9on: Austerlitz",
-          "https://www.napoleon.org/en/history-of-the-two-empires/articles/the-battle-of-austerlitz-and-the-principles-of-war/"
-        ]
-      ],
-      "context": "Contest the Pratzen Heights and village approaches. Fog, timed arrivals and artillery are abstracted; no scripted historical maneuvers.",
-      "terrain_note": "Measured modern elevation; historical land cover, paths and sector boundaries are reconstructed for play. Opening sectors and relative strengths are authored scenario interpretations, not an exact order of battle.",
-      "sites": [
-        [
-          "Bosenitz approach",
-          "plains",
-          16.744,
-          49.22,
-          0,
-          30
-        ],
-        [
-          "Santon Hill",
-          "hills",
-          16.762,
-          49.203,
-          0,
-          55
-        ],
-        [
-          "Bellowitz",
-          "city",
-          16.757,
-          49.185,
-          0,
-          35
-        ],
-        [
-          "Zuran Hill",
-          "hills",
-          16.738,
-          49.179,
-          0,
-          85
-        ],
-        [
-          "Schlapanitz",
-          "city",
-          16.728,
-          49.169,
-          0,
-          40
-        ],
-        [
-          "Jirzikowitz",
-          "city",
-          16.758,
-          49.166,
-          0,
-          60
-        ],
-        [
-          "Western reserve",
-          "plains",
-          16.715,
-          49.198,
-          0,
-          45
-        ],
-        [
-          "Goldbach north",
-          "plains",
-          16.746,
-          49.15,
-          0,
-          30
-        ],
-        [
-          "Kobelnitz",
-          "city",
-          16.733,
-          49.141,
-          0,
-          40
-        ],
-        [
-          "Sokolnitz",
-          "city",
-          16.754,
-          49.116,
-          0,
-          40
-        ],
-        [
-          "French southern approach",
-          "plains",
-          16.714,
-          49.116,
-          0,
-          55
-        ],
-        [
-          "French centre",
-          "plains",
-          16.718,
-          49.153,
-          0,
-          70
-        ],
-        [
-          "Holubitz",
-          "city",
-          16.814,
-          49.176,
-          1,
-          40
-        ],
-        [
-          "Blasowitz",
-          "city",
-          16.786,
-          49.165,
-          1,
-          50
-        ],
-        [
-          "Pratzen village",
-          "city",
-          16.765,
-          49.141,
-          1,
-          60
-        ],
-        [
-          "Pratzen Heights",
-          "hills",
-          16.779,
-          49.13,
-          1,
-          70
-        ],
-        [
-          "Stare Vinohrady",
-          "hills",
-          16.802,
-          49.149,
-          1,
-          55
-        ],
-        [
-          "Krenowitz",
-          "city",
-          16.829,
-          49.143,
-          1,
-          80
-        ],
-        [
-          "Austerlitz",
-          "city",
-          16.867,
-          49.153,
-          1,
-          30
-        ],
-        [
-          "Allied northern reserve",
-          "plains",
-          16.843,
-          49.211,
-          1,
-          35
-        ],
-        [
-          "Eastern plateau",
-          "hills",
-          16.847,
-          49.181,
-          1,
-          40
-        ],
-        [
-          "Augezd approach",
-          "plains",
-          16.77,
-          49.108,
-          1,
-          65
-        ],
-        [
-          "Eastern ponds approach",
-          "plains",
-          16.809,
-          49.109,
-          1,
-          40
-        ],
-        [
-          "Allied southern reserve",
-          "plains",
-          16.852,
-          49.118,
-          1,
-          70
-        ]
-      ],
-      "roads": [],
-      "ridges": []
-    }
+    ]
   },
-  "antietam_1862": {
-    "id": "antietam_1862",
-    "name": "Antietam \u00b7 1862",
+  "greco_persian": {
+    "id": "greco_persian",
+    "name": "Greece, Persia & Egypt",
     "category": "historical",
-    "description": "The Cornfield, Sunken Road and creek crossings form a compact interpretation of the battlefield. Fixed forces abstract the day\u2019s arrivals. 24 regions.",
-    "map_asset_id": "antietam_1862_atlas_v3",
+    "description": "An ancient-war composite from Greece across Anatolia and Mesopotamia to the Persian heartland, with Phoenician ports, Cyprus and the Nile. Historical places anchor 30 gameplay sectors; control does not represent one date or a single empire. 30 regions.",
+    "map_asset_id": "greco_persian_reviewed_v5",
     "regions": [
       [
-        "North Woods",
-        "forest",
-        0.44,
+        "Macedonia",
+        "plains",
+        0.078222,
         0.085366
       ],
       [
-        "Poffenberger fields",
+        "Thessaly",
         "plains",
-        0.546667,
-        0.121951
+        0.076,
+        0.139512
       ],
       [
-        "East Woods",
-        "forest",
-        0.653333,
-        0.195122
+        "Athens",
+        "city",
+        0.105111,
+        0.220488
       ],
       [
-        "Upper bridge approach",
+        "Sparta",
+        "city",
+        0.076222,
+        0.264878
+      ],
+      [
+        "Crete",
+        "hills",
+        0.136889,
+        0.351707
+      ],
+      [
+        "Thrace",
+        "plains",
+        0.162222,
+        0.058537
+      ],
+      [
+        "Ionia",
         "coast",
-        0.826667,
-        0.207317
+        0.185333,
+        0.222439
       ],
       [
-        "Northwestern reserve",
+        "Lydia",
+        "city",
+        0.200889,
+        0.19561
+      ],
+      [
+        "Phrygia",
         "plains",
-        0.133333,
-        0.109756
+        0.256222,
+        0.182439
       ],
       [
-        "The Cornfield",
-        "plains",
-        0.48,
-        0.231707
+        "Cappadocia",
+        "hills",
+        0.366444,
+        0.183902
       ],
       [
-        "West Woods",
-        "forest",
+        "Cilicia",
+        "coast",
+        0.362889,
+        0.268293
+      ],
+      [
+        "Rhodes",
+        "coast",
+        0.202222,
+        0.307317
+      ],
+      [
+        "Cyprus",
+        "coast",
+        0.315556,
+        0.365854
+      ],
+      [
+        "Phoenicia",
+        "city",
         0.36,
-        0.329268
+        0.450244
       ],
       [
-        "Dunker Church",
+        "Damascus",
         "city",
-        0.48,
-        0.353659
+        0.384444,
+        0.438537
       ],
       [
-        "Mumma Farm",
+        "Nile Delta",
+        "plains",
+        0.266667,
+        0.570732
+      ],
+      [
+        "Memphis",
         "city",
-        0.586667,
-        0.341463
+        0.272222,
+        0.617073
       ],
       [
-        "Roulette Farm",
+        "Thebes",
         "city",
-        0.666667,
-        0.426829
+        0.303333,
+        0.818537
       ],
       [
-        "Sunken Road",
-        "hills",
-        0.6,
-        0.487805
+        "Sinai",
+        "desert",
+        0.328889,
+        0.653659
       ],
       [
-        "Piper Farm",
+        "Upper Mesopotamia",
+        "plains",
+        0.445111,
+        0.260488
+      ],
+      [
+        "Assyria",
+        "plains",
+        0.536667,
+        0.299512
+      ],
+      [
+        "Babylon",
         "city",
-        0.48,
-        0.560976
+        0.564889,
+        0.485854
       ],
       [
-        "Sharpsburg",
+        "Armenia",
+        "hills",
+        0.54,
+        0.146341
+      ],
+      [
+        "Susa",
         "city",
-        0.426667,
-        0.597561
+        0.65,
+        0.502927
       ],
       [
-        "Western town approach",
-        "plains",
-        0.106667,
-        0.560976
-      ],
-      [
-        "Middle bridge approach",
-        "coast",
-        0.813333,
-        0.52439
-      ],
-      [
-        "Eastern heights",
+        "Media",
         "hills",
-        0.92,
-        0.695122
+        0.656,
+        0.37561
       ],
       [
-        "Cemetery heights",
-        "hills",
-        0.573333,
-        0.634146
-      ],
-      [
-        "Burnside Bridge",
-        "coast",
-        0.666667,
-        0.695122
-      ],
-      [
-        "Sherrick Farm",
+        "Persepolis",
         "city",
-        0.533333,
-        0.719512
+        0.753111,
+        0.613171
       ],
       [
-        "Otto Farm",
-        "city",
-        0.48,
-        0.817073
-      ],
-      [
-        "Southern heights",
-        "hills",
-        0.32,
-        0.829268
-      ],
-      [
-        "Snavely approach",
-        "coast",
-        0.68,
-        0.95122
-      ],
-      [
-        "Southeastern reserve",
+        "Parthia",
         "plains",
-        0.906667,
-        0.914634
+        0.877778,
+        0.312195
       ],
       [
-        "Southwestern road",
-        "plains",
-        0.12,
-        0.914634
-      ]
-    ],
-    "player1_capital": 12,
-    "player2_capital": 3,
-    "player1_extra_starts": [
-      6,
-      7,
-      8,
-      9,
-      10,
-      11,
-      13,
-      16,
-      17,
-      18,
-      19,
-      20,
-      23
-    ],
-    "player2_extra_starts": [
-      0,
-      1,
-      2,
-      4,
-      5,
-      14,
-      15,
-      21,
-      22
-    ],
-    "setting": {
-      "era": "17 September 1862",
-      "note": "Measured modern elevation; historical land cover, paths and sector boundaries are reconstructed for play.",
-      "sources": [
-        [
-          "American Battlefield Trust: historical map",
-          "https://www.battlefields.org/learn/maps/map-battlefield-antietam"
-        ]
-      ],
-      "terrain_note": "Measured modern elevation; historical land cover, paths and sector boundaries are reconstructed for play. Opening sectors and relative strengths are authored scenario interpretations, not an exact order of battle."
-    },
-    "battle": {
-      "id": "antietam_1862",
-      "name": "Antietam \u00b7 1862",
-      "bounds": [
-        -77.782,
-        39.425,
-        -77.707,
-        39.507
-      ],
-      "date": "17 September 1862",
-      "sides": [
-        "Confederate army",
-        "Union army"
-      ],
-      "commanders": [
-        "Robert E. Lee",
-        "George B. McClellan"
-      ],
-      "capitals": [
-        12,
-        3
-      ],
-      "objectives": [
-        5,
-        10,
-        17
-      ],
-      "defender": 0,
-      "sources": [
-        [
-          "American Battlefield Trust: historical map",
-          "https://www.battlefields.org/learn/maps/map-battlefield-antietam"
-        ]
-      ],
-      "context": "The Cornfield, Sunken Road and creek crossings form a compact interpretation of the battlefield. Fixed forces abstract the day\u2019s arrivals.",
-      "terrain_note": "Measured modern elevation; historical land cover, paths and sector boundaries are reconstructed for play. Opening sectors and relative strengths are authored scenario interpretations, not an exact order of battle.",
-      "sites": [
-        [
-          "North Woods",
-          "forest",
-          -77.749,
-          39.5,
-          1,
-          45
-        ],
-        [
-          "Poffenberger fields",
-          "plains",
-          -77.741,
-          39.497,
-          1,
-          50
-        ],
-        [
-          "East Woods",
-          "forest",
-          -77.733,
-          39.491,
-          1,
-          45
-        ],
-        [
-          "Upper bridge approach",
-          "coast",
-          -77.72,
-          39.49,
-          1,
-          85
-        ],
-        [
-          "Northwestern reserve",
-          "plains",
-          -77.772,
-          39.498,
-          1,
-          50
-        ],
-        [
-          "The Cornfield",
-          "plains",
-          -77.746,
-          39.488,
-          1,
-          60
-        ],
-        [
-          "West Woods",
-          "forest",
-          -77.755,
-          39.48,
-          0,
-          60
-        ],
-        [
-          "Dunker Church",
-          "city",
-          -77.746,
-          39.478,
-          0,
-          55
-        ],
-        [
-          "Mumma Farm",
-          "city",
-          -77.738,
-          39.479,
-          0,
-          40
-        ],
-        [
-          "Roulette Farm",
-          "city",
-          -77.732,
-          39.472,
-          0,
-          35
-        ],
-        [
-          "Sunken Road",
-          "hills",
-          -77.737,
-          39.467,
-          0,
-          75
-        ],
-        [
-          "Piper Farm",
-          "city",
-          -77.746,
-          39.461,
-          0,
-          50
-        ],
-        [
-          "Sharpsburg",
-          "city",
-          -77.75,
-          39.458,
-          0,
-          75
-        ],
-        [
-          "Western town approach",
-          "plains",
-          -77.774,
-          39.461,
-          0,
-          35
-        ],
-        [
-          "Middle bridge approach",
-          "coast",
-          -77.721,
-          39.464,
-          1,
-          65
-        ],
-        [
-          "Eastern heights",
-          "hills",
-          -77.713,
-          39.45,
-          1,
-          60
-        ],
-        [
-          "Cemetery heights",
-          "hills",
-          -77.739,
-          39.455,
-          0,
-          45
-        ],
-        [
-          "Burnside Bridge",
-          "coast",
-          -77.732,
-          39.45,
-          0,
-          45
-        ],
-        [
-          "Sherrick Farm",
-          "city",
-          -77.742,
-          39.448,
-          0,
-          35
-        ],
-        [
-          "Otto Farm",
-          "city",
-          -77.746,
-          39.44,
-          0,
-          35
-        ],
-        [
-          "Southern heights",
-          "hills",
-          -77.758,
-          39.439,
-          0,
-          40
-        ],
-        [
-          "Snavely approach",
-          "coast",
-          -77.731,
-          39.429,
-          1,
-          40
-        ],
-        [
-          "Southeastern reserve",
-          "plains",
-          -77.714,
-          39.432,
-          1,
-          65
-        ],
-        [
-          "Southwestern road",
-          "plains",
-          -77.773,
-          39.432,
-          0,
-          30
-        ]
-      ],
-      "roads": [],
-      "ridges": []
-    }
-  },
-  "cannae_216": {
-    "id": "cannae_216",
-    "name": "Cannae \u00b7 216 BCE",
-    "category": "historical",
-    "description": "A battlefield interpretation around Cannae and the lower Aufidus. The precise ancient deployment and river course are disputed; encirclement is not scripted. 24 regions.",
-    "map_asset_id": "cannae_216_atlas_v3",
-    "regions": [
-      [
-        "Northern ford",
-        "coast",
-        0.1,
-        0.133333
-      ],
-      [
-        "Aufidus west bank",
-        "coast",
-        0.338462,
-        0.155556
-      ],
-      [
-        "Aufidus east bank",
-        "coast",
-        0.6,
-        0.122222
-      ],
-      [
-        "Northeastern track",
-        "plains",
-        0.892308,
-        0.133333
-      ],
-      [
-        "Western plain",
-        "plains",
-        0.1,
-        0.311111
-      ],
-      [
-        "Carthaginian left",
-        "plains",
-        0.338462,
-        0.311111
-      ],
-      [
-        "Carthaginian centre",
-        "plains",
-        0.6,
-        0.311111
-      ],
-      [
-        "Eastern plain",
-        "plains",
-        0.892308,
-        0.3
-      ],
-      [
-        "Western cavalry ground",
-        "plains",
-        0.1,
-        0.477778
-      ],
-      [
-        "Hannibal's position",
-        "city",
-        0.338462,
-        0.477778
-      ],
-      [
-        "Forward battle plain",
-        "plains",
-        0.6,
-        0.477778
-      ],
-      [
-        "Eastern cavalry ground",
-        "plains",
-        0.892308,
-        0.477778
-      ],
-      [
-        "Southwest flank",
-        "plains",
-        0.1,
-        0.633333
-      ],
-      [
-        "Roman left",
-        "plains",
-        0.338462,
-        0.633333
-      ],
-      [
-        "Roman centre",
-        "plains",
-        0.6,
-        0.633333
-      ],
-      [
-        "Roman right",
-        "plains",
-        0.892308,
-        0.633333
-      ],
-      [
-        "Western ridge",
-        "hills",
-        0.1,
-        0.788889
-      ],
-      [
-        "Cannae heights",
-        "hills",
-        0.323077,
-        0.788889
-      ],
-      [
-        "Roman reserve",
-        "city",
-        0.6,
-        0.788889
-      ],
-      [
-        "Eastern rise",
-        "hills",
-        0.892308,
-        0.788889
-      ],
-      [
-        "Southwest track",
-        "plains",
-        0.1,
-        0.933333
-      ],
-      [
-        "Southern camp approach",
-        "plains",
-        0.338462,
-        0.933333
-      ],
-      [
-        "Southern reserve",
-        "plains",
-        0.6,
-        0.933333
-      ],
-      [
-        "Southeast track",
-        "plains",
-        0.892308,
-        0.933333
-      ]
-    ],
-    "player1_capital": 9,
-    "player2_capital": 18,
-    "player1_extra_starts": [
-      0,
-      1,
-      2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8,
-      10,
-      11
-    ],
-    "player2_extra_starts": [
-      12,
-      13,
-      14,
-      15,
-      16,
-      17,
-      19,
-      20,
-      21,
-      22,
-      23
-    ],
-    "setting": {
-      "era": "2 August 216 BCE",
-      "note": "Measured modern elevation; historical land cover, paths and sector boundaries are reconstructed for play.",
-      "sources": [
-        [
-          "World History Encyclopedia: Cannae",
-          "https://www.worldhistory.org/Battle_of_Cannae/"
-        ]
-      ],
-      "terrain_note": "Measured modern elevation; historical land cover, paths and sector boundaries are reconstructed for play. Opening sectors and relative strengths are authored scenario interpretations, not an exact order of battle."
-    },
-    "battle": {
-      "id": "cannae_216",
-      "name": "Cannae \u00b7 216 BCE",
-      "bounds": [
-        16.025,
-        41.275,
-        16.155,
-        41.365
-      ],
-      "date": "2 August 216 BCE",
-      "sides": [
-        "Carthaginian army",
-        "Roman army"
-      ],
-      "commanders": [
-        "Hannibal",
-        "Paullus and Varro"
-      ],
-      "capitals": [
-        9,
-        18
-      ],
-      "objectives": [
-        5,
-        10,
-        17
-      ],
-      "defender": 0,
-      "sources": [
-        [
-          "World History Encyclopedia: Cannae",
-          "https://www.worldhistory.org/Battle_of_Cannae/"
-        ]
-      ],
-      "context": "A battlefield interpretation around Cannae and the lower Aufidus. The precise ancient deployment and river course are disputed; encirclement is not scripted.",
-      "terrain_note": "Measured modern elevation; historical land cover, paths and sector boundaries are reconstructed for play. Opening sectors and relative strengths are authored scenario interpretations, not an exact order of battle.",
-      "sites": [
-        [
-          "Northern ford",
-          "coast",
-          16.038,
-          41.353,
-          0,
-          25
-        ],
-        [
-          "Aufidus west bank",
-          "coast",
-          16.069,
-          41.351,
-          0,
-          30
-        ],
-        [
-          "Aufidus east bank",
-          "coast",
-          16.103,
-          41.354,
-          0,
-          25
-        ],
-        [
-          "Northeastern track",
-          "plains",
-          16.141,
-          41.353,
-          0,
-          25
-        ],
-        [
-          "Western plain",
-          "plains",
-          16.038,
-          41.337,
-          0,
-          30
-        ],
-        [
-          "Carthaginian left",
-          "plains",
-          16.069,
-          41.337,
-          0,
-          70
-        ],
-        [
-          "Carthaginian centre",
-          "plains",
-          16.103,
-          41.337,
-          0,
-          35
-        ],
-        [
-          "Eastern plain",
-          "plains",
-          16.141,
-          41.338,
-          0,
-          30
-        ],
-        [
-          "Western cavalry ground",
-          "plains",
-          16.038,
-          41.322,
-          0,
-          90
-        ],
-        [
-          "Hannibal's position",
-          "city",
-          16.069,
-          41.322,
-          0,
-          75
-        ],
-        [
-          "Forward battle plain",
-          "plains",
-          16.103,
-          41.322,
-          0,
-          35
-        ],
-        [
-          "Eastern cavalry ground",
-          "plains",
-          16.141,
-          41.322,
-          0,
-          90
-        ],
-        [
-          "Southwest flank",
-          "plains",
-          16.038,
-          41.308,
-          1,
-          40
-        ],
-        [
-          "Roman left",
-          "plains",
-          16.069,
-          41.308,
-          1,
-          65
-        ],
-        [
-          "Roman centre",
-          "plains",
-          16.103,
-          41.308,
-          1,
-          80
-        ],
-        [
-          "Roman right",
-          "plains",
-          16.141,
-          41.308,
-          1,
-          65
-        ],
-        [
-          "Western ridge",
-          "hills",
-          16.038,
-          41.294,
-          1,
-          40
-        ],
-        [
-          "Cannae heights",
-          "hills",
-          16.067,
-          41.294,
-          1,
-          45
-        ],
-        [
-          "Roman reserve",
-          "city",
-          16.103,
-          41.294,
-          1,
-          90
-        ],
-        [
-          "Eastern rise",
-          "hills",
-          16.141,
-          41.294,
-          1,
-          40
-        ],
-        [
-          "Southwest track",
-          "plains",
-          16.038,
-          41.281,
-          1,
-          30
-        ],
-        [
-          "Southern camp approach",
-          "plains",
-          16.069,
-          41.281,
-          1,
-          45
-        ],
-        [
-          "Southern reserve",
-          "plains",
-          16.103,
-          41.281,
-          1,
-          60
-        ],
-        [
-          "Southeast track",
-          "plains",
-          16.141,
-          41.281,
-          1,
-          30
-        ]
-      ],
-      "roads": [],
-      "ridges": []
-    }
-  },
-  "naseby_1645": {
-    "id": "naseby_1645",
-    "name": "Naseby \u00b7 1645",
-    "category": "historical",
-    "description": "Ridges and open fields around Naseby. Sector positions interpret the registered battlefield; cavalry and baggage capture use normal control rules. 24 regions.",
-    "map_asset_id": "naseby_1645_atlas_v3",
-    "regions": [
-      [
-        "Clipston approach",
-        "plains",
-        0.136842,
-        0.103448
-      ],
-      [
-        "Northern ridge",
-        "hills",
-        0.389474,
-        0.12069
-      ],
-      [
-        "Royalist reserve",
-        "city",
-        0.631579,
-        0.12069
-      ],
-      [
-        "Northeast approach",
-        "plains",
-        0.884211,
-        0.12069
-      ],
-      [
-        "Western Royalist flank",
-        "plains",
-        0.136842,
-        0.275862
-      ],
-      [
-        "Dust Hill west",
-        "hills",
-        0.389474,
-        0.275862
-      ],
-      [
-        "Dust Hill east",
-        "hills",
-        0.631579,
-        0.275862
-      ],
-      [
-        "Eastern Royalist flank",
-        "plains",
-        0.884211,
-        0.275862
-      ],
-      [
-        "Western hedge",
+        "Hyrcania",
         "forest",
-        0.136842,
-        0.431034
+        0.787556,
+        0.276098
       ],
       [
-        "Broad Moor west",
-        "plains",
-        0.389474,
-        0.431034
+        "Carmania",
+        "desert",
+        0.846,
+        0.596098
       ],
       [
-        "Broad Moor centre",
-        "plains",
-        0.631579,
-        0.431034
-      ],
-      [
-        "Broad Moor east",
-        "plains",
-        0.884211,
-        0.431034
-      ],
-      [
-        "Sulby hedge approach",
-        "forest",
-        0.136842,
-        0.586207
-      ],
-      [
-        "Parliamentary left",
-        "plains",
-        0.389474,
-        0.586207
-      ],
-      [
-        "Parliamentary centre",
-        "hills",
-        0.631579,
-        0.586207
-      ],
-      [
-        "Parliamentary right",
-        "plains",
-        0.884211,
-        0.586207
-      ],
-      [
-        "Western rear",
-        "plains",
-        0.136842,
-        0.741379
-      ],
-      [
-        "Naseby ridge",
-        "hills",
-        0.389474,
-        0.741379
-      ],
-      [
-        "Fairfax's reserve",
-        "city",
-        0.631579,
-        0.741379
-      ],
-      [
-        "Eastern rear",
-        "plains",
-        0.884211,
-        0.741379
-      ],
-      [
-        "Baggage road",
-        "plains",
-        0.136842,
-        0.896552
-      ],
-      [
-        "Naseby outskirts",
-        "city",
-        0.389474,
-        0.896552
-      ],
-      [
-        "Southern fields",
-        "plains",
-        0.631579,
-        0.896552
-      ],
-      [
-        "Southeast track",
-        "plains",
-        0.884211,
-        0.896552
+        "Drangiana",
+        "desert",
+        0.944444,
+        0.559512
       ]
     ],
     "player1_capital": 2,
-    "player2_capital": 18,
+    "player2_capital": 26,
     "player1_extra_starts": [
-      0,
-      1,
-      3,
       4,
-      5,
-      6,
-      7,
-      8,
-      9,
-      10,
       11
     ],
     "player2_extra_starts": [
-      12,
-      13,
-      14,
-      15,
-      16,
-      17,
-      19,
+      25,
+      27
+    ],
+    "setting": {
+      "era": "Composite \u00b7 Greek\u2013Persian conflicts, 499\u2013330 BC",
+      "note": "Modern coastlines; interpreted gameplay sectors around historical places, not exact period borders. Starting territories are balanced for open-ended conquest, not historical deployments. Terrain symbols are illustrative.",
+      "sources": [
+        [
+          "The Metropolitan Museum of Art: The Achaemenid Persian Empire",
+          "https://www.metmuseum.org/essays/the-achaemenid-persian-empire-550-330-b-c"
+        ]
+      ],
+      "terrain_note": "Modern coastlines; interpreted gameplay sectors around historical places, not exact period borders. Starting territories are balanced for open-ended conquest, not historical deployments. Terrain symbols are illustrative.",
+      "opening_note": "Recommended opening: 152 vs 152 troops. Territory growth and access also affect difficulty."
+    },
+    "historical_sectors": true,
+    "sea_routes": [
+      [
+        "Athens",
+        "Ionia"
+      ],
+      [
+        "Athens",
+        "Crete"
+      ],
+      [
+        "Crete",
+        "Rhodes"
+      ],
+      [
+        "Rhodes",
+        "Ionia"
+      ],
+      [
+        "Rhodes",
+        "Cyprus"
+      ],
+      [
+        "Cyprus",
+        "Cilicia"
+      ],
+      [
+        "Cyprus",
+        "Phoenicia"
+      ],
+      [
+        "Crete",
+        "Nile Delta"
+      ]
+    ]
+  },
+  "viking_conquests": {
+    "id": "viking_conquests",
+    "name": "Viking World \u00b7 Northern Europe",
+    "category": "historical",
+    "description": "A 30-region composite linking the Nordic homelands with Iceland, Britain, Ireland, Frankish river approaches and the Baltic routes to Ladoga and Novgorod. Raiding, settlement and trading contacts across 793\u20131066; not a single Viking empire. 30 regions.",
+    "map_asset_id": "viking_conquests_reviewed_v5",
+    "regions": [
+      [
+        "Iceland",
+        "hills",
+        0.108475,
+        0.279167
+      ],
+      [
+        "Faroe Islands",
+        "coast",
+        0.307627,
+        0.391667
+      ],
+      [
+        "Orkney",
+        "coast",
+        0.372203,
+        0.521667
+      ],
+      [
+        "Hebrides",
+        "coast",
+        0.312712,
+        0.554167
+      ],
+      [
+        "Halogaland",
+        "hills",
+        0.70339,
+        0.1125
+      ],
+      [
+        "Trondelag",
+        "hills",
+        0.6,
+        0.33625
+      ],
+      [
+        "Vestland",
+        "coast",
+        0.514068,
+        0.462917
+      ],
+      [
+        "Viken",
+        "city",
+        0.600169,
+        0.509583
+      ],
+      [
+        "Jutland",
+        "plains",
+        0.58339,
+        0.655833
+      ],
+      [
+        "Hedeby",
+        "city",
+        0.585932,
+        0.70875
+      ],
+      [
+        "Zealand",
+        "city",
+        0.628475,
+        0.660833
+      ],
+      [
+        "Scania",
+        "plains",
+        0.647288,
+        0.658333
+      ],
+      [
+        "Gotland",
+        "coast",
+        0.736441,
+        0.583333
+      ],
+      [
+        "Birka",
+        "city",
+        0.721017,
+        0.506667
+      ],
+      [
+        "Finland",
+        "forest",
+        0.830508,
+        0.395833
+      ],
+      [
+        "Ladoga",
+        "city",
+        0.971186,
+        0.479167
+      ],
+      [
+        "Novgorod",
+        "city",
+        0.953898,
+        0.540833
+      ],
+      [
+        "Baltic Coast",
+        "forest",
+        0.832203,
+        0.60625
+      ],
+      [
+        "Estonia",
+        "coast",
+        0.84322,
+        0.5025
+      ],
+      [
+        "Northumbria",
+        "city",
+        0.405424,
+        0.730833
+      ],
+      [
+        "Mercia",
+        "plains",
+        0.404237,
+        0.772917
+      ],
+      [
+        "Wessex",
+        "city",
+        0.401356,
+        0.851667
+      ],
+      [
+        "Scotland",
+        "hills",
+        0.352203,
+        0.584167
+      ],
+      [
+        "Dublin",
+        "city",
+        0.317627,
+        0.75625
+      ],
+      [
+        "Munster",
+        "coast",
+        0.280169,
+        0.816667
+      ],
+      [
+        "Normandy",
+        "coast",
+        0.442373,
+        0.919167
+      ],
+      [
+        "Brittany",
+        "coast",
+        0.372881,
+        0.970833
+      ],
+      [
+        "Paris",
+        "city",
+        0.463559,
+        0.943333
+      ],
+      [
+        "Frisia",
+        "coast",
+        0.516102,
+        0.770833
+      ],
+      [
+        "Rhineland",
+        "city",
+        0.541695,
+        0.856667
+      ]
+    ],
+    "player1_capital": 7,
+    "player2_capital": 3,
+    "player1_extra_starts": [
+      11,
+      12
+    ],
+    "player2_extra_starts": [
       20,
-      21,
-      22,
       23
     ],
     "setting": {
-      "era": "14 June 1645",
-      "note": "Measured modern elevation; historical land cover, paths and sector boundaries are reconstructed for play.",
+      "era": "Composite \u00b7 North Atlantic, Nordic and Baltic routes, 793\u20131066",
+      "note": "Modern coastlines; interpreted gameplay sectors around historical places, not exact period borders. Starting territories are balanced for open-ended conquest, not historical deployments. Terrain symbols are illustrative.",
       "sources": [
         [
-          "Historic England: registered battlefield",
-          "https://historicengland.org.uk/listing/the-list/list-entry/1000023"
+          "National Museum of Denmark: The Viking Age",
+          "https://en.natmus.dk/historical-knowledge/denmark/prehistoric-period-until-1050-ad/the-Viking-age/"
         ]
       ],
-      "terrain_note": "Measured modern elevation; historical land cover, paths and sector boundaries are reconstructed for play. Opening sectors and relative strengths are authored scenario interpretations, not an exact order of battle."
+      "terrain_note": "Modern coastlines; interpreted gameplay sectors around historical places, not exact period borders. Starting territories are balanced for open-ended conquest, not historical deployments. Terrain symbols are illustrative.",
+      "opening_note": "Recommended opening: 168 vs 168 troops. Territory growth and access also affect difficulty."
     },
-    "battle": {
-      "id": "naseby_1645",
-      "name": "Naseby \u00b7 1645",
-      "bounds": [
-        -1.025,
-        52.387,
-        -0.93,
-        52.445
-      ],
-      "date": "14 June 1645",
-      "sides": [
-        "Royalist army",
-        "Parliamentarian army"
-      ],
-      "commanders": [
-        "Charles I",
-        "Thomas Fairfax"
-      ],
-      "capitals": [
-        2,
-        18
-      ],
-      "objectives": [
-        9,
-        10,
-        17
-      ],
-      "defender": 1,
-      "sources": [
-        [
-          "Historic England: registered battlefield",
-          "https://historicengland.org.uk/listing/the-list/list-entry/1000023"
-        ]
-      ],
-      "context": "Ridges and open fields around Naseby. Sector positions interpret the registered battlefield; cavalry and baggage capture use normal control rules.",
-      "terrain_note": "Measured modern elevation; historical land cover, paths and sector boundaries are reconstructed for play. Opening sectors and relative strengths are authored scenario interpretations, not an exact order of battle.",
-      "sites": [
-        [
-          "Clipston approach",
-          "plains",
-          -1.012,
-          52.439,
-          0,
-          25
-        ],
-        [
-          "Northern ridge",
-          "hills",
-          -0.988,
-          52.438,
-          0,
-          40
-        ],
-        [
-          "Royalist reserve",
-          "city",
-          -0.965,
-          52.438,
-          0,
-          80
-        ],
-        [
-          "Northeast approach",
-          "plains",
-          -0.941,
-          52.438,
-          0,
-          25
-        ],
-        [
-          "Western Royalist flank",
-          "plains",
-          -1.012,
-          52.429,
-          0,
-          70
-        ],
-        [
-          "Dust Hill west",
-          "hills",
-          -0.988,
-          52.429,
-          0,
-          65
-        ],
-        [
-          "Dust Hill east",
-          "hills",
-          -0.965,
-          52.429,
-          0,
-          65
-        ],
-        [
-          "Eastern Royalist flank",
-          "plains",
-          -0.941,
-          52.429,
-          0,
-          75
-        ],
-        [
-          "Western hedge",
-          "forest",
-          -1.012,
-          52.42,
-          0,
-          30
-        ],
-        [
-          "Broad Moor west",
-          "plains",
-          -0.988,
-          52.42,
-          0,
-          30
-        ],
-        [
-          "Broad Moor centre",
-          "plains",
-          -0.965,
-          52.42,
-          0,
-          35
-        ],
-        [
-          "Broad Moor east",
-          "plains",
-          -0.941,
-          52.42,
-          0,
-          30
-        ],
-        [
-          "Sulby hedge approach",
-          "forest",
-          -1.012,
-          52.411,
-          1,
-          55
-        ],
-        [
-          "Parliamentary left",
-          "plains",
-          -0.988,
-          52.411,
-          1,
-          85
-        ],
-        [
-          "Parliamentary centre",
-          "hills",
-          -0.965,
-          52.411,
-          1,
-          75
-        ],
-        [
-          "Parliamentary right",
-          "plains",
-          -0.941,
-          52.411,
-          1,
-          85
-        ],
-        [
-          "Western rear",
-          "plains",
-          -1.012,
-          52.402,
-          1,
-          40
-        ],
-        [
-          "Naseby ridge",
-          "hills",
-          -0.988,
-          52.402,
-          1,
-          40
-        ],
-        [
-          "Fairfax's reserve",
-          "city",
-          -0.965,
-          52.402,
-          1,
-          85
-        ],
-        [
-          "Eastern rear",
-          "plains",
-          -0.941,
-          52.402,
-          1,
-          40
-        ],
-        [
-          "Baggage road",
-          "plains",
-          -1.012,
-          52.393,
-          1,
-          25
-        ],
-        [
-          "Naseby outskirts",
-          "city",
-          -0.988,
-          52.393,
-          1,
-          30
-        ],
-        [
-          "Southern fields",
-          "plains",
-          -0.965,
-          52.393,
-          1,
-          30
-        ],
-        [
-          "Southeast track",
-          "plains",
-          -0.941,
-          52.393,
-          1,
-          25
-        ]
-      ],
-      "roads": [],
-      "ridges": []
-    }
-  },
-  "constantinople": {
-    "id": "constantinople",
-    "name": "Constantinople: The Walled City",
-    "category": "sieges",
-    "description": "A siege-inspired district map around the land walls and Golden Horn. Walls are landmarks, not a separate breach mechanic. 24 regions.",
-    "map_asset_id": "constantinople_atlas_v3",
-    "regions": [
+    "historical_sectors": true,
+    "sea_routes": [
       [
-        "Western camps",
-        "plains",
-        0.082759,
-        0.209677
+        "Iceland",
+        "Faroe Islands"
       ],
       [
-        "Northern camps",
-        "plains",
-        0.241379,
-        0.112903
+        "Faroe Islands",
+        "Vestland"
       ],
       [
-        "Blachernae",
-        "city",
-        0.317241,
-        0.306452
+        "Faroe Islands",
+        "Orkney"
       ],
       [
-        "Golden Horn head",
-        "coast",
-        0.358621,
-        0.145161
+        "Vestland",
+        "Orkney"
       ],
       [
-        "Mesoteichion",
-        "city",
-        0.22069,
-        0.532258
+        "Orkney",
+        "Scotland"
       ],
       [
-        "Northern wall",
-        "hills",
-        0.289655,
-        0.419355
+        "Hebrides",
+        "Dublin"
       ],
       [
-        "Western approach",
-        "plains",
-        0.082759,
-        0.483871
+        "Dublin",
+        "Mercia"
       ],
       [
-        "Southern approach",
-        "plains",
-        0.103448,
-        0.725806
+        "Jutland",
+        "Northumbria"
       ],
       [
-        "Golden Gate",
-        "city",
-        0.193103,
-        0.935484
+        "Jutland",
+        "Frisia"
       ],
       [
-        "Studion",
-        "city",
-        0.248276,
-        0.870968
+        "Zealand",
+        "Scania"
       ],
       [
-        "Xerolophos",
-        "hills",
-        0.310345,
-        0.790323
+        "Hedeby",
+        "Zealand"
       ],
       [
-        "Lycus Valley",
-        "plains",
-        0.310345,
-        0.580645
+        "Scania",
+        "Gotland"
       ],
       [
-        "Holy Apostles",
-        "city",
-        0.37931,
-        0.596774
+        "Gotland",
+        "Birka"
       ],
       [
-        "Northern quarter",
-        "city",
-        0.4,
-        0.451613
+        "Gotland",
+        "Baltic Coast"
       ],
       [
-        "Aetius quarter",
-        "city",
-        0.337931,
-        0.483871
+        "Birka",
+        "Finland"
       ],
       [
-        "Forum of the Ox",
-        "plains",
-        0.4,
-        0.758065
+        "Finland",
+        "Estonia"
       ],
       [
-        "Forum of Theodosius",
-        "city",
-        0.482759,
-        0.758065
-      ],
-      [
-        "Central quarter",
-        "city",
-        0.462069,
-        0.596774
-      ],
-      [
-        "Forum of Constantine",
-        "city",
-        0.531034,
-        0.790323
-      ],
-      [
-        "Hippodrome",
-        "city",
-        0.551724,
-        0.83871
-      ],
-      [
-        "Hagia Sophia quarter",
-        "city",
-        0.586207,
-        0.774194
-      ],
-      [
-        "Acropolis",
-        "hills",
-        0.62069,
-        0.693548
-      ],
-      [
-        "Galata",
-        "city",
-        0.544828,
-        0.483871
-      ],
-      [
-        "Eastern shore",
-        "coast",
-        0.834483,
-        0.5
+        "Wessex",
+        "Normandy"
       ]
-    ],
-    "player1_capital": 20,
-    "player2_capital": 0,
-    "player1_extra_starts": [
-      17,
-      21
-    ],
-    "player2_extra_starts": [
-      4,
-      9
-    ],
-    "setting": {
-      "era": "Medieval city interpretation",
-      "note": "Measured modern elevation; historical land cover, paths and sector boundaries are reconstructed for play.",
-      "sources": [
-        [
-          "UNESCO: Historic Areas of Istanbul",
-          "https://whc.unesco.org/en/list/356/"
-        ]
-      ],
-      "terrain_note": "Measured modern elevation; historical land cover, paths and sector boundaries are reconstructed for play.",
-      "opening_note": "Recommended opening: 208 vs 224 troops. Territory growth and access also affect difficulty."
-    }
+    ]
   },
-  "chittorgarh": {
-    "id": "chittorgarh",
-    "name": "Chittorgarh: The Hill Fort",
-    "category": "sieges",
-    "description": "A hill-fort campaign across plateau strongpoints and surrounding approaches. Gates and walls use existing terrain and movement rules. 24 regions.",
-    "map_asset_id": "chittorgarh_atlas_v3",
+  "norman_england_1066": {
+    "id": "norman_england_1066",
+    "name": "Norman England \u00b7 1066",
+    "category": "historical",
+    "description": "England in the year of the Norman invasion: Sussex landing grounds, London, the shires and the road north to York. Balanced conquest starts, not a reconstruction of army deployments. 28 regions.",
+    "map_asset_id": "norman_england_1066_atlas_v3",
     "regions": [
       [
-        "Northern approach",
-        "plains",
-        0.145455,
-        0.106667
-      ],
-      [
-        "Northern town",
-        "city",
-        0.309091,
-        0.146667
-      ],
-      [
-        "North plateau",
-        "hills",
-        0.536364,
-        0.146667
-      ],
-      [
-        "Northeastern fields",
-        "plains",
-        0.845455,
-        0.146667
-      ],
-      [
-        "Western riverbank",
+        "Bamburgh",
         "coast",
-        0.118182,
-        0.333333
+        0.523077,
+        0.047541
       ],
       [
-        "Lower town",
-        "city",
-        0.290909,
-        0.373333
-      ],
-      [
-        "Fort approach",
+        "Durham",
         "hills",
-        0.454545,
-        0.4
+        0.541026,
+        0.183607
       ],
       [
-        "Eastern valley",
-        "plains",
-        0.809091,
-        0.36
-      ],
-      [
-        "Western fields",
-        "plains",
-        0.136364,
-        0.586667
-      ],
-      [
-        "Padan Pol approach",
-        "city",
-        0.363636,
-        0.493333
-      ],
-      [
-        "Ram Pol",
-        "city",
-        0.518182,
-        0.426667
-      ],
-      [
-        "Upper plateau",
+        "Carlisle",
         "hills",
-        0.590909,
-        0.373333
+        0.366667,
+        0.165574
       ],
       [
-        "Rana Kumbha precinct",
+        "York",
         "city",
-        0.536364,
-        0.493333
+        0.605128,
+        0.318033
       ],
       [
-        "Vijay Stambha precinct",
-        "city",
-        0.545455,
-        0.506667
-      ],
-      [
-        "Gaumukh precinct",
+        "Lancaster",
         "coast",
-        0.536364,
-        0.56
+        0.384615,
+        0.303279
       ],
       [
-        "Eastern escarpment",
-        "hills",
-        0.672727,
-        0.506667
-      ],
-      [
-        "Padmini precinct",
+        "Chester",
         "city",
-        0.572727,
-        0.586667
+        0.373077,
+        0.444262
       ],
       [
-        "Southern plateau",
-        "hills",
-        0.618182,
-        0.666667
+        "Lincoln",
+        "city",
+        0.674359,
+        0.437705
       ],
       [
-        "Southern gate approach",
-        "hills",
-        0.536364,
-        0.746667
-      ],
-      [
-        "Southeastern fields",
-        "plains",
-        0.872727,
-        0.68
-      ],
-      [
-        "Southwestern road",
-        "plains",
-        0.190909,
-        0.84
-      ],
-      [
-        "Southern camps",
-        "plains",
-        0.390909,
-        0.88
-      ],
-      [
-        "Southern foothills",
+        "Nottingham",
         "forest",
-        0.627273,
-        0.893333
+        0.596154,
+        0.483607
       ],
       [
-        "Eastern camps",
+        "Stafford",
         "plains",
-        0.890909,
-        0.906667
-      ]
-    ],
-    "player1_capital": 12,
-    "player2_capital": 1,
-    "player1_extra_starts": [
-      6,
-      9
-    ],
-    "player2_extra_starts": [
-      2,
-      5
-    ],
-    "setting": {
-      "era": "Fort landscape interpretation",
-      "note": "Measured modern elevation; historical land cover, paths and sector boundaries are reconstructed for play.",
-      "sources": [
-        [
-          "UNESCO: Hill Forts of Rajasthan",
-          "https://whc.unesco.org/en/list/247/"
-        ]
+        0.471795,
+        0.506557
       ],
-      "terrain_note": "Measured modern elevation; historical land cover, paths and sector boundaries are reconstructed for play.",
-      "opening_note": "Recommended opening: 208 vs 208 troops. Territory growth and access also affect difficulty."
-    }
-  },
-  "malta": {
-    "id": "malta",
-    "name": "Malta: Harbors & Forts",
-    "category": "sieges",
-    "description": "A 1565-inspired island theater around fortified harbors and inland approaches. Naval combat, bombardment and breaches are not separate mechanics. 24 regions.",
-    "map_asset_id": "malta_atlas_v3",
-    "regions": [
       [
-        "Gozo West",
+        "Shrewsbury",
         "hills",
-        0.107143,
-        0.153333
+        0.391026,
+        0.522951
       ],
       [
-        "Gozo Citadel",
-        "city",
-        0.190476,
-        0.146667
-      ],
-      [
-        "Gozo East",
-        "coast",
-        0.292857,
-        0.206667
-      ],
-      [
-        "Comino",
-        "coast",
-        0.414286,
-        0.26
-      ],
-      [
-        "Mellieha",
+        "Hereford",
         "hills",
-        0.483333,
-        0.446667
+        0.394872,
+        0.629508
       ],
       [
-        "St Paul's Bay",
-        "coast",
-        0.583333,
-        0.476667
-      ],
-      [
-        "Mgarr",
+        "Worcester",
         "plains",
-        0.492857,
-        0.57
+        0.458974,
+        0.608197
       ],
       [
-        "Mosta",
-        "city",
-        0.633333,
-        0.606667
-      ],
-      [
-        "Naxxar",
-        "hills",
-        0.67619,
-        0.586667
-      ],
-      [
-        "Mdina",
-        "city",
-        0.57619,
-        0.68
-      ],
-      [
-        "Rabat",
-        "city",
-        0.564286,
-        0.693333
-      ],
-      [
-        "Dingli",
-        "hills",
-        0.528571,
-        0.773333
-      ],
-      [
-        "Siggiewi",
+        "Leicester",
         "plains",
-        0.661905,
-        0.786667
+        0.598718,
+        0.534426
       ],
       [
-        "Zebbug",
-        "city",
-        0.671429,
-        0.73
-      ],
-      [
-        "Birkirkara",
-        "city",
-        0.72619,
-        0.65
-      ],
-      [
-        "Marsa",
+        "Northampton",
         "plains",
-        0.795238,
-        0.71
-      ],
-      [
-        "Sciberras Peninsula",
-        "hills",
-        0.840476,
-        0.633333
-      ],
-      [
-        "Fort St Elmo",
-        "city",
-        0.854762,
-        0.623333
-      ],
-      [
-        "Birgu",
-        "city",
-        0.864286,
-        0.673333
-      ],
-      [
-        "Senglea",
-        "city",
-        0.847619,
-        0.676667
-      ],
-      [
-        "Cospicua",
-        "city",
-        0.864286,
-        0.696667
-      ],
-      [
-        "Zejtun",
-        "city",
-        0.888095,
-        0.78
-      ],
-      [
-        "Marsaxlokk",
-        "coast",
-        0.916667,
-        0.826667
-      ],
-      [
-        "Zurrieq",
-        "plains",
-        0.75,
-        0.863333
-      ]
-    ],
-    "player1_capital": 18,
-    "player2_capital": 9,
-    "player1_extra_starts": [
-      15,
-      19
-    ],
-    "player2_extra_starts": [
-      6,
-      10
-    ],
-    "setting": {
-      "era": "1565-inspired theater",
-      "note": "Measured modern elevation; historical land cover, paths and sector boundaries are reconstructed for play.",
-      "sources": [
-        [
-          "Heritage Malta: National War Museum",
-          "https://heritagemalta.mt/explore/national-war-museum/"
-        ]
-      ],
-      "terrain_note": "Measured modern elevation; historical land cover, paths and sector boundaries are reconstructed for play.",
-      "opening_note": "Recommended opening: 224 vs 224 troops. Territory growth and access also affect difficulty."
-    }
-  },
-  "kurukshetra": {
-    "id": "kurukshetra",
-    "name": "Kurukshetra: The Epic Battlefield",
-    "category": "legends",
-    "description": "A Mahabharata-inspired interpretation of the Kurukshetra landscape. Camp positions and named sectors are imaginative, not archaeological claims. 24 regions.",
-    "map_asset_id": "kurukshetra_atlas_v3",
-    "regions": [
-      [
-        "Northern Pilgrim Road",
-        "plains",
-        0.104167,
-        0.121739
-      ],
-      [
-        "Saraswati Memory",
-        "coast",
-        0.325,
-        0.121739
-      ],
-      [
-        "Kaurava Rear",
-        "plains",
-        0.579167,
-        0.121739
-      ],
-      [
-        "Northern Grove",
-        "forest",
-        0.8875,
-        0.121739
-      ],
-      [
-        "Western Watch",
-        "hills",
-        0.104167,
-        0.269565
-      ],
-      [
-        "Bhishma's Camp",
-        "city",
-        0.325,
-        0.269565
-      ],
-      [
-        "Kaurava Standard",
-        "city",
-        0.579167,
-        0.269565
-      ],
-      [
-        "Eastern Watch",
-        "plains",
-        0.8875,
-        0.269565
-      ],
-      [
-        "Chariot Ground West",
-        "plains",
-        0.104167,
-        0.43913
-      ],
-      [
-        "Drona's Field",
-        "plains",
-        0.325,
-        0.43913
-      ],
-      [
-        "Field of Vows",
-        "plains",
-        0.579167,
-        0.43913
-      ],
-      [
-        "Chariot Ground East",
-        "plains",
-        0.8875,
-        0.43913
-      ],
-      [
-        "Western Sacred Grove",
-        "forest",
-        0.104167,
-        0.604348
-      ],
-      [
-        "Dharma Field",
-        "plains",
-        0.325,
-        0.604348
-      ],
-      [
-        "Arjuna's Ground",
-        "plains",
-        0.579167,
-        0.604348
-      ],
-      [
-        "Eastern Sacred Grove",
-        "forest",
-        0.8875,
-        0.604348
-      ],
-      [
-        "Pandava Left",
-        "plains",
-        0.104167,
-        0.76087
-      ],
-      [
-        "Pandava Standard",
-        "city",
-        0.325,
-        0.76087
-      ],
-      [
-        "Yudhishthira's Camp",
-        "city",
-        0.579167,
-        0.76087
-      ],
-      [
-        "Pandava Right",
-        "plains",
-        0.8875,
-        0.76087
-      ],
-      [
-        "Southern Pilgrim Road",
-        "plains",
-        0.104167,
-        0.921739
-      ],
-      [
-        "Lotus Water",
-        "coast",
-        0.325,
-        0.921739
-      ],
-      [
-        "Southern Reserve",
-        "plains",
-        0.579167,
-        0.921739
-      ],
-      [
-        "Southern Grove",
-        "forest",
-        0.8875,
-        0.921739
-      ]
-    ],
-    "player1_capital": 17,
-    "player2_capital": 6,
-    "player1_extra_starts": [
-      13,
-      18
-    ],
-    "player2_extra_starts": [
-      5,
-      10
-    ],
-    "setting": {
-      "era": "Mahabharata-inspired",
-      "note": "Literary-inspired setting with imaginative place assignments, not archaeological evidence. Measured modern elevation; historical land cover, paths and sector boundaries are reconstructed for play.",
-      "sources": [
-        [
-          "Kurukshetra district: cultural setting",
-          "https://kurukshetra.gov.in/history/"
-        ]
-      ],
-      "terrain_note": "Literary-inspired setting with imaginative place assignments, not archaeological evidence. Measured modern elevation; historical land cover, paths and sector boundaries are reconstructed for play.",
-      "opening_note": "Recommended opening: 224 vs 224 troops. Territory growth and access also affect difficulty."
-    }
-  },
-  "troy_troad": {
-    "id": "troy_troad",
-    "name": "Troy & the Troad",
-    "category": "legends",
-    "description": "An Iliad-inspired landscape around Troy. The ancient coast, camps and battle sectors are interpretive; no supernatural or scripted siege rules. 24 regions.",
-    "map_asset_id": "troy_troad_atlas_v3",
-    "regions": [
-      [
-        "Northern Cape",
-        "coast",
-        0.192308,
-        0.104348
-      ],
-      [
-        "Northern Plain",
-        "plains",
-        0.460391,
-        0.134641
-      ],
-      [
-        "Dardanelles Watch",
-        "hills",
-        0.7,
-        0.113043
-      ],
-      [
-        "Eastern Gate Country",
-        "plains",
-        0.876923,
-        0.165217
-      ],
-      [
-        "Achaean Landing",
-        "coast",
-        0.138281,
-        0.371448
-      ],
-      [
-        "Ship Camp West",
-        "city",
-        0.361328,
-        0.374154
-      ],
-      [
-        "Ship Camp East",
-        "city",
-        0.561328,
-        0.374154
-      ],
-      [
-        "Northern Ridge",
-        "hills",
-        0.838281,
-        0.363329
-      ],
-      [
-        "Achilles' Camp",
-        "city",
-        0.2,
-        0.495652
-      ],
-      [
-        "Patroclus' Field",
-        "plains",
-        0.369231,
-        0.513043
-      ],
-      [
-        "Scamander Plain",
-        "plains",
-        0.530769,
-        0.46087
-      ],
-      [
-        "Trojan Northern Road",
-        "plains",
-        0.815385,
-        0.478261
-      ],
-      [
-        "Western Dunes",
-        "coast",
-        0.146154,
-        0.678261
-      ],
-      [
-        "Battle Plain West",
-        "plains",
-        0.353846,
-        0.669565
-      ],
-      [
-        "Battle Plain East",
-        "plains",
-        0.546154,
-        0.643478
-      ],
-      [
-        "Troy Citadel",
-        "city",
-        0.453846,
-        0.504348
-      ],
-      [
-        "Southern Ford",
-        "coast",
-        0.369231,
-        0.826087
-      ],
-      [
-        "Scaean Gate Approach",
-        "city",
-        0.515385,
-        0.547826
-      ],
-      [
-        "Trojan Orchard",
-        "forest",
-        0.707692,
-        0.669565
-      ],
-      [
-        "Eastern Foothills",
-        "hills",
-        0.884615,
-        0.652174
-      ],
-      [
-        "Southern Coast",
-        "coast",
-        0.146154,
-        0.86087
-      ],
-      [
-        "Southern Pastures",
-        "plains",
-        0.538462,
-        0.904348
-      ],
-      [
-        "Ida Road",
-        "hills",
-        0.715385,
-        0.852174
-      ],
-      [
-        "Eastern Woodland",
-        "forest",
-        0.884615,
-        0.852174
-      ]
-    ],
-    "player1_capital": 15,
-    "player2_capital": 6,
-    "player1_extra_starts": [
-      11,
-      17
-    ],
-    "player2_extra_starts": [
-      1,
-      5
-    ],
-    "setting": {
-      "era": "Iliad-inspired",
-      "note": "Literary-inspired setting with imaginative place assignments, not archaeological evidence. Measured modern elevation; historical land cover, paths and sector boundaries are reconstructed for play.",
-      "sources": [
-        [
-          "UNESCO: Archaeological Site of Troy",
-          "https://whc.unesco.org/en/list/849/"
-        ]
-      ],
-      "terrain_note": "Literary-inspired setting with imaginative place assignments, not archaeological evidence. Measured modern elevation; historical land cover, paths and sector boundaries are reconstructed for play.",
-      "opening_note": "Recommended opening: 224 vs 224 troops. Territory growth and access also affect difficulty."
-    }
-  },
-  "emberfall": {
-    "id": "emberfall",
-    "name": "Emberfall: Kingdoms of Ash",
-    "category": "legends",
-    "description": "An original high-fantasy world: rival mountain halls, ancient forests, river kingdoms and the volcanic Ashen Crown. No borrowed characters or geography. 24 regions.",
-    "map_asset_id": "emberfall_atlas_v3",
-    "regions": [
-      [
-        "Frostwatch",
-        "hills",
-        0.18,
-        0.16
-      ],
-      [
-        "Wintermere",
-        "coast",
-        0.34,
-        0.133333
-      ],
-      [
-        "Stonewake Halls",
-        "city",
-        0.49,
-        0.186667
-      ],
-      [
-        "Thunder Peaks",
-        "hills",
-        0.65,
-        0.16
-      ],
-      [
-        "Dawnspire",
-        "city",
-        0.82,
-        0.186667
-      ],
-      [
-        "Greenhollow",
-        "plains",
-        0.14,
-        0.36
-      ],
-      [
-        "Elderbough",
-        "forest",
-        0.3,
-        0.333333
-      ],
-      [
-        "Deepwood Court",
-        "city",
-        0.43,
-        0.373333
-      ],
-      [
-        "Silver March",
-        "plains",
-        0.59,
-        0.36
-      ],
-      [
-        "Obsidian Pass",
-        "hills",
-        0.73,
-        0.346667
-      ],
-      [
-        "Ashen Crown",
-        "city",
-        0.87,
-        0.386667
-      ],
-      [
-        "Westhaven",
-        "coast",
-        0.12,
-        0.573333
-      ],
-      [
-        "Alder Vale",
-        "plains",
-        0.27,
-        0.533333
-      ],
-      [
-        "Rivermeet",
-        "city",
-        0.42,
-        0.573333
-      ],
-      [
-        "Copper Downs",
-        "hills",
-        0.57,
-        0.546667
-      ],
-      [
-        "Ember Waste",
-        "desert",
-        0.73,
-        0.546667
-      ],
-      [
-        "Cinder Gate",
-        "city",
-        0.87,
+        0.628205,
         0.6
       ],
       [
-        "Saltwind Coast",
-        "coast",
-        0.19,
-        0.746667
-      ],
-      [
-        "Harvest Reach",
-        "plains",
-        0.34,
-        0.733333
-      ],
-      [
-        "Sunward Keep",
+        "Norwich",
         "city",
-        0.49,
-        0.76
+        0.910256,
+        0.536066
       ],
       [
-        "Glasswater Bay",
+        "Ipswich",
         "coast",
-        0.61,
-        0.773333
+        0.891026,
+        0.629508
       ],
       [
-        "Redstone Hills",
+        "Cambridge",
+        "plains",
+        0.758974,
+        0.606557
+      ],
+      [
+        "Colchester",
+        "city",
+        0.858974,
+        0.657377
+      ],
+      [
+        "London",
+        "city",
+        0.726923,
+        0.719672
+      ],
+      [
+        "Oxford",
+        "plains",
+        0.582051,
+        0.680328
+      ],
+      [
+        "Gloucester",
+        "city",
+        0.45641,
+        0.660656
+      ],
+      [
+        "Bath",
         "hills",
-        0.74,
-        0.733333
+        0.441026,
+        0.740984
       ],
       [
-        "Nightwood",
-        "forest",
-        0.85,
-        0.8
+        "Winchester",
+        "city",
+        0.574359,
+        0.793443
       ],
       [
-        "Far Lantern",
+        "Canterbury",
+        "city",
+        0.882051,
+        0.757377
+      ],
+      [
+        "Hastings",
         "coast",
-        0.4,
-        0.906667
+        0.816667,
+        0.82623
+      ],
+      [
+        "Dorchester",
+        "plains",
+        0.430769,
+        0.85082
+      ],
+      [
+        "Exeter",
+        "city",
+        0.291026,
+        0.84918
+      ],
+      [
+        "Cornwall",
+        "coast",
+        0.133333,
+        0.893443
       ]
     ],
-    "player1_capital": 19,
-    "player2_capital": 10,
+    "player1_capital": 24,
+    "player2_capital": 0,
     "player1_extra_starts": [
-      15,
-      20
+      21,
+      22
     ],
     "player2_extra_starts": [
-      8,
-      9
+      1,
+      3
     ],
     "setting": {
-      "era": "Original high fantasy",
-      "note": "Original fictional world, names and artwork; no real-world geography or measured elevation.",
-      "sources": [],
-      "terrain_note": "Original fictional world, names and artwork; no real-world geography or measured elevation.",
-      "opening_note": "Recommended opening: 144 vs 144 troops. Territory growth and access also affect difficulty."
-    }
+      "era": "England \u00b7 1066",
+      "note": "Modern coastlines; interpreted gameplay sectors around historical places, not exact period borders. Starting territories are balanced for open-ended conquest, not historical deployments. Terrain symbols are illustrative.",
+      "sources": [
+        [
+          "English Heritage: Battle of Hastings and the Norman Conquest",
+          "https://www.english-heritage.org.uk/visit/places/1066-battle-of-hastings-abbey-and-battlefield/history-and-stories/history/"
+        ]
+      ],
+      "terrain_note": "Modern coastlines; interpreted gameplay sectors around historical places, not exact period borders. Starting territories are balanced for open-ended conquest, not historical deployments. Terrain symbols are illustrative.",
+      "opening_note": "Recommended opening: 152 vs 152 troops. Territory growth and access also affect difficulty."
+    },
+    "historical_sectors": true,
+    "sea_routes": []
   }
 }

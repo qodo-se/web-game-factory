@@ -16,12 +16,13 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class CollectionTests(unittest.TestCase):
     def test_collection_and_random_rejection(self):
-        self.assertEqual({key for key,p in PRESETS.items() if p.get('category', 'world') == 'world'}, {'mediterranean', 'europe', 'india', 'central_asia',
+        self.assertEqual(set(PRESETS), {'mediterranean', 'europe', 'india', 'central_asia',
             'americas', 'africa_middle_east', 'southeast_asia_oceania', 'balochistan_borderlands_expanded',
-            'japan_korea','british_irish_isles','anatolia_caucasus','nile_horn','andes_pacific','caribbean_central_america'})
+            'japan_korea','british_irish_isles','anatolia_caucasus',
+            'crusader_levant','civil_war_eastern_theater','greco_persian','viking_conquests','norman_england_1066'})
         with self.assertRaises(ValidationError):
             NewGameRequest(mode='random')
-        for key in ['eastern_europe', 'western_europe', 'middle_east', 'southeast_asia', 'pakistan_afghanistan', 'balochistan_borderlands']:
+        for key in ['nile_horn', 'napoleon_1805', 'eastern_europe', 'western_europe', 'middle_east', 'southeast_asia', 'pakistan_afghanistan', 'balochistan_borderlands', 'waterloo', 'crusader_states', 'malta', 'emberfall', 'andes_pacific', 'caribbean_central_america']:
             with self.assertRaises(ValueError):
                 GameEngine.from_preset(key)
 
@@ -59,6 +60,7 @@ class CollectionTests(unittest.TestCase):
     def test_expanded_land_coverage(self):
         # Test actual inland locations, including territories with non-ISO source codes.
         samples = {
+            'japan_korea': [(142,43.5),(139.7,35.68),(126.98,37.57),(123.43,41.8),(125.32,43.82),(126.64,45.76),(131.89,43.12),(135.07,48.48),(127.53,50.29),(142.73,50.4),(158.65,53.02),(150.8,59.56),(161.5,60.0)],
             'balochistan_borderlands_expanded': [(62.20,34.35),(69.18,34.53),(66.99,30.18),(63.05,26.00),(60.86,29.50),(60.64,25.29),(62.33,27.37),(61.50,31.03)],
             'africa_middle_east': [(31.6, 4.85), (-1.5, 12.4), (47, -20), (53, 29)],
             'americas': [(-53, 4), (-150, 64), (-68, -54), (-99, 19)],
@@ -115,6 +117,20 @@ class CollectionTests(unittest.TestCase):
         for pair in [('IRN','PAK'), ('IRN','AFG'), ('PAK','AFG')]:
             self.assertIn(frozenset(pair), crossings)
 
+    def test_northeast_asia_and_older_japan_save(self):
+        from games.borderstrife.api import backups
+        current = PRESETS['japan_korea']
+        self.assertEqual(current['name'], 'Northeast Asia')
+        self.assertEqual(len(current['regions']), 30)
+        self.assertEqual(current['map_asset_id'], 'japan_korea_atlas_v5')
+        self.assertEqual(set(current['anchor_countries']), {'JPN','KOR','PRK','CHN','RUS'})
+        previous=json.loads((Path(__file__).parent/'fixtures/previous_japan_korea.json').read_text())
+        engine=GameEngine(load_preset(previous))
+        restored=backups.decode(backups.encode(engine))
+        self.assertEqual(restored.state,engine.state)
+        self.assertEqual(len(restored.state.regions),24)
+        self.assertEqual(restored.state.map_asset_id,'japan_korea_atlas_v4')
+
     def test_old_campaigns_remain_readable(self):
         for key in ['eastern_europe', 'western_europe', 'middle_east', 'southeast_asia', 'pakistan_afghanistan', 'balochistan_borderlands']:
             preset = runpy.run_path(str(ROOT / f'engine/presets/{key}.py'))['PRESET']
@@ -122,3 +138,13 @@ class CollectionTests(unittest.TestCase):
             self.assertEqual(restored.state.preset_id, key)
             atlas = json.loads((ROOT / f'ui/maps/{key}.json').read_text())
             self.assertEqual(len(restored.state.regions), len(atlas['regions']))
+
+    def test_retired_theaters_restore(self):
+        from games.borderstrife.api import backups
+        retired=json.loads((Path(__file__).parent/'fixtures/retired_theaters.json').read_text())
+        for key,preset in retired.items():
+            with self.subTest(map=key):
+                self.assertNotIn(key,PRESETS)
+                engine=GameEngine(load_preset(preset))
+                restored=backups.decode(backups.encode(engine))
+                self.assertEqual(restored.state,engine.state)

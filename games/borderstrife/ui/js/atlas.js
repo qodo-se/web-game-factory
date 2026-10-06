@@ -237,7 +237,7 @@ const atlas = {
         const dark=interfaceView.darkMap;
         ctx.setTransform(scaleX,0,0,scaleY,0,0);
         const ocean = ctx.createLinearGradient(0,0,0,h);
-        ocean.addColorStop(0,dark?'#14252e':this.data.category==='historical'?'#303930':'#263e49'); ocean.addColorStop(1,dark?'#0c1921':this.data.category==='historical'?'#202c2b':'#1c303a');
+        ocean.addColorStop(0,dark?'#14252e':'#263e49'); ocean.addColorStop(1,dark?'#0c1921':'#1c303a');
         ctx.fillStyle = ocean; ctx.fillRect(0,0,w,h);
         if(this.data.inland_frame){ctx.fillStyle=dark?'#202c27':'#485244';ctx.fillRect(0,0,w,h);}
         if(this.data.presentation_version>=4)cartography.context(ctx,this);
@@ -275,7 +275,7 @@ const atlas = {
                 ctx.fillStyle = terrain[r.terrain] || terrain.plains;
                 ctx.fill(path, 'evenodd');
             }
-            if(r.terrain==='hills' && this.data.category !== 'historical' && !this.terrainImage && !this.data.presentation_version) {
+            if(r.terrain==='hills' && !this.terrainImage && !this.data.presentation_version) {
                 ctx.save();ctx.clip(path,'evenodd');
                 ctx.strokeStyle=dark?'rgba(198,200,174,.18)':'rgba(72,64,49,.19)';ctx.lineWidth=.65;
                 ctx.stroke(this.geometry.relief[i]);ctx.restore();
@@ -301,15 +301,6 @@ const atlas = {
             ctx.strokeStyle = r.owner==='player_1'?(dark?'#7fa4bd':'#577792'):r.owner==='player_2'?(dark?'#c38e7c':'#98695c'):(dark?'rgba(191,206,191,.48)':'rgba(40,49,44,.48)');
             ctx.lineWidth = this.terrainImage ? .85 : r.owner==='rogue'?.7:1.4; ctx.globalAlpha=this.terrainImage?.68:1; ctx.stroke(path);ctx.globalAlpha=1;
         });
-        if (this.data.category === 'historical' && !this.terrainImage) {
-            ctx.save(); ctx.clip(land,'evenodd');
-            ctx.lineJoin='round'; ctx.lineCap='round';
-            // Broad ridge shading, not surveyed contour elevations.
-            ctx.strokeStyle='rgba(45,45,29,.13)';ctx.lineWidth=16;ctx.stroke(this.geometry.ridges);
-            ctx.strokeStyle='rgba(235,226,182,.22)';ctx.lineWidth=5;ctx.stroke(this.geometry.ridges);
-            ctx.strokeStyle='rgba(230,216,174,.85)';ctx.lineWidth=2;ctx.setLineDash([5,3]);ctx.stroke(this.geometry.roads);
-            ctx.restore();
-        }
         if(this.data.presentation_version>=4)cartography.terrain(ctx,this,regions);
         ctx.save();ctx.clip(land,'evenodd');ctx.strokeStyle=dark?'rgba(115,174,184,.8)':'rgba(63,115,137,.85)';ctx.lineWidth=1.5;
         if (!this.terrainImage) ctx.stroke(this.geometry.rivers);ctx.restore();

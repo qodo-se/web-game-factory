@@ -1111,6 +1111,7 @@ function handleRegionClick(id) {
         // Switch selection to another own region
         if (r.owner === 'player_1' && validMoves[id] && (!committedFrom.has(id)||pendingMoves.some(m=>m.from_region_id===id&&m.standing_id))) {
             selectedFrom = id;
+            sidebar.open('orders');
             renderMap(); updateRegionInfo(id); updateMoveHint(); return;
         }
 
@@ -1121,6 +1122,7 @@ function handleRegionClick(id) {
 
     if (r.owner === 'player_1' && validMoves[id] && (!committedFrom.has(id)||pendingMoves.some(m=>m.from_region_id===id&&m.standing_id))) {
         selectedFrom = id;
+        sidebar.open('orders');
         renderMap(); updateRegionInfo(id); updateMoveHint();
     } else {
         updateRegionInfo(id);
@@ -1137,6 +1139,7 @@ function removePendingMove(fromId) {
 // ── UI updates ────────────────────────────────────────────────────────────────
 
 function updateTopBar() {
+    drawOffers.update();
     document.getElementById('turn-label').textContent = campaignReplay.active?'Replay':'Turn';
     document.getElementById('turn-num').textContent = campaignReplay.active?(state.turn===1?'Start':state.turn-1):state.turn;
     document.getElementById('p1-name').textContent    = state.battle?.factions.player_1 || state.player_1.name;
@@ -1270,6 +1273,8 @@ function showCombatLog(summary) {
 
 function setResolving(on) {
     resolving = on;
+    drawOffers.update();
+    campaignFiles.updateGameButtons();
     if(on){mapOrders.clearHold();mapOrders.close();}
     document.getElementById('resolving-overlay').classList.toggle('hidden', !on);
     document.getElementById('end-turn-btn').disabled = on;
@@ -1351,7 +1356,8 @@ async function loadOlderHistory() {
     if(historyLoading||!historyMore)return;
     historyLoading=true;renderTimeline();
     try {
-        const before=Math.min(...campaignHistory.map(entry=>entry.turn),state.turn);
+        const savedState=campaignReplay.active?campaignReplay.finalState:state;
+        const before=Math.min(...campaignHistory.map(entry=>entry.turn),savedState.turn);
         const data=await api.getHistory(gameId,before);
         const entries=new Map(campaignHistory.map(entry=>[entry.turn,entry]));
         for(const entry of data.history)entries.set(entry.turn,entry);
@@ -1364,7 +1370,13 @@ function renderTimeline() {
     const more=document.getElementById('history-more');
     more.hidden=!historyMore;more.disabled=historyLoading;
     more.textContent=historyLoading?'Loading…':'Load older turns';
-    document.getElementById('timeline-list').innerHTML=campaignHistory.slice().reverse().map(entry=>{
+    const savedState = campaignReplay.active ? campaignReplay.finalState : state;
+    const offers = (savedState.draw_offers || []).map(offer => ({...offer, drawOffer:true}));
+    if (savedState.resigned) offers.push({turn:savedState.turn, resignation:true});
+    const entries = [...campaignHistory, ...offers].sort((a,b) => b.turn-a.turn || Number(!!a.drawOffer)-Number(!!b.drawOffer));
+    document.getElementById('timeline-list').innerHTML=entries.map(entry=>{
+        if(entry.resignation) return `<p><b>Turn ${entry.turn} · Resigned</b><br>You resigned. Your opponent wins.</p>`;
+        if(entry.drawOffer) return `<p><b>Turn ${entry.turn} · Draw ${entry.accepted?'accepted':'declined'}</b><br>${escHtml(entry.message)}</p>`;
         const captured=(entry.events||[]).filter(e=>e.type==='battle'&&e.won);
         const text=captured.length?captured.map(e=>`${e.owner==='player_1'?'You':'AI'} captured ${state.regions[e.to]?.name||'territory'}`).join(' · '):'Frontiers held';
         return `<p><b>Turn ${entry.turn}</b><br>${escHtml(text)}</p>`;
@@ -1377,12 +1389,14 @@ function handleGameOver(winner) {
     const title     = document.getElementById('gameover-title');
     const subtitle  = document.getElementById('gameover-subtitle');
 
-    title.textContent = isVictory ? 'VICTORY' : 'DEFEAT';
-    title.style.color = isVictory ? '#dfc184' : '#efa296';
+    title.textContent = winner === 'draw' ? 'DRAW' : isVictory ? 'VICTORY' : 'DEFEAT';
+    title.style.color = winner === 'draw' || isVictory ? '#dfc184' : '#efa296';
     subtitle.textContent = isVictory
         ? `${state.player_1.name} conquers all.`
         : `${state.player_2.name} prevails.`;
-    if (state.battle) {
+    if (winner === 'draw') subtitle.textContent = 'Both sides agreed to a stalemate. Download or replay your campaign.';
+    if (state.resigned) subtitle.textContent = 'You resigned. Your opponent wins. Download or replay your campaign.';
+    if (state.battle && winner !== 'draw' && !state.resigned) {
         const objectives = owner => state.battle.objectives.filter(id => state.regions[id].owner === owner).length;
         subtitle.textContent = `${state.battle.factions[winner]} wins. Objectives: ${objectives('player_1')}–${objectives('player_2')} · Your remaining strength: ${state.player_1.total_army}.`;
     }
@@ -1394,7 +1408,7 @@ function handleGameOver(winner) {
     document.getElementById('open-campaign-replay').hidden=false;
     orderHistory.updateButtons();
     document.getElementById('end-turn-btn').disabled = true;
-    document.getElementById('abandon-btn').textContent = 'Back to Menu';
+    document.getElementById('abandon-btn').textContent = 'Exit';
 
     sessionStorage.setItem('winner', winner);
     sessionStorage.setItem('winnerName', isVictory ? state.player_1.name : state.player_2.name);
@@ -1418,6 +1432,7 @@ async function init() {
     document.getElementById('retry-draft-save').addEventListener('click',()=>{if(!resolving)standingOrders.saveDraft();});
     document.getElementById('abandon-btn').addEventListener('click', abandon);
     sidebar.init();
+    drawOffers.init();
     interfaceView.init();
     presentation.init();
     campaignReplay.init();

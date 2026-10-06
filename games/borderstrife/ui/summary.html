@@ -49,10 +49,10 @@
 
             const isVictory = winner === 'player_1';
 
-            document.getElementById('result-title').textContent = isVictory ? 'VICTORY' : 'DEFEAT';
+            document.getElementById('result-title').textContent = winner === 'draw' ? 'DRAW' : isVictory ? 'VICTORY' : 'DEFEAT';
             document.getElementById('result-title').classList.add(isVictory ? 'victory' : 'defeat');
             document.getElementById('result-subtitle').textContent =
-                isVictory ? `${winnerName} has conquered the map.` : `${winnerName} has prevailed.`;
+                winner === 'draw' ? 'Both sides agreed to a stalemate.' : isVictory ? `${winnerName} has conquered the map.` : `${winnerName} has prevailed.`;
 
             document.getElementById('stat-turns').textContent    = turns;
             document.getElementById('stat-p1-regions').textContent = p1regions;

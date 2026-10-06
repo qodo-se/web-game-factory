@@ -1,3 +1,7 @@
+# Current catalog
+
+The 11 regional and five historical theaters are selectable; see [COLLECTIONS.md](COLLECTIONS.md). The original source geometry and build notes below describe earlier regional versions retained for save compatibility. Current playable maps contain 24–30 regions.
+
 # Campaign geography
 
 Start with the [map overview and interaction guide](../ui/maps/README.md).

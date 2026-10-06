@@ -23,6 +23,31 @@ def rings(geometry):
 def geometry(feature):
     return unary_union([Polygon(p[0], p[1:]) for p in feature['polygons']])
 
+def simplify_small_islands(atlas, area_bounds, minimum_area=.025):
+    """Omit small decorative islets, preserving region markers and shared borders."""
+    west, south, east, north = atlas['bounds']
+    dx, dy = east - west, north - south
+    min_lon, min_lat, max_lon, max_lat = area_bounds
+    cells = [geometry(region) for region in atlas['regions']]
+
+    def tiny_islet(polygon):
+        x, y = polygon.centroid.coords[0]
+        lon, lat = west + x * dx, north - y * dy
+        return min_lon < lon < max_lon and min_lat < lat < max_lat and polygon.area * dx * dy < minimum_area
+
+    for index, region in enumerate(atlas['regions']):
+        marker = Point(region['center'])
+        neighbors = [cell for i, cell in enumerate(cells) if i != index]
+        region['polygons'] = [ring for ring in region['polygons']
+                              if not tiny_islet(Polygon(ring[0], ring[1:]))
+                              or Polygon(ring[0], ring[1:]).buffer(1e-6).covers(marker)
+                              or any(Polygon(ring[0], ring[1:]).distance(other) < 1e-5 for other in neighbors)]
+    # Context coastlines otherwise paint the removed islets back underneath the map.
+    if 'context_land' in atlas:
+        atlas['context_land'] = [ring for ring in atlas['context_land']
+                                 if not tiny_islet(Polygon(ring[0], ring[1:]))]
+
+
 def build(archive, only=None):
     source = json.loads((ROOT / 'engine/presets/reviewed.json').read_text())
     provinces = [shape(r.shape.__geo_interface__).buffer(0) for r in shapefile.Reader(str(archive)).iterShapeRecords()]
@@ -56,6 +81,10 @@ def build(archive, only=None):
         surrounding = transform(lambda x, y: ((np.asarray(x) - west) / dx, (north - np.asarray(y)) / dy), surrounding).simplify(0.0007, preserve_topology=True)
         context = surrounding
         a['context_land'] = rings(context)
+        if key == 'greco_persian':
+            simplify_small_islands(a, (21, 34, 29, 41))
+        elif key in {'viking_conquests', 'japan_korea'}:
+            simplify_small_islands(a, a['bounds'])
         a['inland_frame'] = surrounding.intersection(box(0, 0, 1, 1)).area > 0.995
         if key in WATERS:
             water = box(0, 0, 1, 1).difference(surrounding)
